@@ -7,19 +7,19 @@ const EXTRA_SLIDES = [
   {
     headline: "오사카 식도락 여행",
     subhead: "현지인 맛집부터 카페까지 완전 정복",
-    bg: "https://images.unsplash.com/photo-1590559899731-a363c37fa905?q=80&w=3442&auto=format&fit=crop",
+    bg: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1600&q=80",
     cta: "특가 보기"
   },
   {
     headline: "겨울 삿포로 눈꽃 축제",
     subhead: "하얀 설원 위에서 즐기는 낭만",
-    bg: "https://images.unsplash.com/photo-1540321262-e64845ad43db?q=80&w=3442&auto=format&fit=crop",
+    bg: "https://images.unsplash.com/photo-1491002052546-bf38f186af56?w=1600&q=80",
     cta: "일정 확인"
   },
   {
     headline: "다낭 호캉스 특가",
     subhead: "5성급 리조트 조식 포함 패키지",
-    bg: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=3442&auto=format&fit=crop",
+    bg: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&q=80",
     cta: "예약 하기"
   }
 ];

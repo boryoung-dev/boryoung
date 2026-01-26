@@ -9,28 +9,32 @@ const japanSeed: Seed[] = [
     priceText: "840,000원",
     highlight1: "골프",
     highlight2: "리조트",
-    badge: "BEST"
+    badge: "BEST",
+    thumbnailUrl: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80"
   },
   {
     title: "가고시마 케도인G.G 3박4일 (일 출발)",
     duration: "3박4일",
     priceText: "1,090,000원",
     highlight1: "골프",
-    highlight2: "리조트"
+    highlight2: "리조트",
+    thumbnailUrl: "https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=800&q=80"
   },
   {
     title: "가고시마 사츠마 골프리조트 교세라 2박3일",
     duration: "2박3일",
     priceText: "849,000원",
     highlight1: "골프",
-    highlight2: "온천"
+    highlight2: "온천",
+    thumbnailUrl: "https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?w=800&q=80"
   },
   {
     title: "후쿠오카 유아이 골프클럽 2박3일",
     duration: "2박3일",
     priceText: "1,190,000원",
     highlight1: "골프",
-    highlight2: "도심 접근"
+    highlight2: "도심 접근",
+    thumbnailUrl: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80"
   }
 ];
 
@@ -40,21 +44,24 @@ const seaSeed: Seed[] = [
     duration: "3박5일",
     priceText: "699,000원~",
     highlight1: "핵심 일정",
-    highlight2: "자유 시간"
+    highlight2: "자유 시간",
+    thumbnailUrl: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80"
   },
   {
     title: "비엔티엔·방비엥 4박6일",
     duration: "4박6일",
     priceText: "799,000원~",
     highlight1: "도시+자연",
-    highlight2: "현지 체험"
+    highlight2: "현지 체험",
+    thumbnailUrl: "https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=800&q=80"
   },
   {
     title: "싱가폴·말라카·쿠알라 3박5일",
     duration: "3박5일",
     priceText: "899,000원~",
     highlight1: "2개국",
-    highlight2: "미식·야경"
+    highlight2: "미식·야경",
+    thumbnailUrl: "https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=800&q=80"
   }
 ];
 
@@ -64,14 +71,16 @@ const taiwanSeed: Seed[] = [
     duration: "3박4일",
     priceText: "899,000원~",
     highlight1: "남부 핵심",
-    highlight2: "야시장"
+    highlight2: "야시장",
+    thumbnailUrl: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80"
   },
   {
     title: "타이페이·야류·화련 3박4일",
     duration: "3박4일",
     priceText: "949,000원~",
     highlight1: "동부 포함",
-    highlight2: "자연 명소"
+    highlight2: "자연 명소",
+    thumbnailUrl: "https://images.unsplash.com/photo-1504457047772-27faf1c00561?w=800&q=80"
   }
 ];
 
@@ -82,21 +91,24 @@ const jejuSeed: Seed[] = [
     priceText: "599,000원~",
     highlight1: "우도8경",
     highlight2: "잠수함",
-    badge: "BEST"
+    badge: "BEST",
+    thumbnailUrl: "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&q=80"
   },
   {
     title: "제주 시내 특급호텔 골프 2박3일 54홀",
     duration: "2박3일",
     priceText: "699,000원~",
     highlight1: "54홀",
-    highlight2: "호텔 숙박"
+    highlight2: "호텔 숙박",
+    thumbnailUrl: "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=800&q=80"
   },
   {
     title: "제주 한라산 정상 힐링 2박3일",
     duration: "2박3일",
     priceText: "499,000원~",
     highlight1: "한라산",
-    highlight2: "동부 관광"
+    highlight2: "동부 관광",
+    thumbnailUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80"
   }
 ];
 
@@ -106,7 +118,8 @@ const domesticSeed: Seed[] = [
     duration: "2박3일",
     priceText: "649,000원~",
     highlight1: "울릉",
-    highlight2: "해안 코스"
+    highlight2: "해안 코스",
+    thumbnailUrl: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&q=80"
   }
 ];
 
@@ -121,30 +134,30 @@ const seedByTab: Record<HomeTabKey, Seed[]> = {
 
 const IMAGES: Record<HomeTabKey, string[]> = {
   JAPAN: [
-    "https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1542640244-7e672d6bd4e8?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1503428593586-e225b476b52c?q=80&w=800&auto=format&fit=crop"
+    "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80",
+    "https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=800&q=80",
+    "https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?w=800&q=80",
+    "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80"
   ],
   SEA: [
-    "https://images.unsplash.com/photo-1593111774240-d529f12db4bb?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1548545644-b0d500416972?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1535131749050-ba4337461e0d?q=80&w=800&auto=format&fit=crop"
+    "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80",
+    "https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=800&q=80",
+    "https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=800&q=80",
+    "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80"
   ],
   TAIWAN: [
-    "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1470076892663-af684e5e15af?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=800&auto=format&fit=crop"
+    "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80",
+    "https://images.unsplash.com/photo-1504457047772-27faf1c00561?w=800&q=80",
+    "https://images.unsplash.com/photo-1464817739973-0128fe77aaa1?w=800&q=80"
   ],
   JEJU: [
-    "https://images.unsplash.com/photo-1572295727871-7638149ea3d7?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1623567341691-1f1915907409?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1581458784534-70653526f634?q=80&w=800&auto=format&fit=crop"
+    "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&q=80",
+    "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=800&q=80",
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80"
   ],
   DOMESTIC: [
-    "https://images.unsplash.com/photo-1629248457639-5eb891104337?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1565538466669-e56592237517?q=80&w=800&auto=format&fit=crop"
+    "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&q=80",
+    "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&q=80"
   ]
 };
 
