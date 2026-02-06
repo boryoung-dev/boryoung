@@ -1,5 +1,5 @@
 import { homeSections } from "@/content/homeSections";
-import { getHomeProductsByTab } from "@/lib/home/seed";
+import { getHomeProductsByTab, getRankingProducts, getCollectionItems } from "@/lib/home/seed";
 import type { HomeSection } from "@/lib/home/types";
 
 import { CurationsSection } from "./sections/CurationsSection";
@@ -12,12 +12,17 @@ import { MagazineSection } from "./sections/MagazineSection";
 import { SiteHeader } from "../common/SiteHeader";
 import { KakaoFloating } from "../common/KakaoFloating";
 
-export function HomePage() {
+export async function HomePage() {
   const categoryTabs = homeSections.find(
     (s): s is Extract<HomeSection, { type: "categoryTabs" }> => s.type === "categoryTabs"
   );
 
-  const productsByTab = getHomeProductsByTab(categoryTabs?.itemsPerTab ?? 8);
+  // DB에서 데이터 가져오기
+  const [productsByTab, rankingItems, collectionItems] = await Promise.all([
+    getHomeProductsByTab(categoryTabs?.itemsPerTab ?? 8),
+    getRankingProducts(),
+    getCollectionItems(),
+  ]);
 
   return (
     <div className="min-h-screen bg-[color:var(--bg)] font-sans text-[color:var(--fg)] antialiased selection:bg-[color:var(--brand)] selection:text-white">
@@ -38,11 +43,15 @@ export function HomePage() {
             }
 
             if (section.type === "ranking") {
-              return <RankingSection key={key} {...section} />;
+              // DB 데이터가 있으면 사용, 없으면 하드코딩 데이터
+              const items = rankingItems.length > 0 ? rankingItems : section.items;
+              return <RankingSection key={key} {...section} items={items} />;
             }
 
             if (section.type === "collection") {
-              return <CollectionSection key={key} {...section} />;
+              // DB 데이터가 있으면 사용, 없으면 하드코딩 데이터
+              const items = collectionItems.length > 0 ? collectionItems : section.items;
+              return <CollectionSection key={key} {...section} items={items} />;
             }
 
             if (section.type === "categoryTabs") {

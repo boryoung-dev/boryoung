@@ -25,6 +25,7 @@ export function CurationsSection(props: {
                   <img
                     src={it.imageUrl}
                     alt={it.title}
+                    referrerPolicy="no-referrer"
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/80" />

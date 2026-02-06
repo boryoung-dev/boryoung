@@ -1,8 +1,9 @@
 "use client";
 
-import { HomeSection } from "@/lib/home/types";
+import Link from "next/link";
+import { HomeSection, CollectionItem } from "@/lib/home/types";
 
-export function CollectionSection(props: Extract<HomeSection, { type: "collection" }>) {
+export function CollectionSection(props: Extract<HomeSection, { type: "collection" }> & { items: CollectionItem[] }) {
   if (!props.isVisible) return null;
 
   return (
@@ -12,13 +13,15 @@ export function CollectionSection(props: Extract<HomeSection, { type: "collectio
         
         <div className="flex overflow-x-auto pb-4 gap-4 md:gap-6 snap-x snap-mandatory scrollbar-hide">
           {props.items.map((item) => (
-            <div 
-                key={item.id} 
+            <Link 
+                key={item.id}
+                href={item.slug ? `/tours/${item.slug}` : `/tours`}
                 className="relative flex-none w-[280px] md:w-[320px] aspect-[4/5] rounded-2xl overflow-hidden group cursor-pointer snap-start shadow-md"
             >
-              <img 
-                src={item.imageUrl} 
+              <img
+                src={item.imageUrl}
                 alt={item.title}
+                referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
@@ -40,7 +43,7 @@ export function CollectionSection(props: Extract<HomeSection, { type: "collectio
                   {item.subTitle}
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

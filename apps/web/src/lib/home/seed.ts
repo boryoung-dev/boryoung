@@ -1,222 +1,201 @@
-import type { HomeTabKey, ProductCardDTO } from "./types";
+import { prisma } from '@/lib/prisma';
+import type { HomeTabKey, ProductCardDTO, RankingItem, CollectionItem } from "./types";
 
-type Seed = Omit<ProductCardDTO, "id">;
-
-const japanSeed: Seed[] = [
-  {
-    title: "가고시마 케도인G.C 2박3일 (수·금 출발)",
-    duration: "2박3일",
-    priceText: "840,000원",
-    highlight1: "골프",
-    highlight2: "리조트",
-    badge: "BEST",
-    thumbnailUrl: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80"
-  },
-  {
-    title: "가고시마 케도인G.G 3박4일 (일 출발)",
-    duration: "3박4일",
-    priceText: "1,090,000원",
-    highlight1: "골프",
-    highlight2: "리조트",
-    thumbnailUrl: "https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=800&q=80"
-  },
-  {
-    title: "가고시마 사츠마 골프리조트 교세라 2박3일",
-    duration: "2박3일",
-    priceText: "849,000원",
-    highlight1: "골프",
-    highlight2: "온천",
-    thumbnailUrl: "https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?w=800&q=80"
-  },
-  {
-    title: "후쿠오카 유아이 골프클럽 2박3일",
-    duration: "2박3일",
-    priceText: "1,190,000원",
-    highlight1: "골프",
-    highlight2: "도심 접근",
-    thumbnailUrl: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80"
-  }
-];
-
-const seaSeed: Seed[] = [
-  {
-    title: "치앙마이 완전실속 3박5일",
-    duration: "3박5일",
-    priceText: "699,000원~",
-    highlight1: "핵심 일정",
-    highlight2: "자유 시간",
-    thumbnailUrl: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80"
-  },
-  {
-    title: "비엔티엔·방비엥 4박6일",
-    duration: "4박6일",
-    priceText: "799,000원~",
-    highlight1: "도시+자연",
-    highlight2: "현지 체험",
-    thumbnailUrl: "https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=800&q=80"
-  },
-  {
-    title: "싱가폴·말라카·쿠알라 3박5일",
-    duration: "3박5일",
-    priceText: "899,000원~",
-    highlight1: "2개국",
-    highlight2: "미식·야경",
-    thumbnailUrl: "https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=800&q=80"
-  }
-];
-
-const taiwanSeed: Seed[] = [
-  {
-    title: "대만 가오슝 남부 3박4일",
-    duration: "3박4일",
-    priceText: "899,000원~",
-    highlight1: "남부 핵심",
-    highlight2: "야시장",
-    thumbnailUrl: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80"
-  },
-  {
-    title: "타이페이·야류·화련 3박4일",
-    duration: "3박4일",
-    priceText: "949,000원~",
-    highlight1: "동부 포함",
-    highlight2: "자연 명소",
-    thumbnailUrl: "https://images.unsplash.com/photo-1504457047772-27faf1c00561?w=800&q=80"
-  }
-];
-
-const jejuSeed: Seed[] = [
-  {
-    title: "제주 2박3일 BEST (우도8경·잠수함)",
-    duration: "2박3일",
-    priceText: "599,000원~",
-    highlight1: "우도8경",
-    highlight2: "잠수함",
-    badge: "BEST",
-    thumbnailUrl: "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&q=80"
-  },
-  {
-    title: "제주 시내 특급호텔 골프 2박3일 54홀",
-    duration: "2박3일",
-    priceText: "699,000원~",
-    highlight1: "54홀",
-    highlight2: "호텔 숙박",
-    thumbnailUrl: "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=800&q=80"
-  },
-  {
-    title: "제주 한라산 정상 힐링 2박3일",
-    duration: "2박3일",
-    priceText: "499,000원~",
-    highlight1: "한라산",
-    highlight2: "동부 관광",
-    thumbnailUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80"
-  }
-];
-
-const domesticSeed: Seed[] = [
-  {
-    title: "울릉도 2박3일 (독도 선택)",
-    duration: "2박3일",
-    priceText: "649,000원~",
-    highlight1: "울릉",
-    highlight2: "해안 코스",
-    thumbnailUrl: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&q=80"
-  }
-];
-
-const seedByTab: Record<HomeTabKey, Seed[]> = {
-  JAPAN: japanSeed,
-  SEA: seaSeed,
-  TAIWAN: taiwanSeed,
-  JEJU: jejuSeed,
-  DOMESTIC: domesticSeed
+// destination → HomeTabKey 매핑
+const DESTINATION_TO_TAB: Record<string, HomeTabKey> = {
+  'JAPAN': 'JAPAN',
+  'TAIWAN': 'TAIWAN',
+  'SOUTHEAST_ASIA': 'SEA',
+  'KOREA': 'JEJU', // 제주/국내 합쳐서
+  'CHINA': 'SEA', // 동남아에 포함
+  'AMERICAS': 'SEA', // 동남아에 포함
+  'OTHER': 'SEA',
 };
 
-
-const IMAGES: Record<HomeTabKey, string[]> = {
-  JAPAN: [
-    "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80",
-    "https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=800&q=80",
-    "https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?w=800&q=80",
-    "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80"
-  ],
-  SEA: [
-    "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80",
-    "https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=800&q=80",
-    "https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=800&q=80",
-    "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80"
-  ],
-  TAIWAN: [
-    "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80",
-    "https://images.unsplash.com/photo-1504457047772-27faf1c00561?w=800&q=80",
-    "https://images.unsplash.com/photo-1464817739973-0128fe77aaa1?w=800&q=80"
-  ],
-  JEJU: [
-    "https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&q=80",
-    "https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=800&q=80",
-    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80"
-  ],
-  DOMESTIC: [
-    "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&q=80",
-    "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&q=80"
-  ]
-};
-
-function makeId(tab: HomeTabKey, i: number) {
-  return `${tab.toLowerCase()}_${i.toString().padStart(3, "0")}`;
+// 카테고리명으로 구분 (국내 vs 제주)
+function getTabByCategory(destination: string, category: string): HomeTabKey {
+  if (destination === 'KOREA') {
+    if (category?.includes('제주')) {
+      return 'JEJU';
+    }
+    return 'DOMESTIC';
+  }
+  return DESTINATION_TO_TAB[destination] || 'SEA';
 }
 
-function fillerFor(tab: HomeTabKey, i: number): Seed {
-  const baseTitle: Record<HomeTabKey, string[]> = {
-    JAPAN: ["규슈 골프", "오카야마 골프", "구마모토 골프"],
-    SEA: ["동남아", "리조트", "자유여행"],
-    TAIWAN: ["타이중", "타이페이", "가오슝"],
-    JEJU: ["제주", "서귀포", "동부"],
-    DOMESTIC: ["국내", "강원", "남해"]
-  };
+// Ranking 섹션용 데이터 (featured 상품)
+export async function getRankingProducts(): Promise<RankingItem[]> {
+  try {
+    const products = await prisma.tourProduct.findMany({
+      where: {
+        isActive: true,
+        isFeatured: true,
+      },
+      include: {
+        images: {
+          where: { isThumbnail: true },
+          take: 1,
+        },
+      },
+      orderBy: [
+        { sortOrder: 'asc' },
+        { createdAt: 'desc' },
+      ],
+      take: 4,
+    });
 
-  const durationPool = ["2박3일", "3박4일", "3박5일", "4박6일"];
-  const pricePool = [
-    "699,000원~",
-    "799,000원~",
-    "899,000원~",
-    "990,000원~",
-    "1,090,000원~"
-  ];
-  const d = durationPool[i % durationPool.length] ?? "2박3일";
-  const p = pricePool[i % pricePool.length] ?? "699,000원~";
-
-  const t = baseTitle[tab][i % baseTitle[tab].length] ?? "추천";
-  const badge = i % 9 === 0 ? ("NEW" as const) : undefined;
-  
-  // Deterministic image selection
-  const imagePool = IMAGES[tab];
-  const thumbnailUrl = imagePool[i % imagePool.length];
-
-  return {
-    title: `${t} 패키지 ${d}`,
-    duration: d,
-    priceText: p,
-    highlight1: tab === "JAPAN" ? "골프" : "핵심 일정",
-    highlight2: tab === "JAPAN" ? "숙박" : "자유 시간",
-    badge,
-    thumbnailUrl
-  };
+    return products.map((product, index) => ({
+      id: product.id,
+      slug: product.slug,
+      rank: index + 1,
+      title: product.title,
+      price: product.basePrice
+        ? `${product.basePrice.toLocaleString()}원~`
+        : '가격 문의',
+      imageUrl: product.images[0]?.url || getDefaultImage(getTabByCategory(product.destination, '')),
+      badges: [product.durationText || '문의', product.destination === 'JAPAN' ? '골프' : '여행'],
+    }));
+  } catch (error) {
+    console.error('Failed to fetch ranking products:', error);
+    return [];
+  }
 }
 
-export function getHomeProductsByTab(itemsPerTab: number): Record<HomeTabKey, ProductCardDTO[]> {
-  const out = {} as Record<HomeTabKey, ProductCardDTO[]>;
+// Collection 섹션용 데이터 (destination별 추천)
+export async function getCollectionItems(): Promise<CollectionItem[]> {
+  try {
+    const destinations = ['JAPAN', 'SOUTHEAST_ASIA', 'TAIWAN'];
+    const items: CollectionItem[] = [];
 
-  (Object.keys(seedByTab) as HomeTabKey[]).forEach((tab) => {
-    const seed = seedByTab[tab];
-    const items: ProductCardDTO[] = [];
+    for (const dest of destinations) {
+      const product = await prisma.tourProduct.findFirst({
+        where: {
+          isActive: true,
+          destination: dest,
+        },
+        include: {
+          category: true,
+          images: {
+            where: { isThumbnail: true },
+            take: 1,
+          },
+        },
+        orderBy: [
+          { isFeatured: 'desc' },
+          { sortOrder: 'asc' },
+        ],
+      });
 
-    for (let i = 0; i < itemsPerTab; i += 1) {
-      const s = seed[i] ?? fillerFor(tab, i);
-      items.push({ id: makeId(tab, i), ...s });
+      if (product) {
+        const destLabels: Record<string, string> = {
+          'JAPAN': '일본 골프의 정석',
+          'SOUTHEAST_ASIA': '동남아 럭셔리',
+          'TAIWAN': '대만 프리미엄',
+        };
+
+        const destSubtitles: Record<string, string> = {
+          'JAPAN': '규슈/오키나와/홋카이도 BEST',
+          'SOUTHEAST_ASIA': '5성급 호텔 + VIP 의전',
+          'TAIWAN': '명문 코스 완전 정복',
+        };
+
+        items.push({
+          id: product.id,
+          slug: product.slug,
+          title: destLabels[dest] || product.title,
+          subTitle: destSubtitles[dest] || product.category?.name || '패키지',
+          imageUrl: product.images[0]?.url || getDefaultImage(getTabByCategory(dest, '')),
+          badges: product.category ? [product.category.name] : [],
+        });
+      }
     }
 
-    out[tab] = items;
-  });
+    return items;
+  } catch (error) {
+    console.error('Failed to fetch collection items:', error);
+    return [];
+  }
+}
 
-  return out;
+export async function getHomeProductsByTab(itemsPerTab: number): Promise<Record<HomeTabKey, ProductCardDTO[]>> {
+  try {
+    // DB에서 활성 상품 가져오기
+    const products = await prisma.tourProduct.findMany({
+      where: {
+        isActive: true,
+      },
+      include: {
+        category: true,
+        images: {
+          where: { isThumbnail: true },
+          take: 1,
+        },
+      },
+      orderBy: [
+        { isFeatured: 'desc' },
+        { sortOrder: 'asc' },
+        { createdAt: 'desc' },
+      ],
+    });
+
+    // 탭별로 상품 분류
+    const productsByTab: Record<HomeTabKey, ProductCardDTO[]> = {
+      JAPAN: [],
+      SEA: [],
+      TAIWAN: [],
+      JEJU: [],
+      DOMESTIC: [],
+    };
+
+    products.forEach((product) => {
+      const tab = getTabByCategory(product.destination, product.category?.name || '');
+      
+      const card: ProductCardDTO = {
+        id: product.id,
+        slug: product.slug,
+        title: product.title,
+        duration: product.durationText || '문의',
+        priceText: product.basePrice 
+          ? `${product.basePrice.toLocaleString()}원`
+          : '가격 문의',
+        highlight1: product.destination === 'JAPAN' ? '골프' : '여행',
+        highlight2: product.durationText || '패키지',
+        badge: product.isFeatured ? 'BEST' : undefined,
+        thumbnailUrl: product.images[0]?.url || getDefaultImage(tab),
+      };
+
+      productsByTab[tab].push(card);
+    });
+
+    // 각 탭별로 itemsPerTab 개수만큼만 가져오기
+    Object.keys(productsByTab).forEach((tab) => {
+      productsByTab[tab as HomeTabKey] = productsByTab[tab as HomeTabKey].slice(0, itemsPerTab);
+    });
+
+    return productsByTab;
+    
+  } catch (error) {
+    console.error('Failed to fetch home products:', error);
+    
+    // 에러 시 빈 배열 반환
+    return {
+      JAPAN: [],
+      SEA: [],
+      TAIWAN: [],
+      JEJU: [],
+      DOMESTIC: [],
+    };
+  }
+}
+
+// 기본 이미지 (썸네일 없을 때)
+function getDefaultImage(tab: HomeTabKey): string {
+  const defaults: Record<HomeTabKey, string> = {
+    JAPAN: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80',
+    SEA: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80',
+    TAIWAN: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
+    JEJU: 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?w=800&q=80',
+    DOMESTIC: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&q=80',
+  };
+  return defaults[tab];
 }

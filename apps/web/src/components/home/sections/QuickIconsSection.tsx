@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { HomeSection } from "@/lib/home/types";
 import {
   Plane,
@@ -33,7 +34,7 @@ export function QuickIconsSection(props: Extract<HomeSection, { type: "quickIcon
       <div className="px-4 max-w-[1200px] mx-auto">
         <div className="grid grid-cols-4 md:grid-cols-8 gap-y-6 gap-x-2 md:gap-6">
           {props.items.map((item, idx) => (
-            <a
+            <Link
               key={idx}
               href={item.linkUrl || "#"}
               className="flex flex-col items-center gap-3 group cursor-pointer"
@@ -44,7 +45,7 @@ export function QuickIconsSection(props: Extract<HomeSection, { type: "quickIcon
               <span className="text-xs md:text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
                 {item.label}
               </span>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

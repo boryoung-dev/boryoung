@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PlusButton } from "@/components/common/PlusButton";
 
 export function ProcessSection(props: {
@@ -15,9 +16,9 @@ export function ProcessSection(props: {
                 </p>
             </div>
             <div className="flex-shrink-0">
-                <a href="#" className="text-[15px] font-medium text-[color:var(--brand)] hover:underline flex items-center gap-1">
+                <Link href="/about" className="text-[15px] font-medium text-[color:var(--brand)] hover:underline flex items-center gap-1">
                     프로세스 자세히 보기 <span className="text-xs">›</span>
-                </a>
+                </Link>
             </div>
         </div>
         

@@ -1,15 +1,20 @@
+import Link from "next/link";
 import type { ProductCardDTO } from "@/lib/home/types";
 import { Badge } from "@repo/ui";
 
 export function ProductCard({ item }: { item: ProductCardDTO }) {
+  const href = item.slug ? `/tours/${item.slug}` : `/tours`;
+  
   return (
-    <article className="group relative isolate overflow-hidden rounded-[28px] bg-[#0b0b0c] shadow-[0_20px_50px_rgba(0,0,0,0.25)]">
+    <Link href={href} className="block">
+      <article className="group relative isolate overflow-hidden rounded-[28px] bg-[#0b0b0c] shadow-[0_20px_50px_rgba(0,0,0,0.25)] cursor-pointer">
       <div className="relative aspect-[4/5] w-full">
         {item.thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={item.thumbnailUrl}
             alt={item.title}
+            referrerPolicy="no-referrer"
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
           />
         ) : (
@@ -54,5 +59,6 @@ export function ProductCard({ item }: { item: ProductCardDTO }) {
         </div>
       </div>
     </article>
+    </Link>
   );
 }

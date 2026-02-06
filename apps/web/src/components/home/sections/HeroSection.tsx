@@ -105,6 +105,7 @@ export function HeroSection(props: {
               <img
                 src={slide.bg}
                 alt={slide.headline}
+                referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70" />
