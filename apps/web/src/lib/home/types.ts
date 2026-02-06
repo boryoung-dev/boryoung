@@ -2,6 +2,7 @@ export type ProductBadge = "BEST" | "NEW" | "CLOSING";
 
 export type ProductCardDTO = {
   id: string;
+  slug?: string;
   title: string;
   duration: string;
   priceText: string;
@@ -63,6 +64,7 @@ export type QuickIconsSection = {
 
 export type RankingItem = {
   id: string;
+  slug?: string;
   rank: number;
   title: string;
   price: string;
@@ -79,6 +81,7 @@ export type RankingSection = {
 
 export type CollectionItem = {
   id: string;
+  slug?: string;
   title: string;
   subTitle: string;
   imageUrl: string;
