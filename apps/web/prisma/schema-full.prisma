@@ -1,0 +1,86 @@
+// Prisma 스키마 - 보령항공여행사 (전체)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model TourProduct {
+  id          String    @id
+  slug        String    @unique
+  title       String
+  destination String
+  category    String?
+  nights      Int?
+  days        Int?
+  duration    String?
+  price       Int?
+  excerpt     String?   @db.Text
+  content     String?   @db.Text
+  contentHtml String?   @db.Text
+  images      Json      @default("[]")
+  thumbnail   String?
+  publishedAt DateTime?
+  naverUrl    String?
+  isActive    Boolean   @default(true)
+  isFeatured  Boolean   @default(false)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  bookings    Booking[]
+
+  @@index([destination])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([price])
+  @@index([sortOrder])
+  @@map("tour_products")
+}
+
+model Booking {
+  id            String      @id @default(cuid())
+  tourProductId String
+  tourProduct   TourProduct @relation(fields: [tourProductId], references: [id], onDelete: Cascade)
+  
+  // 예약자 정보
+  name          String
+  phone         String
+  email         String?
+  
+  // 예약 상세
+  peopleCount   Int
+  desiredDate   DateTime?
+  requests      String?     @db.Text
+  
+  // 상태 관리
+  status        String      @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED
+  adminMemo     String?     @db.Text
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([tourProductId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("bookings")
+}
+
+model Admin {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String
+  role          String   @default("ADMIN") // ADMIN, SUPER_ADMIN
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@map("admins")
+}

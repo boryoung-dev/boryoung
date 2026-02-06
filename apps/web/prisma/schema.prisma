@@ -1,0 +1,327 @@
+// 개선된 Prisma 스키마 - 보령항공여행사
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// 상품 관련 (Product & Categories & Tags)
+// ============================================
+
+model Category {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  slug        String        @unique
+  description String?
+  icon        String?       // 아이콘 이름 (lucide 등)
+  level       Int           @default(0) // 0=대분류, 1=중분류, 2=소분류
+  sortOrder   Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // 셀프 레퍼런싱 (계층형 카테고리)
+  parentId    String?
+  parent      Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[]    @relation("CategoryHierarchy")
+
+  products    TourProduct[]
+
+  @@index([slug])
+  @@index([sortOrder])
+  @@index([parentId])
+  @@index([level])
+  @@map("categories")
+}
+
+model Tag {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  slug        String       @unique
+  type        String       @default("FEATURE") // FEATURE, DURATION, PRICE_RANGE, ACCOMMODATION
+  sortOrder   Int          @default(0)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  productTags ProductTag[]
+
+  @@index([slug])
+  @@index([type])
+  @@map("tags")
+}
+
+model TourProduct {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  subtitle      String?
+  excerpt       String?   @db.Text
+
+  // 카테고리 (외래키)
+  categoryId    String
+  category      Category  @relation(fields: [categoryId], references: [id])
+
+  // 기본 정보
+  destination   String
+  departure     String?   // 출발지 (인천, 김포, 부산 등)
+  airline       String?   // 항공사
+  nights        Int?
+  days          Int?
+  durationText  String?
+
+  // 골프 관련
+  golfCourses   Json?     // [{name: "코스명", holes: 18, par: 72}]
+  totalHoles    Int?
+  difficulty    String?   // BEGINNER, INTERMEDIATE, ADVANCED, ALL
+
+  // 인원
+  minPeople     Int?
+  maxPeople     Int?
+
+  // 가격
+  basePrice     Int?
+  originalPrice Int?      // 정가 (할인 전)
+
+  // 내용
+  content       String?   @db.Text
+  contentHtml   String?   @db.Text
+  inclusions    Json?     // ["항공료", "숙박", "그린피"] 포함사항
+  exclusions    Json?     // ["여행자보험", "개인경비"] 불포함사항
+
+  // 일정
+  scheduleDates Json?     // [{date: "2026-03-15", status: "available"}, ...]
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  // 메타데이터
+  publishedAt   DateTime?
+  naverUrl      String?
+  viewCount     Int       @default(0)
+  bookingCount  Int       @default(0)
+
+  // 상태
+  isActive      Boolean   @default(true)
+  isFeatured    Boolean   @default(false)
+  sortOrder     Int       @default(0)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  images        ProductImage[]
+  tags          ProductTag[]
+  itineraries   Itinerary[]
+  priceOptions  PriceOption[]
+  bookings      Booking[]
+  reviews       Review[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([destination])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([sortOrder])
+  @@index([basePrice])
+  @@map("tour_products")
+}
+
+model ProductTag {
+  id        String      @id @default(cuid())
+  productId String
+  tagId     String
+
+  product   TourProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime    @default(now())
+
+  @@unique([productId, tagId])
+  @@index([productId])
+  @@index([tagId])
+  @@map("product_tags")
+}
+
+model ProductImage {
+  id        String      @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  type      String      @default("DETAIL") // THUMBNAIL, DETAIL, GOLF_COURSE, HOTEL, FOOD
+  sortOrder Int         @default(0)
+  isThumbnail Boolean   @default(false)
+
+  product   TourProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime    @default(now())
+
+  @@index([productId])
+  @@index([sortOrder])
+  @@index([type])
+  @@map("product_images")
+}
+
+model Itinerary {
+  id            String      @id @default(cuid())
+  productId     String
+  day           Int
+  title         String
+  description   String?     @db.Text
+  activities    Json        @default("[]") // [{time: "08:00", activity: "호텔 출발"}]
+  meals         String?     // "조식: 호텔식 / 중식: 현지식 / 석식: 자유식"
+  accommodation String?
+  golfCourse    String?     // 해당 일 골프 코스명
+  golfHoles     Int?        // 해당 일 라운드 홀 수
+  transport     String?     // 이동 수단 (전용버스, 택시 등)
+  sortOrder     Int         @default(0)
+
+  product       TourProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([productId])
+  @@index([sortOrder])
+  @@map("itineraries")
+}
+
+model PriceOption {
+  id            String      @id @default(cuid())
+  productId     String
+  name          String
+  description   String?
+  price         Int
+  priceType     String      @default("PER_PERSON") // PER_PERSON, PER_ROOM, ADDITIONAL
+  season        String?     // PEAK, REGULAR, OFF 등
+  validFrom     DateTime?
+  validTo       DateTime?
+  isDefault     Boolean     @default(false)
+  isActive      Boolean     @default(true)
+  sortOrder     Int         @default(0)
+
+  product       TourProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([productId])
+  @@index([isActive])
+  @@map("price_options")
+}
+
+model Review {
+  id          String      @id @default(cuid())
+  productId   String
+  authorName  String
+  rating      Int
+  title       String?
+  content     String      @db.Text
+  travelDate  DateTime?
+  isVerified  Boolean     @default(false)
+  isPublished Boolean     @default(false)
+
+  product     TourProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([productId])
+  @@index([isPublished])
+  @@index([rating])
+  @@map("reviews")
+}
+
+// ============================================
+// 예약 시스템
+// ============================================
+
+model Booking {
+  id            String      @id @default(cuid())
+  bookingNumber String      @unique
+
+  // 상품 정보
+  tourProductId String
+  tourProduct   TourProduct @relation(fields: [tourProductId], references: [id])
+
+  // 예약자 정보
+  name          String
+  phone         String
+  email         String?
+
+  // 예약 상세
+  peopleCount   Int
+  desiredDate   DateTime?
+  selectedOptions Json      @default("[]")
+  totalPrice    Int?
+  requests      String?     @db.Text
+
+  // 상태 관리
+  status        String      @default("PENDING")
+  adminMemo     String?     @db.Text
+
+  // 결제 정보
+  paymentStatus String?     @default("UNPAID")
+  paidAmount    Int?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([bookingNumber])
+  @@index([tourProductId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("bookings")
+}
+
+// ============================================
+// 블로그/매거진
+// ============================================
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String?   @db.Text
+  content     String    @db.Text
+  contentHtml String?   @db.Text
+  thumbnail   String?
+  category    String?
+  tags        Json      @default("[]")
+  viewCount   Int       @default(0)
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([category])
+  @@map("blog_posts")
+}
+
+// ============================================
+// 관리자
+// ============================================
+
+model Admin {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String
+  role          String   @default("ADMIN")
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@map("admins")
+}
