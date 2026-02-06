@@ -13,9 +13,11 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "@types/node": "^20.19.30",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.6.0",
+    "tsx": "^4.21.0",
     "turbo": "^2.7.5",
     "typescript": "^5.9.3"
   }
