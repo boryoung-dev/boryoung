@@ -1,12 +1,64 @@
+"use client";
+
+import { useState } from "react";
 import { SiteHeader } from "@/components/common/SiteHeader";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 
-export const metadata = {
-  title: "문의하기 | 보령항공여행",
-  description: "보령항공여행에 문의하세요",
-};
-
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    content: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setIsSubmitted(true);
+        setFormData({
+          name: "",
+          phone: "",
+          email: "",
+          content: "",
+        });
+        // 3초 후 성공 메시지 숨김
+        setTimeout(() => setIsSubmitted(false), 5000);
+      } else {
+        setError(data.error || "문의 접수에 실패했습니다.");
+      }
+    } catch (err) {
+      console.error("문의 제출 오류:", err);
+      setError("문의 제출 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <SiteHeader />
@@ -24,7 +76,7 @@ export default function ContactPage() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl p-6">
               <h2 className="text-2xl font-bold mb-6">연락처</h2>
-              
+
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -32,7 +84,10 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="font-semibold mb-1">전화</div>
-                    <a href="tel:02-1234-5678" className="text-blue-600 hover:underline text-lg">
+                    <a
+                      href="tel:02-1234-5678"
+                      className="text-blue-600 hover:underline text-lg"
+                    >
                       02-1234-5678
                     </a>
                   </div>
@@ -44,7 +99,10 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="font-semibold mb-1">이메일</div>
-                    <a href="mailto:contact@boryoung.com" className="text-blue-600 hover:underline">
+                    <a
+                      href="mailto:contact@boryoung.com"
+                      className="text-blue-600 hover:underline"
+                    >
                       contact@boryoung.com
                     </a>
                   </div>
@@ -57,7 +115,8 @@ export default function ContactPage() {
                   <div>
                     <div className="font-semibold mb-1">주소</div>
                     <p className="text-gray-600">
-                      서울특별시 강남구 테헤란로 123<br />
+                      서울특별시 강남구 테헤란로 123
+                      <br />
                       보령빌딩 5층
                     </p>
                   </div>
@@ -70,7 +129,8 @@ export default function ContactPage() {
                   <div>
                     <div className="font-semibold mb-1">운영 시간</div>
                     <p className="text-gray-600">
-                      평일: 09:00 - 18:00<br />
+                      평일: 09:00 - 18:00
+                      <br />
                       주말/공휴일: 휴무
                     </p>
                   </div>
@@ -104,13 +164,34 @@ export default function ContactPage() {
           {/* 문의 폼 */}
           <div className="bg-white rounded-xl p-8">
             <h2 className="text-2xl font-bold mb-6">문의 남기기</h2>
-            <form className="space-y-4">
+
+            {isSubmitted && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-green-800 font-medium">
+                  문의가 성공적으로 접수되었습니다!
+                </p>
+                <p className="text-green-600 text-sm mt-1">
+                  빠른 시일 내에 연락드리겠습니다.
+                </p>
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800">{error}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   이름 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
@@ -122,6 +203,9 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
@@ -133,6 +217,9 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -142,6 +229,9 @@ export default function ContactPage() {
                   문의 내용 <span className="text-red-500">*</span>
                 </label>
                 <textarea
+                  name="content"
+                  value={formData.content}
+                  onChange={handleChange}
                   required
                   rows={6}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -151,9 +241,10 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+                disabled={isSubmitting}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                문의하기
+                {isSubmitting ? "제출 중..." : "문의하기"}
               </button>
             </form>
           </div>

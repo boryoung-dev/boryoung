@@ -27,15 +27,17 @@ export default function AdminBookingsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchBookings();
-  }, [filter]);
+    if (Object.keys(authHeaders).length > 0) {
+      fetchBookings();
+    }
+  }, [filter, authHeaders]);
 
   const fetchBookings = async () => {
     try {
       const url = filter
         ? `/api/bookings?status=${filter}&limit=100`
         : `/api/bookings?limit=100`;
-      const response = await fetch(url);
+      const response = await fetch(url, { headers: authHeaders as any });
       const data = await response.json();
       if (data.success) setBookings(data.bookings);
     } catch (error) {

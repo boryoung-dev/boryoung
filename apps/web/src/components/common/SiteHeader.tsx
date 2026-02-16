@@ -1,84 +1,74 @@
-import { Button } from "@repo/ui";
 import Link from "next/link";
+import { Search, User } from "lucide-react";
 
 export function SiteHeader() {
   return (
-    <>
-      <div className="bg-[#f5f5f7] px-4 py-2.5 text-center text-xs text-[color:var(--fg)]">
-        <span className="inline-block">
-          신규 회원 가입 시 5% 즉시 할인 쿠폰 증정.{" "}
-          <Link href="#" className="text-[color:var(--brand)] hover:underline font-medium">
-            지금 가입하기 ›
+    <header className="sticky top-0 z-50 w-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+      <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between px-[60px]">
+        {/* 로고 */}
+        <Link
+          href="/"
+          className="flex items-center transition-opacity hover:opacity-80"
+        >
+          <span className="text-2xl font-bold text-[#8B5CF6]">
+            Boryoung
+          </span>
+        </Link>
+
+        {/* 네비게이션 */}
+        <nav className="hidden items-center gap-8 md:flex">
+          <Link
+            href="/tours"
+            className="text-[15px] font-medium text-[#18181B] hover:text-[#8B5CF6] transition-colors"
+          >
+            여행상품
           </Link>
-        </span>
-      </div>
+          <Link
+            href="/tours?tag=special"
+            className="text-[15px] font-medium text-[#71717A] hover:text-[#8B5CF6] transition-colors"
+          >
+            특가상품
+          </Link>
+          <Link
+            href="/about"
+            className="text-[15px] font-medium text-[#71717A] hover:text-[#8B5CF6] transition-colors"
+          >
+            고객후기
+          </Link>
+        </nav>
 
-      <header className="sticky top-0 z-50 w-full border-b border-[color:var(--border)] bg-[color:var(--bg)]/95 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <span className="text-xl font-bold tracking-tight text-[color:var(--fg)]">
-              Boryoung
-            </span>
+        {/* 액션 버튼 */}
+        <div className="flex items-center gap-4">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F4F4F5] transition-colors hover:bg-[#E4E4E7]">
+            <Search className="h-5 w-5 text-[#71717A]" />
+          </button>
+          <Link
+            href="/contact"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#8B5CF6] transition-opacity hover:opacity-90"
+          >
+            <User className="h-5 w-5 text-white" />
           </Link>
 
-          <nav className="hidden gap-8 text-sm font-medium text-[color:var(--fg)] md:flex">
-            {[
-              { label: "일본", slug: "japan-golf" },
-              { label: "동남아", slug: "southeast-asia" },
-              { label: "대만", slug: "taiwan-golf" },
-              { label: "제주", slug: "jeju-golf" },
-              { label: "국내", slug: "korea-golf" },
-            ].map((item) => (
-              <Link
-                key={item.slug}
-                href={`/tours?category=${item.slug}`}
-                className="hover:text-[color:var(--brand)] transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-5">
-            <button className="text-[color:var(--fg)] hover:text-[color:var(--brand)] transition-colors">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-            </button>
-            <Button variant="brand" size="sm" className="hidden sm:inline-flex h-9 px-5 text-sm font-medium">
-              상담하기
-            </Button>
-
-            <button className="md:hidden text-[color:var(--fg)]">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="3" x2="21" y1="6" y2="6" />
-                <line x1="3" x2="21" y1="12" y2="12" />
-              </svg>
-            </button>
-          </div>
+          {/* 모바일 메뉴 버튼 */}
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F4F4F5] md:hidden">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#71717A"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="3" x2="21" y1="6" y2="6" />
+              <line x1="3" x2="21" y1="12" y2="12" />
+              <line x1="3" x2="21" y1="18" y2="18" />
+            </svg>
+          </button>
         </div>
-      </header>
-    </>
+      </div>
+    </header>
   );
 }

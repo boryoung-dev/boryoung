@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PlusButton } from "@/components/common/PlusButton";
 
 export function CurationsSection(props: {
@@ -9,15 +10,16 @@ export function CurationsSection(props: {
       <div className="mx-auto w-full max-w-[1200px] px-6">
         <div className="mb-10 flex items-end justify-between">
             <h2 className="text-4xl font-semibold tracking-tight text-[color:var(--fg)]">{props.title}</h2>
-            <div className="hidden text-[15px] font-medium text-[color:var(--brand)] sm:block cursor-pointer hover:underline transition-all">
+            <Link href="/tours" className="hidden text-[15px] font-medium text-[color:var(--brand)] sm:block cursor-pointer hover:underline transition-all">
                 전체 컬렉션 보기
-            </div>
+            </Link>
         </div>
         
         <div className="flex gap-6 overflow-x-auto pb-10 pt-4 scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0 snap-x snap-mandatory">
           {props.items.map((it, idx) => (
-            <div 
-                key={it.id} 
+            <Link
+                href="/tours"
+                key={it.id}
                 className="snap-center group relative flex h-[480px] min-w-[320px] sm:min-w-[380px] cursor-pointer flex-col justify-between overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-sm transition-all duration-500 hover:shadow-xl hover:scale-[1.01]"
             >
               {it.imageUrl ? (
@@ -64,7 +66,7 @@ export function CurationsSection(props: {
               <div className="absolute bottom-6 right-6 z-20">
                   <PlusButton label="자세히 보기" />
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -97,6 +97,12 @@ export function ProductForm({ initialData }: ProductFormProps) {
         minPeople: formData.minPeople || undefined,
         maxPeople: formData.maxPeople || undefined,
         totalHoles: formData.totalHoles || undefined,
+        difficulty: formData.difficulty || undefined,
+        publishedAt: formData.publishedAt || undefined,
+        excerpt: formData.excerpt || undefined,
+        metaTitle: formData.metaTitle || undefined,
+        metaDescription: formData.metaDescription || undefined,
+        naverUrl: formData.naverUrl || undefined,
       };
 
       const res = await fetch(url, {

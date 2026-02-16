@@ -13,6 +13,7 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/node": "^20.19.30",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

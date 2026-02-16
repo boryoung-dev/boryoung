@@ -1,6 +1,7 @@
 import { homeSections } from "@/content/homeSections";
 import { getHomeProductsByTab, getRankingProducts, getCollectionItems } from "@/lib/home/seed";
 import type { HomeSection } from "@/lib/home/types";
+import { prisma } from "@/lib/prisma";
 
 import { CurationsSection } from "./sections/CurationsSection";
 import { CategoryTabsSection } from "./sections/CategoryTabsSection.client";
@@ -18,10 +19,24 @@ export async function HomePage() {
   );
 
   // DB에서 데이터 가져오기
-  const [productsByTab, rankingItems, collectionItems] = await Promise.all([
+  const now = new Date();
+  const [productsByTab, rankingItems, collectionItems, banners] = await Promise.all([
     getHomeProductsByTab(categoryTabs?.itemsPerTab ?? 8),
     getRankingProducts(),
     getCollectionItems(),
+    prisma.banner.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { startDate: null },
+          { startDate: { lte: now } },
+        ],
+        AND: [
+          { OR: [{ endDate: null }, { endDate: { gte: now } }] },
+        ],
+      },
+      orderBy: { sortOrder: "asc" },
+    }),
   ]);
 
   return (
@@ -35,7 +50,7 @@ export async function HomePage() {
             const key = `${section.type}_${idx}`;
             
             if (section.type === "hero") {
-              return <HeroSection key={key} {...section} />;
+              return <HeroSection key={key} {...section} banners={banners} />;
             }
 
             if (section.type === "quickIcons") {

@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface BookingDetail {
   id: string;
@@ -29,25 +30,21 @@ interface BookingDetail {
 
 export default function BookingDetailPage() {
   const { id: bookingId } = useParams() as { id: string };
-  const router = useRouter();
+  const { authHeaders } = useAdminAuth();
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [newStatus, setNewStatus] = useState('');
   const [adminMemo, setAdminMemo] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
-  
+
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      router.push('/login');
-      return;
+    if (Object.keys(authHeaders).length > 0) {
+      fetchBooking();
     }
-    
-    fetchBooking();
-  }, [bookingId, router]);
-  
+  }, [bookingId, authHeaders]);
+
   const fetchBooking = async () => {
     try {
-      const response = await fetch(`/api/bookings/${bookingId}`);
+      const response = await fetch(`/api/bookings/${bookingId}`, { headers: authHeaders as any });
       const data = await response.json();
       
       if (data.success) {
@@ -70,7 +67,8 @@ export default function BookingDetailPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-        },
+          ...authHeaders,
+        } as any,
         body: JSON.stringify({
           status: newStatus,
           adminMemo,

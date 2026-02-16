@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type TouchEvent } from "react";
+import Link from "next/link";
 import { Button } from "@repo/ui";
 
 const EXTRA_SLIDES = [
@@ -8,21 +9,33 @@ const EXTRA_SLIDES = [
     headline: "오사카 식도락 여행",
     subhead: "현지인 맛집부터 카페까지 완전 정복",
     bg: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1600&q=80",
-    cta: "특가 보기"
+    cta: "특가 보기",
+    link: "/tours"
   },
   {
     headline: "겨울 삿포로 눈꽃 축제",
     subhead: "하얀 설원 위에서 즐기는 낭만",
     bg: "https://images.unsplash.com/photo-1491002052546-bf38f186af56?w=1600&q=80",
-    cta: "일정 확인"
+    cta: "일정 확인",
+    link: "/tours"
   },
   {
     headline: "다낭 호캉스 특가",
     subhead: "5성급 리조트 조식 포함 패키지",
     bg: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&q=80",
-    cta: "예약 하기"
+    cta: "예약 하기",
+    link: "/tours"
   }
 ];
+
+interface BannerData {
+  id: string;
+  title: string;
+  subtitle?: string | null;
+  imageUrl: string;
+  linkUrl?: string | null;
+  ctaText?: string | null;
+}
 
 export function HeroSection(props: {
   headline: string;
@@ -31,20 +44,31 @@ export function HeroSection(props: {
   primaryCtaLabel: string;
   secondaryCtaLabel: string;
   backgroundImageUrl?: string;
+  banners?: BannerData[];
 }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const touchStart = useRef<number | null>(null);
   const touchEnd = useRef<number | null>(null);
-  
-  const slides = [
-    {
-      headline: props.headline,
-      subhead: props.subhead,
-      bg: props.backgroundImageUrl,
-      cta: props.primaryCtaLabel
-    },
-    ...EXTRA_SLIDES
-  ];
+
+  // banners가 있으면 banners를 사용, 없으면 기존 로직 사용
+  const slides = props.banners && props.banners.length > 0
+    ? props.banners.map(banner => ({
+        headline: banner.title,
+        subhead: banner.subtitle || "",
+        bg: banner.imageUrl,
+        cta: banner.ctaText || "자세히 보기",
+        link: banner.linkUrl || "/tours"
+      }))
+    : [
+        {
+          headline: props.headline,
+          subhead: props.subhead,
+          bg: props.backgroundImageUrl,
+          cta: props.primaryCtaLabel,
+          link: "/tours"
+        },
+        ...EXTRA_SLIDES
+      ];
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -115,15 +139,19 @@ export function HeroSection(props: {
                   <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-2 md:mb-4 drop-shadow-sm">
                     {slide.headline}
                   </h2>
-                  <p className="text-white/90 text-lg md:text-xl font-medium mb-6 drop-shadow-sm line-clamp-2">
-                    {slide.subhead}
-                  </p>
-                  <Button 
-                    variant="brand" 
-                    className="rounded-full px-6 h-10 md:h-12 bg-white text-black hover:bg-white/90 border-none font-bold"
-                  >
-                    {slide.cta}
-                  </Button>
+                  {slide.subhead && (
+                    <p className="text-white/90 text-lg md:text-xl font-medium mb-6 drop-shadow-sm line-clamp-2">
+                      {slide.subhead}
+                    </p>
+                  )}
+                  <Link href={slide.link}>
+                    <Button
+                      variant="brand"
+                      className="rounded-full px-6 h-10 md:h-12 bg-white text-black hover:bg-white/90 border-none font-bold"
+                    >
+                      {slide.cta}
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>

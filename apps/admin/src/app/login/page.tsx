@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@boryoung.com');
+  const [password, setPassword] = useState('admin1234');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -97,9 +97,19 @@ export default function AdminLoginPage() {
           </button>
         </form>
         
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>최초 관리자 계정이 필요하신가요?</p>
-          <p className="mt-1">개발자에게 문의하세요</p>
+        <div className="mt-6 border-t pt-4">
+          <p className="text-xs font-semibold text-gray-500 mb-2 text-center">테스트 계정</p>
+          <div className="space-y-1 text-xs text-gray-500">
+            <button type="button" onClick={() => { setEmail('admin@boryoung.com'); setPassword('admin1234'); }} className="w-full text-left px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">
+              <span className="font-medium text-blue-600">SUPER_ADMIN</span> admin@boryoung.com / admin1234
+            </button>
+            <button type="button" onClick={() => { setEmail('manager@boryoung.com'); setPassword('manager1234'); }} className="w-full text-left px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">
+              <span className="font-medium text-green-600">MANAGER</span> manager@boryoung.com / manager1234
+            </button>
+            <button type="button" onClick={() => { setEmail('staff@boryoung.com'); setPassword('staff1234'); }} className="w-full text-left px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">
+              <span className="font-medium text-orange-600">STAFF</span> staff@boryoung.com / staff1234
+            </button>
+          </div>
         </div>
       </div>
     </div>

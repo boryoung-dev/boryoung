@@ -308,6 +308,53 @@ model BlogPost {
 }
 
 // ============================================
+// 배너
+// ============================================
+
+model Banner {
+  id          String    @id @default(cuid())
+  title       String
+  subtitle    String?
+  imageUrl    String
+  linkUrl     String?   // 클릭 시 이동할 URL
+  ctaText     String?   // CTA 버튼 텍스트
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  startDate   DateTime? // 노출 시작일
+  endDate     DateTime? // 노출 종료일
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("banners")
+}
+
+// ============================================
+// 문의
+// ============================================
+
+model Inquiry {
+  id          String    @id @default(cuid())
+  name        String
+  phone       String
+  email       String?
+  content     String    @db.Text
+  status      String    @default("PENDING") // PENDING, REPLIED, CLOSED
+  adminReply  String?   @db.Text
+  repliedAt   DateTime?
+  repliedBy   String?   // 관리자 이름
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("inquiries")
+}
+
+// ============================================
 // 관리자
 // ============================================
 
