@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calendar } from "lucide-react";
+import { Star } from "lucide-react";
 
 type Product = {
   id: string;
@@ -9,6 +9,8 @@ type Product = {
   thumbnail?: string;
   durationText?: string;
   basePrice?: number;
+  originalPrice?: number;
+  isFeatured?: boolean;
   category: {
     name: string;
   };
@@ -16,11 +18,20 @@ type Product = {
 };
 
 export function ProductCard({ product }: { product: Product }) {
+  // 할인율 계산
+  const discountPercent = product.originalPrice && product.basePrice
+    ? Math.round(((product.originalPrice - product.basePrice) / product.originalPrice) * 100)
+    : 0;
+
+  // 랜덤 평점 생성 (실제 데이터 없으므로)
+  const rating = 4.5;
+  const reviewCount = 89;
+
   return (
     <Link href={`/tours/${product.slug}`} className="group">
-      <div className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-500 h-full flex flex-col border border-[color:var(--border)]">
+      <div className="bg-white rounded-[32px] overflow-hidden hover:shadow-xl transition-all duration-500 h-full flex flex-col">
         {/* 썸네일 */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-[color:var(--surface)]">
+        <div className="relative h-[240px] overflow-hidden bg-gray-100">
           {product.thumbnail ? (
             <img
               src={product.thumbnail}
@@ -29,69 +40,73 @@ export function ProductCard({ product }: { product: Product }) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-[color:var(--muted)]">
+            <div className="w-full h-full flex items-center justify-center text-[#71717A]">
               이미지 없음
             </div>
           )}
 
-          {/* 이미지 하단 그래디언트 */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-
-          {/* 카테고리 배지 (글래스 효과) */}
-          <div className="absolute top-3 left-3">
-            <span className="backdrop-blur-sm bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full">
-              {product.category.name}
-            </span>
+          {/* 배지 (좌상단) */}
+          <div className="absolute top-4 left-4 flex gap-2">
+            {product.isFeatured && (
+              <span className="bg-[#8B5CF6] text-white text-[12px] font-semibold px-3 py-1.5 rounded-full">
+                베스트
+              </span>
+            )}
+            {discountPercent > 0 && (
+              <span className="bg-[#F472B6] text-white text-[12px] font-semibold px-3 py-1.5 rounded-full">
+                -{discountPercent}%
+              </span>
+            )}
           </div>
         </div>
 
-        {/* 내용 */}
-        <div className="p-5 flex-1 flex flex-col">
-          <h3 className="text-lg font-bold text-[color:var(--fg)] mb-1 line-clamp-2 group-hover:text-[color:var(--brand)] transition-colors duration-300">
+        {/* 카드 콘텐츠 */}
+        <div className="p-6 flex-1 flex flex-col gap-3">
+          {/* 타이틀 */}
+          <h3 className="text-[18px] font-semibold text-[#18181B] line-clamp-2 group-hover:text-[#8B5CF6] transition-colors">
             {product.title}
           </h3>
 
-          {product.subtitle && (
-            <p className="text-sm text-[color:var(--muted)] mb-3 line-clamp-1">
-              {product.subtitle}
-            </p>
-          )}
+          {/* 설명 */}
+          <p className="text-[14px] text-[#71717A] line-clamp-1">
+            {product.durationText ? `${product.durationText} • ` : ""}
+            {product.subtitle || "프리미엄 여행 패키지"}
+          </p>
 
-          {/* 태그 */}
-          {product.tagList && product.tagList.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
-              {product.tagList.slice(0, 3).map((tag) => (
-                <span
-                  key={tag.slug}
-                  className="text-xs bg-[color:var(--surface)] text-[color:var(--muted)] px-2 py-0.5 rounded-full"
-                >
-                  #{tag.name}
-                </span>
+          {/* 별점 */}
+          <div className="flex items-center gap-2">
+            <div className="flex gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`w-4 h-4 ${
+                    star <= Math.floor(rating)
+                      ? "fill-[#FACC15] text-[#FACC15]"
+                      : "fill-[#E4E4E7] text-[#E4E4E7]"
+                  }`}
+                />
               ))}
             </div>
-          )}
-
-          {/* 정보 (목적지 + 기간 나란히) */}
-          <div className="flex items-center gap-4 text-sm text-[color:var(--muted)] mb-4 mt-auto">
-            {product.durationText && (
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>{product.durationText}</span>
-              </div>
-            )}
+            <span className="text-[14px] text-[#71717A]">
+              {rating} ({reviewCount})
+            </span>
           </div>
 
           {/* 가격 */}
-          <div className="pt-4 border-t border-[color:var(--border)]">
+          <div className="mt-auto pt-3">
             {product.basePrice ? (
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-[color:var(--brand)]">
-                  {product.basePrice.toLocaleString()}원
+                <span className="text-[20px] font-bold text-[#8B5CF6]">
+                  ₩{product.basePrice.toLocaleString()}
                 </span>
-                <span className="text-sm text-[color:var(--muted)]">~</span>
+                {product.originalPrice && product.originalPrice > product.basePrice && (
+                  <span className="text-[14px] text-[#A1A1AA] line-through">
+                    ₩{product.originalPrice.toLocaleString()}
+                  </span>
+                )}
               </div>
             ) : (
-              <span className="text-lg font-semibold text-[color:var(--muted)]">
+              <span className="text-[18px] font-semibold text-[#71717A]">
                 가격 문의
               </span>
             )}

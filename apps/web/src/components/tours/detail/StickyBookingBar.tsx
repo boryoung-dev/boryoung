@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Users, Phone } from "lucide-react";
+import { Phone, MessageCircle } from "lucide-react";
 
 interface StickyBookingBarProps {
   product: any;
@@ -9,39 +9,91 @@ interface StickyBookingBarProps {
 
 export function StickyBookingBar({ product, onBooking }: StickyBookingBarProps) {
   return (
-    <div className="sticky top-24">
-      <div className="bg-[color:var(--bg)] border border-[color:var(--border)] rounded-2xl shadow-lg p-6 space-y-6">
-        {/* 가격 */}
-        <div>
-          {product.originalPrice && product.basePrice && product.originalPrice > product.basePrice && (
-            <div className="text-[color:var(--muted)] line-through text-sm">
-              {product.originalPrice.toLocaleString()}원
-            </div>
-          )}
+    <div className="sticky top-24 space-y-5">
+      {/* 예약 카드 */}
+      <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+        <div className="mb-6">
+          <div className="text-sm text-[#71717A] mb-2">1인 기준 가격</div>
           {product.basePrice ? (
-            <div className="text-3xl font-bold text-[color:var(--brand)]">
-              {product.basePrice.toLocaleString()}원
-              <span className="text-sm text-[color:var(--muted)] font-normal ml-1">~ /1인</span>
+            <div>
+              <div className="text-[32px] font-bold text-[#18181B]">
+                {product.basePrice.toLocaleString()}원
+              </div>
+              {product.originalPrice && product.originalPrice > product.basePrice && (
+                <div className="text-base text-[#71717A] line-through mt-1">
+                  {product.originalPrice.toLocaleString()}원
+                </div>
+              )}
             </div>
           ) : (
-            <div className="text-2xl font-bold text-[color:var(--fg)]">가격 문의</div>
+            <div className="text-2xl font-bold text-[#18181B]">가격 문의</div>
           )}
         </div>
 
-        {/* 기본 정보 */}
-        <div className="space-y-3 py-4 border-y border-[color:var(--border)]">
+        <button
+          onClick={onBooking}
+          className="w-full h-14 bg-[#8B5CF6] text-white rounded-[28px] font-semibold text-base hover:opacity-90 transition"
+        >
+          예약 신청하기
+        </button>
+      </div>
+
+      {/* 문의 카드 */}
+      <div className="bg-[rgba(139,92,246,0.125)] rounded-[24px] p-6">
+        <h3 className="text-base font-semibold text-[#8B5CF6] mb-4">
+          도움이 필요하신가요?
+        </h3>
+        <div className="space-y-3">
+          <a
+            href="tel:02-1234-5678"
+            className="flex items-center gap-2 text-sm text-[#18181B]"
+          >
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+              <Phone className="w-4 h-4 text-[#8B5CF6]" />
+            </div>
+            <span>02-1234-5678</span>
+          </a>
+          <button className="flex items-center gap-2 text-sm text-[#18181B]">
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+              <MessageCircle className="w-4 h-4 text-[#8B5CF6]" />
+            </div>
+            <span>실시간 채팅 상담</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 투어 정보 카드 */}
+      <div className="bg-[#F9FAFB] rounded-[24px] p-6">
+        <h3 className="text-base font-semibold text-[#18181B] mb-4">
+          투어 정보
+        </h3>
+        <div className="space-y-3">
           {product.durationText && (
-            <div className="flex items-center gap-3 text-sm">
-              <Calendar className="w-4 h-4 text-[color:var(--muted)]" />
-              <span className="text-[color:var(--muted)]">여행 기간</span>
-              <span className="ml-auto font-medium text-[color:var(--fg)]">{product.durationText}</span>
+            <div className="flex justify-between text-sm">
+              <span className="text-[#71717A]">기간</span>
+              <span className="text-[#18181B] font-medium">{product.durationText}</span>
+            </div>
+          )}
+          {product.destination && (
+            <div className="flex justify-between text-sm">
+              <span className="text-[#71717A]">장소</span>
+              <span className="text-[#18181B] font-medium">{product.destination}</span>
+            </div>
+          )}
+          {product.difficulty && (
+            <div className="flex justify-between text-sm">
+              <span className="text-[#71717A]">난이도</span>
+              <span className="text-[#18181B] font-medium">
+                {product.difficulty === "BEGINNER" ? "초급" :
+                 product.difficulty === "INTERMEDIATE" ? "중급" :
+                 product.difficulty === "ADVANCED" ? "상급" : "전체"}
+              </span>
             </div>
           )}
           {(product.minPeople || product.maxPeople) && (
-            <div className="flex items-center gap-3 text-sm">
-              <Users className="w-4 h-4 text-[color:var(--muted)]" />
-              <span className="text-[color:var(--muted)]">인원</span>
-              <span className="ml-auto font-medium text-[color:var(--fg)]">
+            <div className="flex justify-between text-sm">
+              <span className="text-[#71717A]">인원</span>
+              <span className="text-[#18181B] font-medium">
                 {product.minPeople && product.maxPeople
                   ? `${product.minPeople}~${product.maxPeople}명`
                   : product.minPeople
@@ -50,44 +102,7 @@ export function StickyBookingBar({ product, onBooking }: StickyBookingBarProps) 
               </span>
             </div>
           )}
-          {product.departure && (
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-[color:var(--muted)] w-4 h-4 flex items-center justify-center text-xs font-bold">출</span>
-              <span className="text-[color:var(--muted)]">출발지</span>
-              <span className="ml-auto font-medium text-[color:var(--fg)]">{product.departure}</span>
-            </div>
-          )}
         </div>
-
-        {/* 가격 옵션 미리보기 */}
-        {product.priceOptions && product.priceOptions.length > 0 && (
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-[color:var(--fg)]">가격 옵션</div>
-            {product.priceOptions.slice(0, 3).map((opt: any) => (
-              <div key={opt.id} className="flex justify-between text-sm">
-                <span className="text-[color:var(--muted)]">{opt.name}</span>
-                <span className="font-medium text-[color:var(--fg)]">{opt.price.toLocaleString()}원</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* CTA */}
-        <button
-          onClick={onBooking}
-          className="w-full py-3.5 bg-[color:var(--brand)] text-white rounded-full font-semibold text-lg hover:opacity-90 transition"
-        >
-          예약하기
-        </button>
-
-        {/* 전화 문의 */}
-        <a
-          href="tel:041-930-2200"
-          className="flex items-center justify-center gap-2 w-full py-3 border border-[color:var(--border)] rounded-full text-[color:var(--fg)] font-medium hover:bg-[color:var(--surface)] transition"
-        >
-          <Phone className="w-4 h-4" />
-          전화 문의 041-930-2200
-        </a>
       </div>
     </div>
   );

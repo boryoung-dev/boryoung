@@ -1,17 +1,20 @@
 "use client";
 
-import { MapPin, Calendar, Plane, Star } from "lucide-react";
+import { Star, Heart } from "lucide-react";
 
 interface HeroSectionProps {
   product: any;
   onBooking: () => void;
+  onImageClick: (index: number) => void;
 }
 
-export function HeroSection({ product, onBooking }: HeroSectionProps) {
-  const heroImage =
+export function HeroSection({ product, onBooking, onImageClick }: HeroSectionProps) {
+  const mainImage =
     product.images?.find((img: any) => img.isThumbnail)?.url ||
     product.images?.[0]?.url ||
     "/placeholder.png";
+
+  const thumbnails = product.images?.slice(0, 4) || [];
 
   const avgRating =
     product.reviews && product.reviews.length > 0
@@ -22,96 +25,125 @@ export function HeroSection({ product, onBooking }: HeroSectionProps) {
       : null;
 
   return (
-    <div className="relative h-[60vh] min-h-[400px] overflow-hidden">
-      {/* 배경 이미지 */}
-      <img
-        src={heroImage}
-        alt={product.title}
-        referrerPolicy="no-referrer"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      {/* 그라데이션 오버레이 */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+    <div className="flex flex-col lg:flex-row gap-15">
+      {/* 왼쪽: 이미지 섹션 */}
+      <div className="w-full lg:w-[600px] flex-shrink-0">
+        {/* 메인 이미지 */}
+        <button
+          onClick={() => onImageClick(0)}
+          className="w-full h-[400px] rounded-[32px] overflow-hidden mb-4"
+        >
+          <img
+            src={mainImage}
+            alt={product.title}
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          />
+        </button>
 
-      {/* 콘텐츠 */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 lg:p-12">
-        <div className="mx-auto max-w-[1200px]">
-          {/* 카테고리 뱃지 */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-sm font-medium px-3 py-1 rounded-full">
-              {product.category?.name}
+        {/* 썸네일 4개 */}
+        {thumbnails.length > 0 && (
+          <div className="flex gap-4">
+            {thumbnails.map((img: any, idx: number) => (
+              <button
+                key={img.id || idx}
+                onClick={() => onImageClick(idx)}
+                className="flex-1 h-[100px] rounded-[20px] overflow-hidden"
+              >
+                <img
+                  src={img.url}
+                  alt={img.alt || ""}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 오른쪽: 정보 섹션 */}
+      <div className="flex-1">
+        {/* 배지 컨테이너 */}
+        <div className="flex items-center gap-3 mb-4">
+          {product.isFeatured && (
+            <span className="bg-[#8B5CF6] text-white text-sm font-medium px-4 py-1.5 rounded-full">
+              베스트셀러
             </span>
-            {product.isFeatured && (
-              <span className="inline-block bg-yellow-400/90 text-yellow-900 text-sm font-bold px-3 py-1 rounded-full">
-                추천
-              </span>
-            )}
-          </div>
-
-          {/* 제목 */}
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2 leading-tight">
-            {product.title}
-          </h1>
-          {product.subtitle && (
-            <p className="text-lg sm:text-xl text-white/80 mb-4">
-              {product.subtitle}
-            </p>
           )}
+          {product.originalPrice && product.basePrice && product.originalPrice > product.basePrice && (
+            <span className="bg-[#F472B6] text-white text-sm font-medium px-4 py-1.5 rounded-full">
+              얼리버드 -{Math.round((1 - product.basePrice / product.originalPrice) * 100)}%
+            </span>
+          )}
+        </div>
 
-          {/* 메타 정보 */}
-          <div className="flex flex-wrap items-center gap-4 text-white/90 mb-6">
-            {product.destination && (
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm">{product.destination}</span>
-              </div>
-            )}
-            {product.durationText && (
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm">{product.durationText}</span>
-              </div>
-            )}
-            {product.airline && (
-              <div className="flex items-center gap-1.5">
-                <Plane className="w-4 h-4" />
-                <span className="text-sm">{product.airline}</span>
-              </div>
-            )}
-            {avgRating && (
-              <div className="flex items-center gap-1.5">
-                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm">
-                  {avgRating} ({product.reviews.length}개 리뷰)
-                </span>
-              </div>
-            )}
-          </div>
+        {/* 타이틀 */}
+        <h1 className="text-[36px] font-bold text-[#18181B] leading-[1.2] mb-2">
+          {product.title}
+        </h1>
 
-          {/* 가격 + CTA (모바일에서는 하단바로 대체되므로 데스크톱에서만) */}
-          <div className="hidden lg:flex items-end gap-6">
-            <div>
-              {product.originalPrice && product.basePrice && product.originalPrice > product.basePrice && (
-                <div className="text-white/60 line-through text-lg">
-                  {product.originalPrice.toLocaleString()}원
-                </div>
-              )}
-              {product.basePrice ? (
-                <div className="text-3xl font-bold text-white">
-                  {product.basePrice.toLocaleString()}원
-                  <span className="text-lg text-white/60 ml-1">~</span>
-                </div>
-              ) : (
-                <div className="text-2xl font-bold text-white">가격 문의</div>
-              )}
+        {/* 서브타이틀 */}
+        {product.subtitle && (
+          <p className="text-lg text-[#71717A] mb-4">
+            {product.subtitle}
+          </p>
+        )}
+
+        {/* 리뷰 */}
+        {avgRating && (
+          <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-4 h-4 ${
+                    i < Math.round(Number(avgRating))
+                      ? "fill-[#FACC15] text-[#FACC15]"
+                      : "fill-[#E4E4E7] text-[#E4E4E7]"
+                  }`}
+                />
+              ))}
             </div>
-            <button
-              onClick={onBooking}
-              className="px-8 py-3 bg-[color:var(--brand)] text-white rounded-full font-semibold text-lg hover:opacity-90 transition shadow-lg"
-            >
-              예약하기
-            </button>
+            <span className="text-base font-semibold text-[#18181B]">{avgRating}</span>
+            <span className="text-sm text-[#71717A]">({product.reviews.length}개 리뷰)</span>
           </div>
+        )}
+
+        {/* 가격 섹션 */}
+        <div className="bg-white rounded-[24px] p-6 border border-[#F4F4F5] mb-6">
+          <div className="text-sm text-[#71717A] mb-2">1인 기준</div>
+          <div className="flex items-end gap-2">
+            {product.basePrice ? (
+              <>
+                <span className="text-[32px] font-bold text-[#18181B]">
+                  {product.basePrice.toLocaleString()}원
+                </span>
+                {product.originalPrice && product.originalPrice > product.basePrice && (
+                  <span className="text-lg text-[#71717A] line-through mb-1">
+                    {product.originalPrice.toLocaleString()}원
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-2xl font-bold text-[#18181B]">가격 문의</span>
+            )}
+          </div>
+        </div>
+
+        {/* CTA 버튼 */}
+        <div className="flex gap-3">
+          <button
+            onClick={onBooking}
+            className="flex-1 h-14 bg-[#8B5CF6] text-white rounded-[28px] font-semibold text-base hover:opacity-90 transition"
+          >
+            예약하기
+          </button>
+          <button
+            className="w-14 h-14 border border-[#E4E4E7] rounded-[28px] flex items-center justify-center hover:bg-[#F4F4F5] transition"
+          >
+            <Heart className="w-5 h-5 text-[#71717A]" />
+          </button>
         </div>
       </div>
     </div>

@@ -1,46 +1,34 @@
 "use client";
 
-import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+interface TabNavigationProps {
+  activeTab: string;
+  onTabChange: (tab: any) => void;
+}
 
 const tabs = [
-  { id: "overview", label: "개요" },
-  { id: "itinerary", label: "일정" },
+  { id: "intro", label: "상품 소개" },
+  { id: "itinerary", label: "일정표" },
   { id: "inclusions", label: "포함사항" },
-  { id: "reviews", label: "리뷰" },
+  { id: "reviews", label: "후기" },
 ];
 
-export function TabNavigation() {
-  const activeSection = useIntersectionObserver(
-    tabs.map((t) => t.id)
-  );
-
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      const offset = 140; // sticky 헤더 + 탭 높이
-      const top = el.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  };
-
+export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   return (
-    <div className="sticky top-16 z-30 bg-[color:var(--bg)] border-b border-[color:var(--border)] shadow-sm">
-      <div className="mx-auto max-w-[1200px] px-6">
-        <div className="flex gap-0 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => scrollTo(tab.id)}
-              className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeSection === tab.id
-                  ? "border-[color:var(--brand)] text-[color:var(--brand)]"
-                  : "border-transparent text-[color:var(--muted)] hover:text-[color:var(--fg)]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+    <div className="py-1">
+      <div className="bg-[#F4F4F5] rounded-[28px] h-14 p-1 flex items-center gap-1">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`flex-1 h-full rounded-[24px] text-sm font-medium transition-all ${
+              activeTab === tab.id
+                ? "bg-white text-[#8B5CF6] shadow-md font-semibold"
+                : "bg-transparent text-[#71717A] font-medium hover:text-[#18181B]"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
     </div>
   );
