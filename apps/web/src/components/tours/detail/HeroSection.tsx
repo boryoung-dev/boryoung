@@ -35,7 +35,7 @@ export function HeroSection({ product, onBooking }: HeroSectionProps) {
 
       {/* 콘텐츠 */}
       <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 lg:p-12">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1200px]">
           {/* 카테고리 뱃지 */}
           <div className="flex items-center gap-2 mb-3">
             <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-sm font-medium px-3 py-1 rounded-full">
@@ -107,7 +107,7 @@ export function HeroSection({ product, onBooking }: HeroSectionProps) {
             </div>
             <button
               onClick={onBooking}
-              className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold text-lg hover:bg-blue-700 transition shadow-lg"
+              className="px-8 py-3 bg-[color:var(--brand)] text-white rounded-full font-semibold text-lg hover:opacity-90 transition shadow-lg"
             >
               예약하기
             </button>

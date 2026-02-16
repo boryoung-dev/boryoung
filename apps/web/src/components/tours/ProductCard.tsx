@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Calendar, Users } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 type Product = {
   id: string;
@@ -18,25 +18,28 @@ type Product = {
 export function ProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/tours/${product.slug}`} className="group">
-      <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+      <div className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-500 h-full flex flex-col border border-[color:var(--border)]">
         {/* 썸네일 */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+        <div className="relative aspect-[4/3] overflow-hidden bg-[color:var(--surface)]">
           {product.thumbnail ? (
             <img
               src={product.thumbnail}
               alt={product.title}
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
+            <div className="w-full h-full flex items-center justify-center text-[color:var(--muted)]">
               이미지 없음
             </div>
           )}
-          
-          {/* 카테고리 배지 */}
+
+          {/* 이미지 하단 그래디언트 */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+
+          {/* 카테고리 배지 (글래스 효과) */}
           <div className="absolute top-3 left-3">
-            <span className="bg-blue-600 text-white text-xs font-medium px-3 py-1 rounded-full">
+            <span className="backdrop-blur-sm bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full">
               {product.category.name}
             </span>
           </div>
@@ -44,12 +47,12 @@ export function ProductCard({ product }: { product: Product }) {
 
         {/* 내용 */}
         <div className="p-5 flex-1 flex flex-col">
-          <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-blue-600 transition">
+          <h3 className="text-lg font-bold text-[color:var(--fg)] mb-1 line-clamp-2 group-hover:text-[color:var(--brand)] transition-colors duration-300">
             {product.title}
           </h3>
-          
+
           {product.subtitle && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-1">
+            <p className="text-sm text-[color:var(--muted)] mb-3 line-clamp-1">
               {product.subtitle}
             </p>
           )}
@@ -60,7 +63,7 @@ export function ProductCard({ product }: { product: Product }) {
               {product.tagList.slice(0, 3).map((tag) => (
                 <span
                   key={tag.slug}
-                  className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
+                  className="text-xs bg-[color:var(--surface)] text-[color:var(--muted)] px-2 py-0.5 rounded-full"
                 >
                   #{tag.name}
                 </span>
@@ -68,8 +71,8 @@ export function ProductCard({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* 정보 */}
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-4 mt-auto">
+          {/* 정보 (목적지 + 기간 나란히) */}
+          <div className="flex items-center gap-4 text-sm text-[color:var(--muted)] mb-4 mt-auto">
             {product.durationText && (
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
@@ -79,16 +82,16 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
 
           {/* 가격 */}
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-4 border-t border-[color:var(--border)]">
             {product.basePrice ? (
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-blue-600">
+                <span className="text-2xl font-bold text-[color:var(--brand)]">
                   {product.basePrice.toLocaleString()}원
                 </span>
-                <span className="text-sm text-gray-500">~</span>
+                <span className="text-sm text-[color:var(--muted)]">~</span>
               </div>
             ) : (
-              <span className="text-lg font-semibold text-gray-600">
+              <span className="text-lg font-semibold text-[color:var(--muted)]">
                 가격 문의
               </span>
             )}

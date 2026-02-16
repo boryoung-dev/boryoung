@@ -23,12 +23,12 @@ export function ScheduleDates({ dates }: ScheduleDatesProps) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">출발 가능 일정</h2>
+      <h2 className="text-2xl font-bold text-[color:var(--fg)] mb-4">출발 가능 일정</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {dates.map((d: any, idx: number) => (
           <div
             key={idx}
-            className={`flex items-center gap-2 px-4 py-3 border rounded-xl text-sm ${
+            className={`flex items-center gap-2 px-4 py-3 border rounded-2xl text-sm ${
               statusStyles[d.status] || statusStyles.available
             }`}
           >

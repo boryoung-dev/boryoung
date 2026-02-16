@@ -16,14 +16,14 @@ export function ImageGallery({ images, onImageClick }: ImageGalleryProps) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">사진</h2>
+      <h2 className="text-2xl font-bold text-[color:var(--fg)] mb-4">사진</h2>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {displayImages.map((img: any, idx: number) => (
           <button
             key={img.id}
             onClick={() => onImageClick(idx)}
-            className="relative aspect-[4/3] rounded-xl overflow-hidden group"
+            className="relative aspect-[4/3] rounded-2xl overflow-hidden group"
           >
             <img
               src={img.url}
@@ -49,7 +49,7 @@ export function ImageGallery({ images, onImageClick }: ImageGalleryProps) {
       {images.length > 1 && (
         <button
           onClick={() => onImageClick(0)}
-          className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          className="mt-3 text-sm text-[color:var(--brand)] hover:opacity-80 font-medium"
         >
           모든 사진 보기 ({images.length}장)
         </button>

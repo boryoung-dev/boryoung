@@ -22,13 +22,19 @@ export function SiteHeader() {
           </Link>
 
           <nav className="hidden gap-8 text-sm font-medium text-[color:var(--fg)] md:flex">
-            {["일본", "동남아", "대만", "제주", "국내"].map((item) => (
+            {[
+              { label: "일본", slug: "japan-golf" },
+              { label: "동남아", slug: "southeast-asia" },
+              { label: "대만", slug: "taiwan-golf" },
+              { label: "제주", slug: "jeju-golf" },
+              { label: "국내", slug: "korea-golf" },
+            ].map((item) => (
               <Link
-                key={item}
-                href="#"
+                key={item.slug}
+                href={`/tours?category=${item.slug}`}
                 className="hover:text-[color:var(--brand)] transition-colors"
               >
-                {item}
+                {item.label}
               </Link>
             ))}
           </nav>

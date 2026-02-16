@@ -14,7 +14,6 @@ export function HighlightCards({ product }: HighlightCardsProps) {
       icon: Calendar,
       label: "여행 기간",
       value: product.durationText,
-      color: "text-blue-600 bg-blue-50",
     });
   }
 
@@ -28,7 +27,6 @@ export function HighlightCards({ product }: HighlightCardsProps) {
       icon: Users,
       label: "인원",
       value: people,
-      color: "text-green-600 bg-green-50",
     });
   }
 
@@ -37,7 +35,6 @@ export function HighlightCards({ product }: HighlightCardsProps) {
       icon: Flag,
       label: "골프",
       value: `${product.totalHoles}홀`,
-      color: "text-emerald-600 bg-emerald-50",
     });
   }
 
@@ -46,7 +43,6 @@ export function HighlightCards({ product }: HighlightCardsProps) {
       icon: Plane,
       label: "항공사",
       value: product.airline,
-      color: "text-purple-600 bg-purple-50",
     });
   }
 
@@ -55,7 +51,6 @@ export function HighlightCards({ product }: HighlightCardsProps) {
       icon: MapPin,
       label: "출발지",
       value: product.departure,
-      color: "text-orange-600 bg-orange-50",
     });
   }
 
@@ -70,7 +65,6 @@ export function HighlightCards({ product }: HighlightCardsProps) {
       icon: CircleDot,
       label: "난이도",
       value: diffLabels[product.difficulty] || product.difficulty,
-      color: "text-red-600 bg-red-50",
     });
   }
 
@@ -83,14 +77,14 @@ export function HighlightCards({ product }: HighlightCardsProps) {
         return (
           <div
             key={idx}
-            className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl"
+            className="flex items-center gap-3 p-4 bg-[color:var(--surface)] rounded-2xl"
           >
-            <div className={`p-2.5 rounded-lg ${card.color}`}>
+            <div className="p-2.5 rounded-lg text-[color:var(--brand)] bg-[color:var(--brand)]/10">
               <Icon className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs text-gray-500">{card.label}</div>
-              <div className="text-sm font-semibold text-gray-900">
+              <div className="text-xs text-[color:var(--muted)]">{card.label}</div>
+              <div className="text-sm font-semibold text-[color:var(--fg)]">
                 {card.value}
               </div>
             </div>

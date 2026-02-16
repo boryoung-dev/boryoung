@@ -23,14 +23,14 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">여행 후기</h2>
+      <h2 className="text-2xl font-bold text-[color:var(--fg)] mb-6">여행 후기</h2>
 
       {/* 별점 통계 */}
-      <div className="bg-gray-50 rounded-xl p-6 mb-8">
+      <div className="bg-[color:var(--surface)] rounded-2xl p-6 mb-8">
         <div className="flex items-start gap-8">
           {/* 평균 별점 */}
           <div className="text-center">
-            <div className="text-4xl font-bold text-gray-900">
+            <div className="text-4xl font-bold text-[color:var(--fg)]">
               {avgRating.toFixed(1)}
             </div>
             <div className="flex items-center gap-0.5 mt-1">
@@ -45,7 +45,7 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
                 />
               ))}
             </div>
-            <div className="text-sm text-gray-500 mt-1">
+            <div className="text-sm text-[color:var(--muted)] mt-1">
               {reviews.length}개 리뷰
             </div>
           </div>
@@ -54,15 +54,15 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
           <div className="flex-1 space-y-2">
             {distribution.map((d) => (
               <div key={d.star} className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 w-4">{d.star}</span>
+                <span className="text-sm text-[color:var(--muted)] w-4">{d.star}</span>
                 <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-[color:var(--border)] rounded-full overflow-hidden">
                   <div
                     className="h-full bg-yellow-400 rounded-full"
                     style={{ width: `${d.percentage}%` }}
                   />
                 </div>
-                <span className="text-xs text-gray-500 w-8">{d.count}</span>
+                <span className="text-xs text-[color:var(--muted)] w-8">{d.count}</span>
               </div>
             ))}
           </div>
@@ -74,23 +74,23 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
         {reviews.map((review: any) => (
           <div
             key={review.id}
-            className="border-b border-gray-100 pb-6 last:border-0"
+            className="border-b border-[color:var(--border)] pb-6 last:border-0"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 {/* 아바타 */}
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-500">
+                <div className="w-10 h-10 bg-[color:var(--surface)] rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-[color:var(--muted)]">
                     {review.authorName.charAt(0)}
                   </span>
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-[color:var(--fg)]">
                       {review.authorName}
                     </span>
                     {review.isVerified && (
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-[color:var(--brand)]/10 text-[color:var(--brand)] px-2 py-0.5 rounded-full">
                         인증
                       </span>
                     )}
@@ -110,16 +110,16 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
                 </div>
               </div>
               {review.travelDate && (
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-[color:var(--muted)]">
                   {new Date(review.travelDate).toLocaleDateString()}
                 </span>
               )}
             </div>
 
             {review.title && (
-              <h4 className="font-medium text-gray-900 mb-1">{review.title}</h4>
+              <h4 className="font-medium text-[color:var(--fg)] mb-1">{review.title}</h4>
             )}
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-[color:var(--muted)] text-sm leading-relaxed">
               {review.content}
             </p>
           </div>

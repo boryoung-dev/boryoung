@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Search } from "lucide-react";
+import { PackageOpen } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 
-type Product = any; // 타입은 나중에 정리
+type Product = any;
 type Category = any;
 type Tag = any;
 
@@ -37,93 +36,97 @@ export function ToursPageClient({
     window.location.href = `/tours?${params.toString()}`;
   };
 
-  return (
-    <div className="space-y-6">
-      {/* 검색 & 필터 */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <form onSubmit={handleSearch} className="space-y-4">
-          {/* 검색창 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="상품 검색..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
+  const handleCategoryClick = (slug?: string) => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("search", searchQuery);
+    if (slug) params.set("category", slug);
+    if (selectedTag) params.set("tag", selectedTag);
+    window.location.href = `/tours?${params.toString()}`;
+  };
 
-          {/* 카테고리 필터 */}
-          <div className="flex flex-wrap gap-2">
+  const handleTagClick = (slug: string) => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("search", searchQuery);
+    if (selectedCategory) params.set("category", selectedCategory);
+    if (selectedTag !== slug) params.set("tag", slug);
+    window.location.href = `/tours?${params.toString()}`;
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* 필터 영역 */}
+      <div className="space-y-4">
+        {/* 카테고리 필터 */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => handleCategoryClick(undefined)}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+              !selectedCategory
+                ? "bg-[color:var(--brand)] text-white shadow-sm"
+                : "bg-[color:var(--surface)] text-[color:var(--fg)] hover:bg-[color:var(--border)]"
+            }`}
+          >
+            전체
+          </button>
+          {categories.map((cat: Category) => (
             <button
+              key={cat.id}
               type="button"
-              onClick={() => setSelectedCategory(undefined)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                !selectedCategory
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              onClick={() => handleCategoryClick(cat.slug)}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                selectedCategory === cat.slug
+                  ? "bg-[color:var(--brand)] text-white shadow-sm"
+                  : "bg-[color:var(--surface)] text-[color:var(--fg)] hover:bg-[color:var(--border)]"
               }`}
             >
-              전체
+              {cat.name}
             </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedCategory(cat.slug)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  selectedCategory === cat.slug
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
+          ))}
+        </div>
 
-          {/* 태그 필터 */}
+        {/* 태그 필터 */}
+        {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
+            {tags.map((tag: Tag) => (
               <button
                 key={tag.id}
                 type="button"
-                onClick={() =>
-                  setSelectedTag(selectedTag === tag.slug ? undefined : tag.slug)
-                }
-                className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                onClick={() => handleTagClick(tag.slug)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 ${
                   selectedTag === tag.slug
-                    ? "bg-blue-100 text-blue-700 border-2 border-blue-600"
-                    : "bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100"
+                    ? "bg-[color:var(--brand)] text-white"
+                    : "text-[color:var(--muted)] hover:text-[color:var(--fg)] hover:bg-[color:var(--surface)]"
                 }`}
               >
                 #{tag.name}
               </button>
             ))}
           </div>
+        )}
+      </div>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            검색
-          </button>
-        </form>
+      {/* 결과 개수 */}
+      <div className="text-sm text-[color:var(--muted)]">
+        총 <span className="font-semibold text-[color:var(--fg)]">{initialProducts.length}개</span> 상품
       </div>
 
       {/* 상품 그리드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {initialProducts.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-gray-500">
-            검색 결과가 없습니다
-          </div>
-        ) : (
-          initialProducts.map((product) => (
+      {initialProducts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <PackageOpen className="w-16 h-16 text-[color:var(--border)] mb-4" />
+          <p className="text-lg font-medium text-[color:var(--fg)] mb-2">검색 결과가 없습니다</p>
+          <p className="text-sm text-[color:var(--muted)]">
+            다른 검색어나 필터를 시도해 보세요
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {initialProducts.map((product: Product) => (
             <ProductCard key={product.id} product={product} />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -15,19 +15,19 @@ export function OverviewSection({ product }: OverviewSectionProps) {
       {/* 상품 소개 */}
       {product.excerpt && (
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">상품 소개</h2>
-          <p className="text-gray-700 leading-relaxed text-lg">
+          <h2 className="text-2xl font-bold text-[color:var(--fg)] mb-4">상품 소개</h2>
+          <p className="text-[color:var(--muted)] leading-relaxed text-lg">
             {product.excerpt}
           </p>
         </div>
       )}
 
-      {product.content && (
+      {(product.content || product.contentHtml) && (
         <div className="prose prose-gray max-w-none">
           {product.contentHtml ? (
             <div dangerouslySetInnerHTML={{ __html: addReferrerPolicy(product.contentHtml) }} />
           ) : (
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+            <p className="text-[color:var(--muted)] leading-relaxed whitespace-pre-wrap">
               {product.content}
             </p>
           )}
@@ -40,7 +40,7 @@ export function OverviewSection({ product }: OverviewSectionProps) {
           {product.tagList.map((tag: any) => (
             <span
               key={tag.id}
-              className="bg-gray-100 text-gray-600 text-sm px-3 py-1.5 rounded-full"
+              className="bg-[color:var(--surface)] text-[color:var(--muted)] text-sm px-3 py-1.5 rounded-full"
             >
               #{tag.name}
             </span>

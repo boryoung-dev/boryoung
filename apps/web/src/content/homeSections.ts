@@ -15,14 +15,14 @@ export const homeSections: HomeSection[] = [
     type: "quickIcons",
     isVisible: true,
     items: [
-      { label: "해외골프", iconName: "plane" },
-      { label: "54홀", iconName: "flag" },
-      { label: "가성비", iconName: "tag" },
-      { label: "프리미엄", iconName: "star" },
-      { label: "단체", iconName: "users" },
-      { label: "단기", iconName: "clock" },
-      { label: "베트남", iconName: "map" },
-      { label: "일본", iconName: "map" }
+      { label: "해외골프", iconName: "plane", linkUrl: "/tours?search=해외골프" },
+      { label: "54홀", iconName: "flag", linkUrl: "/tours?search=54홀" },
+      { label: "가성비", iconName: "tag", linkUrl: "/tours?search=가성비" },
+      { label: "프리미엄", iconName: "star", linkUrl: "/tours?search=프리미엄" },
+      { label: "단체", iconName: "users", linkUrl: "/tours?search=단체" },
+      { label: "단기", iconName: "clock", linkUrl: "/tours?search=단기" },
+      { label: "베트남", iconName: "map", linkUrl: "/tours?category=southeast-asia" },
+      { label: "일본", iconName: "map", linkUrl: "/tours?category=japan-golf" }
     ]
   },
   {

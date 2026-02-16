@@ -14,20 +14,20 @@ export function InclusionsSection({ inclusions, exclusions }: InclusionsSectionP
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">포함/불포함 사항</h2>
+      <h2 className="text-2xl font-bold text-[color:var(--fg)] mb-6">포함/불포함 사항</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 포함사항 */}
         {inclusions && inclusions.length > 0 && (
-          <div className="bg-green-50 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-green-800 mb-4">포함사항</h3>
+          <div className="bg-[color:var(--surface)] rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-[color:var(--fg)] mb-4">포함사항</h3>
             <ul className="space-y-3">
               {inclusions.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mt-0.5">
                     <Check className="w-3 h-3 text-white" />
                   </div>
-                  <span className="text-sm text-green-900">{item}</span>
+                  <span className="text-sm text-[color:var(--fg)]">{item}</span>
                 </li>
               ))}
             </ul>
@@ -36,15 +36,15 @@ export function InclusionsSection({ inclusions, exclusions }: InclusionsSectionP
 
         {/* 불포함사항 */}
         {exclusions && exclusions.length > 0 && (
-          <div className="bg-red-50 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-red-800 mb-4">불포함사항</h3>
+          <div className="bg-[color:var(--surface)] rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-[color:var(--fg)] mb-4">불포함사항</h3>
             <ul className="space-y-3">
               {exclusions.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-5 h-5 bg-red-400 rounded-full flex items-center justify-center mt-0.5">
                     <X className="w-3 h-3 text-white" />
                   </div>
-                  <span className="text-sm text-red-900">{item}</span>
+                  <span className="text-sm text-[color:var(--fg)]">{item}</span>
                 </li>
               ))}
             </ul>

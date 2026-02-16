@@ -1,4 +1,5 @@
 @import "@repo/ui/styles.css";
+@import "../styles/tiptap.css";
 @import "tailwindcss";
 
 @source "../../../../packages/ui/src/**/*.{ts,tsx}";
