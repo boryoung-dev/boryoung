@@ -116,12 +116,13 @@ model TourProduct {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  images        ProductImage[]
-  tags          ProductTag[]
-  itineraries   Itinerary[]
-  priceOptions  PriceOption[]
-  bookings      Booking[]
-  reviews       Review[]
+  images           ProductImage[]
+  tags             ProductTag[]
+  itineraries      Itinerary[]
+  priceOptions     PriceOption[]
+  bookings         Booking[]
+  reviews          Review[]
+  curationProducts CurationProduct[]
 
   @@index([slug])
   @@index([categoryId])
@@ -371,4 +372,62 @@ model Admin {
 
   @@index([email])
   @@map("admins")
+}
+
+// ============================================
+// 큐레이션 (추천 컬렉션)
+// ============================================
+
+model Curation {
+  id          String            @id @default(cuid())
+  title       String            // "이번주 인기", "가성비 BEST" 등
+  description String?           @db.Text
+  imageUrl    String?
+  linkUrl     String?           // 클릭 시 이동 URL
+  sortOrder   Int               @default(0)
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  products    CurationProduct[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("curations")
+}
+
+model CurationProduct {
+  id          String      @id @default(cuid())
+  curationId  String
+  productId   String
+  sortOrder   Int         @default(0)
+
+  curation    Curation    @relation(fields: [curationId], references: [id], onDelete: Cascade)
+  product     TourProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime    @default(now())
+
+  @@unique([curationId, productId])
+  @@index([curationId])
+  @@index([productId])
+  @@map("curation_products")
+}
+
+// ============================================
+// 빠른 네비게이션 아이콘
+// ============================================
+
+model QuickIcon {
+  id        String   @id @default(cuid())
+  label     String            // "해외골프", "54홀" 등
+  iconName  String            // lucide 아이콘 이름
+  linkUrl   String            // 클릭 시 이동 URL (필수)
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("quick_icons")
 }

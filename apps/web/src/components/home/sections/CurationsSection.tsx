@@ -3,7 +3,7 @@ import { PlusButton } from "@/components/common/PlusButton";
 
 export function CurationsSection(props: {
   title: string;
-  items: { id: string; title: string; description: string; imageUrl?: string }[];
+  items: { id: string; title: string; description: string; imageUrl?: string; linkUrl?: string }[];
 }) {
   return (
     <section className="bg-[color:var(--surface)] py-24 overflow-hidden">
@@ -18,7 +18,7 @@ export function CurationsSection(props: {
         <div className="flex gap-6 overflow-x-auto pb-10 pt-4 scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0 snap-x snap-mandatory">
           {props.items.map((it, idx) => (
             <Link
-                href="/tours"
+                href={it.linkUrl || "/tours"}
                 key={it.id}
                 className="snap-center group relative flex h-[480px] min-w-[320px] sm:min-w-[380px] cursor-pointer flex-col justify-between overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-sm transition-all duration-500 hover:shadow-xl hover:scale-[1.01]"
             >

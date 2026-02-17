@@ -16,6 +16,9 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  FileText,
+  LayoutGrid,
+  Zap,
 } from "lucide-react";
 
 const navItems = [
@@ -24,6 +27,9 @@ const navItems = [
   { href: "/products", label: "상품 관리", icon: Package },
   { href: "/categories", label: "카테고리", icon: FolderTree },
   { href: "/tags", label: "태그 관리", icon: Tags },
+  { href: "/blog-posts", label: "매거진 관리", icon: FileText },
+  { href: "/curations", label: "큐레이션 관리", icon: LayoutGrid },
+  { href: "/quick-icons", label: "빠른아이콘 관리", icon: Zap },
   { href: "/bookings", label: "예약 관리", icon: CalendarCheck },
   { href: "/reviews", label: "리뷰 관리", icon: Star },
   { href: "/inquiries", label: "문의 관리", icon: MessageSquare },

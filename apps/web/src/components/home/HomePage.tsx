@@ -20,7 +20,7 @@ export async function HomePage() {
 
   // DB에서 데이터 가져오기
   const now = new Date();
-  const [productsByTab, rankingItems, collectionItems, banners] = await Promise.all([
+  const [productsByTab, rankingItems, collectionItems, banners, blogPosts, dbCurations, dbQuickIcons] = await Promise.all([
     getHomeProductsByTab(categoryTabs?.itemsPerTab ?? 8),
     getRankingProducts(),
     getCollectionItems(),
@@ -35,6 +35,19 @@ export async function HomePage() {
           { OR: [{ endDate: null }, { endDate: { gte: now } }] },
         ],
       },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.blogPost.findMany({
+      where: { isPublished: true },
+      orderBy: { publishedAt: "desc" },
+      take: 3,
+    }),
+    prisma.curation.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.quickIcon.findMany({
+      where: { isActive: true },
       orderBy: { sortOrder: "asc" },
     }),
   ]);
@@ -54,7 +67,10 @@ export async function HomePage() {
             }
 
             if (section.type === "quickIcons") {
-              return <QuickIconsSection key={key} {...section} />;
+              const items = dbQuickIcons.length > 0
+                ? dbQuickIcons.map(q => ({ label: q.label, iconName: q.iconName, linkUrl: q.linkUrl }))
+                : section.items;
+              return <QuickIconsSection key={key} {...section} items={items} />;
             }
 
             if (section.type === "ranking") {
@@ -81,17 +97,17 @@ export async function HomePage() {
             }
 
             if (section.type === "curations") {
-              return (
-                <CurationsSection
-                  key={key}
-                  title={section.title}
-                  items={section.items}
-                />
-              );
+              const items = dbCurations.length > 0
+                ? dbCurations.map(c => ({ id: c.id, title: c.title, description: c.description || '', imageUrl: c.imageUrl || undefined, linkUrl: c.linkUrl || undefined }))
+                : section.items;
+              return <CurationsSection key={key} title={section.title} items={items} />;
             }
 
             if (section.type === "magazine") {
-              return <MagazineSection key={key} {...section} />;
+              const items = blogPosts.length > 0
+                ? blogPosts.map(p => ({ id: p.id, category: p.category || '팁', title: p.title, description: p.excerpt || '', imageUrl: p.thumbnail || '' }))
+                : section.items;
+              return <MagazineSection key={key} {...section} items={items} />;
             }
 
             return null;
