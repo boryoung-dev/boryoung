@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { MessageSquare, Reply, Trash2, X, Eye } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 interface Inquiry {
   id: string;
@@ -184,40 +185,40 @@ export default function InquiriesPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setSelectedStatus("all")}
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 rounded-lg font-medium ${
               selectedStatus === "all"
                 ? "bg-blue-600 text-white"
-                : "bg-white text-gray-700 border"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             전체 ({inquiries.length})
           </button>
           <button
             onClick={() => setSelectedStatus("PENDING")}
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 rounded-lg font-medium ${
               selectedStatus === "PENDING"
                 ? "bg-blue-600 text-white"
-                : "bg-white text-gray-700 border"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             대기중 ({inquiries.filter((i) => i.status === "PENDING").length})
           </button>
           <button
             onClick={() => setSelectedStatus("REPLIED")}
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 rounded-lg font-medium ${
               selectedStatus === "REPLIED"
                 ? "bg-blue-600 text-white"
-                : "bg-white text-gray-700 border"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             답변완료 ({inquiries.filter((i) => i.status === "REPLIED").length})
           </button>
           <button
             onClick={() => setSelectedStatus("CLOSED")}
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 rounded-lg font-medium ${
               selectedStatus === "CLOSED"
                 ? "bg-blue-600 text-white"
-                : "bg-white text-gray-700 border"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             종료 ({inquiries.filter((i) => i.status === "CLOSED").length})
@@ -282,17 +283,17 @@ export default function InquiriesPage() {
                     {formatDate(inquiry.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
+                    <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => openModal(inquiry)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                         title="상세/답변"
                       >
                         <Reply className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(inquiry.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                         title="삭제"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -383,15 +384,17 @@ export default function InquiriesPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     상태
                   </label>
-                  <select
+                  {/* 문의 상태 선택 */}
+                  <Select
                     value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="PENDING">대기중</option>
-                    <option value="REPLIED">답변완료</option>
-                    <option value="CLOSED">종료</option>
-                  </select>
+                    onChange={setNewStatus}
+                    options={[
+                      { value: "PENDING", label: "대기중" },
+                      { value: "REPLIED", label: "답변완료" },
+                      { value: "CLOSED", label: "종료" },
+                    ]}
+                    className="w-full"
+                  />
                 </div>
 
                 <div>

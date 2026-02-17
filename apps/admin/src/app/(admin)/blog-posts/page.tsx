@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, FileText, Eye, EyeOff } from "lucide-react";
+import Select from "@/components/ui/Select";
+import { TiptapEditor } from "@/components/editor/TiptapEditor";
 
 interface BlogPost {
   id: string;
@@ -128,7 +130,8 @@ export default function BlogPostsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title.trim() || !formData.content.trim()) {
+    const plainContent = formData.content.replace(/<[^>]*>/g, "").trim();
+    if (!formData.title.trim() || !plainContent) {
       alert("제목과 본문은 필수입니다");
       return;
     }
@@ -145,6 +148,7 @@ export default function BlogPostsPage() {
         } as any,
         body: JSON.stringify({
           ...formData,
+          contentHtml: formData.content,
           category: formData.category || null,
           excerpt: formData.excerpt || null,
           thumbnail: formData.thumbnail || null
@@ -392,18 +396,20 @@ export default function BlogPostsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     카테고리
                   </label>
-                  <select
+                  {/* 블로그 카테고리 선택 */}
+                  <Select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">선택 안함</option>
-                    <option value="준비물">준비물</option>
-                    <option value="코스공략">코스공략</option>
-                    <option value="여행팁">여행팁</option>
-                    <option value="장비리뷰">장비리뷰</option>
-                    <option value="기타">기타</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, category: val })}
+                    options={[
+                      { value: "", label: "선택 안함" },
+                      { value: "준비물", label: "준비물" },
+                      { value: "코스공략", label: "코스공략" },
+                      { value: "여행팁", label: "여행팁" },
+                      { value: "장비리뷰", label: "장비리뷰" },
+                      { value: "기타", label: "기타" },
+                    ]}
+                    className="w-full"
+                  />
                 </div>
 
                 <div>
@@ -423,12 +429,11 @@ export default function BlogPostsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     본문 *
                   </label>
-                  <textarea
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    rows={10}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                    required
+                  <TiptapEditor
+                    content={formData.content}
+                    onChange={(html) => setFormData({ ...formData, content: html })}
+                    placeholder="블로그 본문을 입력하세요..."
+                    minHeight="300px"
                   />
                 </div>
 

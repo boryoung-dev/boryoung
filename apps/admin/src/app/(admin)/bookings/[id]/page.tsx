@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import Select from '@/components/ui/Select';
 
 interface BookingDetail {
   id: string;
@@ -259,16 +260,18 @@ export default function BookingDetailPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     예약 상태
                   </label>
-                  <select
+                  {/* 예약 상태 선택 */}
+                  <Select
                     value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="PENDING">접수</option>
-                    <option value="CONFIRMED">확정</option>
-                    <option value="COMPLETED">완료</option>
-                    <option value="CANCELLED">취소</option>
-                  </select>
+                    onChange={setNewStatus}
+                    options={[
+                      { value: "PENDING", label: "접수" },
+                      { value: "CONFIRMED", label: "확정" },
+                      { value: "COMPLETED", label: "완료" },
+                      { value: "CANCELLED", label: "취소" },
+                    ]}
+                    className="w-full"
+                  />
                 </div>
                 
                 <div>

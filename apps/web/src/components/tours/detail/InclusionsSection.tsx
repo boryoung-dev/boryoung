@@ -3,12 +3,23 @@
 import { Check, X } from "lucide-react";
 
 interface InclusionsSectionProps {
-  inclusions: string[] | null;
-  exclusions: string[] | null;
+  inclusions: unknown;
+  exclusions: unknown;
 }
 
-export function InclusionsSection({ inclusions, exclusions }: InclusionsSectionProps) {
-  if ((!inclusions || inclusions.length === 0) && (!exclusions || exclusions.length === 0)) {
+function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === "string");
+  if (typeof value === "string") {
+    try { const parsed = JSON.parse(value); if (Array.isArray(parsed)) return parsed; } catch {}
+  }
+  return [];
+}
+
+export function InclusionsSection(props: InclusionsSectionProps) {
+  const inclusions = toStringArray(props.inclusions);
+  const exclusions = toStringArray(props.exclusions);
+
+  if (inclusions.length === 0 && exclusions.length === 0) {
     return null;
   }
 

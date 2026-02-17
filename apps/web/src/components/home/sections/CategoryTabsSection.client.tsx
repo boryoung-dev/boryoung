@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import type { HomeTab, HomeTabKey, ProductCardDTO } from "@/lib/home/types";
 import { cn } from "@repo/ui";
 import { ProductCard } from "../ProductCard";
@@ -10,18 +11,46 @@ export function CategoryTabsSection(props: {
   tabs: HomeTab[];
   productsByTab: Record<HomeTabKey, ProductCardDTO[]>;
 }) {
-  const [active, setActive] = useState<HomeTabKey>(props.tabs[0]?.key ?? "JAPAN");
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const tabItems = useMemo(
+    () => props.tabs.filter((tab) => (props.productsByTab[tab.key] ?? []).length > 0),
+    [props.tabs, props.productsByTab]
+  );
+
+  const [active, setActive] = useState<HomeTabKey>(() => {
+    return tabItems[0]?.key ?? props.tabs[0]?.key ?? "JAPAN";
+  });
 
   const products = props.productsByTab[active] ?? [];
 
-  const tabItems = useMemo(() => props.tabs, [props.tabs]);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    dragFree: true,
+  });
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
 
-  function scrollByAmount(dir: -1 | 1) {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * 440, behavior: "smooth" });
-  }
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setCanScrollPrev(emblaApi.canScrollPrev());
+    setCanScrollNext(emblaApi.canScrollNext());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  // 탭 변경 시 캐러셀 처음으로
+  useEffect(() => {
+    emblaApi?.scrollTo(0, true);
+  }, [active, emblaApi]);
 
   return (
     <section className="bg-[#111113] py-20">
@@ -61,16 +90,18 @@ export function CategoryTabsSection(props: {
             <div className="hidden items-center gap-2 sm:flex">
               <button
                 type="button"
-                onClick={() => scrollByAmount(-1)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/15"
+                onClick={() => emblaApi?.scrollPrev()}
+                disabled={!canScrollPrev}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/15 disabled:opacity-30"
                 aria-label="이전"
               >
                 <span className="text-lg">‹</span>
               </button>
               <button
                 type="button"
-                onClick={() => scrollByAmount(1)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/15"
+                onClick={() => emblaApi?.scrollNext()}
+                disabled={!canScrollNext}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/15 disabled:opacity-30"
                 aria-label="다음"
               >
                 <span className="text-lg">›</span>
@@ -78,18 +109,17 @@ export function CategoryTabsSection(props: {
             </div>
           </div>
 
-          <div
-            ref={scrollerRef}
-            className="flex gap-6 overflow-x-auto px-6 pb-2 scrollbar-hide snap-x snap-mandatory"
-          >
-            {products.map((p) => (
-              <div
-                key={p.id}
-                className="w-[80vw] min-w-[80vw] snap-start sm:w-[420px] sm:min-w-[420px]"
-              >
-                <ProductCard item={p} />
-              </div>
-            ))}
+          <div className="overflow-hidden px-6" ref={emblaRef}>
+            <div className="flex gap-6">
+              {products.map((p) => (
+                <div
+                  key={p.id}
+                  className="min-w-0 flex-[0_0_80vw] sm:flex-[0_0_420px]"
+                >
+                  <ProductCard item={p} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

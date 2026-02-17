@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, Eye, EyeOff } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 interface Product {
   id: string;
@@ -232,30 +233,30 @@ export default function ReviewsPage() {
       <div className="mb-6 flex gap-2">
         <button
           onClick={() => setStatusFilter("all")}
-          className={`px-4 py-2 rounded-md ${
+          className={`px-4 py-2 rounded-lg font-medium ${
             statusFilter === "all"
               ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
         >
           전체 ({reviews.length})
         </button>
         <button
           onClick={() => setStatusFilter("published")}
-          className={`px-4 py-2 rounded-md ${
+          className={`px-4 py-2 rounded-lg font-medium ${
             statusFilter === "published"
               ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
         >
           공개 ({reviews.filter((r) => r.isPublished).length})
         </button>
         <button
           onClick={() => setStatusFilter("unpublished")}
-          className={`px-4 py-2 rounded-md ${
+          className={`px-4 py-2 rounded-lg font-medium ${
             statusFilter === "unpublished"
               ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
         >
           비공개 ({reviews.filter((r) => !r.isPublished).length})
@@ -366,16 +367,18 @@ export default function ReviewsPage() {
                     {formatDate(review.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
+                    <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleEdit(review)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="수정"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(review.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="삭제"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -434,22 +437,21 @@ export default function ReviewsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     별점 <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    value={editFormData.rating}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        rating: parseInt(e.target.value),
-                      })
+                  {/* 별점 선택 */}
+                  <Select
+                    value={String(editFormData.rating)}
+                    onChange={(val) =>
+                      setEditFormData({ ...editFormData, rating: parseInt(val) })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value={5}>★★★★★ (5점)</option>
-                    <option value={4}>★★★★☆ (4점)</option>
-                    <option value={3}>★★★☆☆ (3점)</option>
-                    <option value={2}>★★☆☆☆ (2점)</option>
-                    <option value={1}>★☆☆☆☆ (1점)</option>
-                  </select>
+                    options={[
+                      { value: "5", label: "★★★★★ (5점)" },
+                      { value: "4", label: "★★★★☆ (4점)" },
+                      { value: "3", label: "★★★☆☆ (3점)" },
+                      { value: "2", label: "★★☆☆☆ (2점)" },
+                      { value: "1", label: "★☆☆☆☆ (1점)" },
+                    ]}
+                    className="w-full"
+                  />
                 </div>
 
                 <div>

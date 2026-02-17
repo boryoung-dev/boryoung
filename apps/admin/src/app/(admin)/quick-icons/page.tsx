@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, Eye, EyeOff, Plane, Flag, Tag, Star, Users, Clock, MapPin, Globe } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 interface QuickIcon {
   id: string;
@@ -132,6 +133,20 @@ export default function QuickIconsPage() {
     }
   };
 
+  const handleToggleActive = async (id: string, isActive: boolean) => {
+    try {
+      const res = await fetch(`/api/quick-icons/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...authHeaders } as any,
+        body: JSON.stringify({ isActive }),
+      });
+      const data = await res.json();
+      if (data.success) fetchQuickIcons();
+    } catch {
+      alert("상태 변경 중 오류가 발생했습니다");
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("정말 이 빠른아이콘을 삭제하시겠습니까?")) return;
 
@@ -235,39 +250,33 @@ export default function QuickIconsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                        icon.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}>
-                        {icon.isActive ? (
-                          <>
-                            <Eye className="w-3 h-3" />
-                            활성
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="w-3 h-3" />
-                            비활성
-                          </>
-                        )}
-                      </span>
+                      <button
+                        onClick={() => handleToggleActive(icon.id, !icon.isActive)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          icon.isActive ? "bg-blue-600" : "bg-gray-300"
+                        }`}
+                        title={icon.isActive ? "비활성화" : "활성화"}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          icon.isActive ? "translate-x-6" : "translate-x-1"
+                        }`} />
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex gap-2 justify-end">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => openEditModal(icon)}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="수정"
                         >
                           <Pencil className="w-4 h-4" />
-                          수정
                         </button>
                         <button
                           onClick={() => handleDelete(icon.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="삭제"
                         >
                           <Trash2 className="w-4 h-4" />
-                          삭제
                         </button>
                       </div>
                     </td>
@@ -314,18 +323,13 @@ export default function QuickIconsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     아이콘 *
                   </label>
-                  <select
+                  {/* 아이콘 선택 드롭다운 */}
+                  <Select
                     value={formData.iconName}
-                    onChange={(e) => setFormData({ ...formData, iconName: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    {ICON_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, iconName: val })}
+                    options={ICON_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                    className="w-full"
+                  />
                   <div className="mt-3 flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm text-gray-600">미리보기:</span>
                     <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
@@ -362,17 +366,19 @@ export default function QuickIconsPage() {
                   />
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
-                    활성화
-                  </label>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">활성화</span>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      formData.isActive ? "bg-blue-600" : "bg-gray-300"
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      formData.isActive ? "translate-x-6" : "translate-x-1"
+                    }`} />
+                  </button>
                 </div>
               </div>
 

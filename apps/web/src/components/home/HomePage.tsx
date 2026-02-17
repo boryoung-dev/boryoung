@@ -12,6 +12,7 @@ import { CollectionSection } from "./sections/CollectionSection";
 import { MagazineSection } from "./sections/MagazineSection";
 import { SiteHeader } from "../common/SiteHeader";
 import { KakaoFloating } from "../common/KakaoFloating";
+import { SiteFooter } from "../common/SiteFooter";
 
 export async function HomePage() {
   const categoryTabs = homeSections.find(
@@ -105,7 +106,7 @@ export async function HomePage() {
 
             if (section.type === "magazine") {
               const items = blogPosts.length > 0
-                ? blogPosts.map(p => ({ id: p.id, category: p.category || '팁', title: p.title, description: p.excerpt || '', imageUrl: p.thumbnail || '' }))
+                ? blogPosts.map(p => ({ id: p.id, slug: p.slug, category: p.category || '팁', title: p.title, description: p.excerpt || '', imageUrl: p.thumbnail || '' }))
                 : section.items;
               return <MagazineSection key={key} {...section} items={items} />;
             }
@@ -114,13 +115,7 @@ export async function HomePage() {
           })}
       </main>
 
-      <footer className="mt-auto border-t border-[color:var(--border)] bg-white py-12 text-center text-sm text-[color:var(--muted)]">
-        <div className="mx-auto max-w-6xl px-6 flex flex-col items-center">
-            <div className="mb-4 text-xl font-bold tracking-tighter text-[color:var(--brand)] opacity-50">Boryoung</div>
-            <p className="mb-2">보령(주) | 대표이사: 심재형 | 사업자등록번호: 123-45-67890</p>
-            <p>&copy; 2024 Boryoung. All rights reserved.</p>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <KakaoFloating />
     </div>

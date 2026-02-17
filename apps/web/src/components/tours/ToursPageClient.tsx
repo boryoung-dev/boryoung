@@ -1,12 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { PackageOpen, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 
 type Product = any;
 type Category = any;
 type Tag = any;
+
+type SortKey = "recommended" | "priceLow" | "priceHigh" | "newest";
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "recommended", label: "추천순" },
+  { key: "priceLow", label: "낮은 가격순" },
+  { key: "priceHigh", label: "높은 가격순" },
+  { key: "newest", label: "최신순" },
+];
+
+const MAX_PRICE = 5000000;
 
 export function ToursPageClient({
   initialProducts,
@@ -23,11 +34,34 @@ export function ToursPageClient({
     search?: string;
   };
 }) {
-  const [searchQuery, setSearchQuery] = useState(initialFilters.search || "");
+  const [searchQuery] = useState(initialFilters.search || "");
   const [selectedCategory, setSelectedCategory] = useState(initialFilters.category);
-  const [selectedTag, setSelectedTag] = useState(initialFilters.tag);
-  const [priceRange, setPriceRange] = useState([0, 5000000]);
+  const [selectedTag] = useState(initialFilters.tag);
+  const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
+  const [sortKey, setSortKey] = useState<SortKey>("recommended");
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  // 상품 데이터에서 여행지 목록 동적 추출
+  const destinations = useMemo(() => {
+    const destSet = new Set<string>();
+    initialProducts.forEach((p: Product) => {
+      if (p.destination) destSet.add(p.destination);
+    });
+    return Array.from(destSet).sort();
+  }, [initialProducts]);
+
+  // 정렬 드롭다운 외부 클릭 닫기
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const handleCategoryClick = (slug?: string) => {
     const params = new URLSearchParams();
@@ -38,21 +72,60 @@ export function ToursPageClient({
   };
 
   const handleResetFilters = () => {
-    window.location.href = `/tours`;
+    setMaxPrice(MAX_PRICE);
+    setSelectedDestinations([]);
+    setSortKey("recommended");
+    if (selectedCategory || searchQuery) {
+      window.location.href = `/tours`;
+    }
   };
-
-  const destinations = [
-    { id: "sea", label: "동남아시아" },
-    { id: "japan", label: "일본" },
-    { id: "europe", label: "유럽" },
-    { id: "america", label: "미주/하와이" },
-  ];
 
   const toggleDestination = (id: string) => {
     setSelectedDestinations((prev) =>
       prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
     );
   };
+
+  // 클라이언트 필터링 + 정렬
+  const filteredProducts = useMemo(() => {
+    let result = [...initialProducts];
+
+    // 가격 필터
+    if (maxPrice < MAX_PRICE) {
+      result = result.filter(
+        (p) => !p.basePrice || p.basePrice <= maxPrice
+      );
+    }
+
+    // 여행지 필터
+    if (selectedDestinations.length > 0) {
+      result = result.filter((p) =>
+        selectedDestinations.includes(p.destination)
+      );
+    }
+
+    // 정렬
+    switch (sortKey) {
+      case "priceLow":
+        result.sort((a, b) => (a.basePrice || 0) - (b.basePrice || 0));
+        break;
+      case "priceHigh":
+        result.sort((a, b) => (b.basePrice || 0) - (a.basePrice || 0));
+        break;
+      case "newest":
+        result.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        break;
+      // recommended: 서버 기본 정렬 유지
+    }
+
+    return result;
+  }, [initialProducts, maxPrice, selectedDestinations, sortKey]);
+
+  const currentSortLabel =
+    SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? "추천순";
 
   return (
     <div className="flex gap-[40px]">
@@ -75,15 +148,21 @@ export function ToursPageClient({
           <h3 className="text-[16px] font-semibold text-[#18181B]">가격대</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm text-[#71717A]">
-              <span>₩{priceRange[0].toLocaleString()}</span>
-              <span>₩{priceRange[1].toLocaleString()}+</span>
+              <span>₩0</span>
+              <span>
+                ₩{maxPrice.toLocaleString()}
+                {maxPrice >= MAX_PRICE ? "+" : ""}
+              </span>
             </div>
-            <div className="relative h-1 bg-[#E4E4E7] rounded-full">
-              <div
-                className="absolute h-full bg-[#8B5CF6] rounded-full"
-                style={{ left: "0%", right: "20%" }}
-              />
-            </div>
+            <input
+              type="range"
+              min={0}
+              max={MAX_PRICE}
+              step={100000}
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="w-full h-1 bg-[#E4E4E7] rounded-full appearance-none cursor-pointer accent-[#8B5CF6]"
+            />
           </div>
         </div>
 
@@ -93,28 +172,28 @@ export function ToursPageClient({
           <div className="space-y-3">
             {destinations.map((dest) => (
               <label
-                key={dest.id}
+                key={dest}
                 className="flex items-center gap-3 cursor-pointer group"
+                onClick={() => toggleDestination(dest)}
               >
                 <div
                   className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                    selectedDestinations.includes(dest.id)
+                    selectedDestinations.includes(dest)
                       ? "bg-[#8B5CF6] border-[#8B5CF6]"
                       : "border-[#D4D4D8] group-hover:border-[#8B5CF6]"
                   }`}
-                  onClick={() => toggleDestination(dest.id)}
                 >
-                  {selectedDestinations.includes(dest.id) && (
+                  {selectedDestinations.includes(dest) && (
                     <Check className="w-3.5 h-3.5 text-white" />
                   )}
                 </div>
-                <span className="text-[14px] text-[#18181B]">{dest.label}</span>
+                <span className="text-[14px] text-[#18181B]">{dest}</span>
               </label>
             ))}
           </div>
         </div>
 
-        {/* 카테고리 필터 (사이드바 스타일) */}
+        {/* 카테고리 필터 */}
         {categories.length > 0 && (
           <div className="bg-white rounded-[24px] p-6 space-y-3">
             <h3 className="text-[16px] font-semibold text-[#18181B] mb-4">카테고리</h3>
@@ -152,16 +231,43 @@ export function ToursPageClient({
         {/* 정렬 바 */}
         <div className="flex items-center justify-between">
           <p className="text-[15px] text-[#71717A]">
-            총 <span className="font-semibold text-[#18181B]">{initialProducts.length}</span>개의 여행 상품
+            총 <span className="font-semibold text-[#18181B]">{filteredProducts.length}</span>개의 여행 상품
           </p>
-          <div className="flex items-center gap-2 border border-[#E4E4E7] rounded-[20px] px-4 py-2.5 bg-white">
-            <span className="text-sm text-[#18181B]">추천순</span>
-            <ChevronDown className="w-4 h-4 text-[#71717A]" />
+          <div ref={sortRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setSortOpen((v) => !v)}
+              className="flex items-center gap-2 border border-[#E4E4E7] rounded-[20px] px-4 py-2.5 bg-white hover:border-[#8B5CF6] transition-colors"
+            >
+              <span className="text-sm text-[#18181B]">{currentSortLabel}</span>
+              <ChevronDown className={`w-4 h-4 text-[#71717A] transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 top-full mt-2 w-40 bg-white rounded-xl shadow-lg border border-[#E4E4E7] py-1 z-20">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => {
+                      setSortKey(opt.key);
+                      setSortOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                      sortKey === opt.key
+                        ? "bg-[#8B5CF6]/10 text-[#8B5CF6] font-medium"
+                        : "text-[#18181B] hover:bg-gray-50"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* 상품 그리드 */}
-        {initialProducts.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-[32px] shadow-sm">
             <PackageOpen className="w-16 h-16 text-[#E4E4E7] mb-4" />
             <p className="text-lg font-medium text-[#18181B] mb-2">검색 결과가 없습니다</p>
@@ -171,7 +277,7 @@ export function ToursPageClient({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {initialProducts.map((product: Product) => (
+            {filteredProducts.map((product: Product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

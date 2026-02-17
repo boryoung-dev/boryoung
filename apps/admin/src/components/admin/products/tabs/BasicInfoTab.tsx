@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import Select from "@/components/ui/Select";
 
 interface Props {
   formData: any;
@@ -34,14 +35,18 @@ export function BasicInfoTab({ formData, updateField }: Props) {
     } catch {}
   };
 
-  const generateSlug = () => {
-    const slug = formData.title
+  const generateSlug = (title: string) => {
+    return title
       .toLowerCase()
       .replace(/[^a-z0-9가-힣\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
       .trim();
-    updateField("slug", slug);
+  };
+
+  const handleTitleChange = (title: string) => {
+    updateField("title", title);
+    updateField("slug", generateSlug(title));
   };
 
   const updateDuration = (nights: number, days: number) => {
@@ -63,7 +68,7 @@ export function BasicInfoTab({ formData, updateField }: Props) {
           <input
             type="text"
             value={formData.title}
-            onChange={(e) => updateField("title", e.target.value)}
+            onChange={(e) => handleTitleChange(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="[일본골프] 규슈 3색온천 54홀 골프 4박5일"
           />
@@ -81,45 +86,34 @@ export function BasicInfoTab({ formData, updateField }: Props) {
           />
         </div>
 
-        {/* Slug */}
-        <div className="lg:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Slug <span className="text-red-500">*</span>
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={formData.slug}
-              onChange={(e) => updateField("slug", e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="kyushu-golf-54-4n5d"
-            />
-            <button
-              onClick={generateSlug}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200"
-            >
-              자동생성
-            </button>
+        {/* Slug (자동생성) */}
+        {formData.slug && (
+          <div className="lg:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
+              {formData.slug}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 카테고리 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             카테고리 <span className="text-red-500">*</span>
           </label>
-          <select
+          {/* 카테고리 선택 (계층 구조 포함) */}
+          <Select
             value={formData.categoryId}
-            onChange={(e) => updateField("categoryId", e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">카테고리 선택</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {"  ".repeat(cat.depth)}{cat.depth > 0 ? "└ " : ""}{cat.name}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => updateField("categoryId", val)}
+            options={[
+              { value: "", label: "카테고리 선택" },
+              ...categories.map((cat) => ({
+                value: cat.id,
+                label: `${"  ".repeat(cat.depth)}${cat.depth > 0 ? "└ " : ""}${cat.name}`,
+              })),
+            ]}
+            className="w-full"
+          />
         </div>
 
         {/* 목적지 */}

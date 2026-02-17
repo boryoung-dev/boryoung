@@ -89,7 +89,7 @@ function CategoryNode({
           {depth < 2 && (
             <button
               onClick={() => onAdd(category)}
-              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
               title="하위 카테고리 추가"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -97,13 +97,13 @@ function CategoryNode({
           )}
           <button
             onClick={() => onEdit(category)}
-            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(category.id, category.name)}
-            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>

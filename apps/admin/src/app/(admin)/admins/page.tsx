@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, Shield, UserCheck, UserX } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 interface Admin {
   id: string;
@@ -141,6 +142,24 @@ export default function AdminsPage() {
     }
   };
 
+  const handleToggleActive = async (id: string, isActive: boolean) => {
+    if (admin?.id === id) {
+      alert("자기 자신의 상태는 변경할 수 없습니다");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admins/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...authHeaders } as any,
+        body: JSON.stringify({ isActive }),
+      });
+      const data = await res.json();
+      if (data.success) fetchAdmins();
+    } catch {
+      alert("상태 변경 중 오류가 발생했습니다");
+    }
+  };
+
   const openEditModal = (adminData: Admin) => {
     setEditTarget(adminData);
     setEditFormData({
@@ -160,7 +179,7 @@ export default function AdminsPage() {
       ADMIN: "bg-gray-100 text-gray-700",
     };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${styles[role] || styles.ADMIN}`}>
+      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${styles[role] || styles.ADMIN}`}>
         {role}
       </span>
     );
@@ -220,15 +239,17 @@ export default function AdminsPage() {
                   {getRoleBadge(adminItem.role)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {adminItem.isActive ? (
-                    <span className="flex items-center gap-1 text-green-600 text-sm">
-                      <UserCheck className="w-4 h-4" /> 활성
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-red-600 text-sm">
-                      <UserX className="w-4 h-4" /> 비활성
-                    </span>
-                  )}
+                  <button
+                    onClick={() => handleToggleActive(adminItem.id, !adminItem.isActive)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      adminItem.isActive ? "bg-blue-600" : "bg-gray-300"
+                    }`}
+                    title={adminItem.isActive ? "비활성화" : "활성화"}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      adminItem.isActive ? "translate-x-6" : "translate-x-1"
+                    }`} />
+                  </button>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                   {adminItem.lastLoginAt
@@ -236,18 +257,22 @@ export default function AdminsPage() {
                     : "로그인 기록 없음"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => openEditModal(adminItem)}
-                    className="text-blue-600 hover:text-blue-900 mr-3"
-                  >
-                    <Pencil className="w-4 h-4 inline" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(adminItem.id, adminItem.name)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    <Trash2 className="w-4 h-4 inline" />
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => openEditModal(adminItem)}
+                      className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      title="수정"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(adminItem.id, adminItem.name)}
+                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="삭제"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -308,15 +333,17 @@ export default function AdminsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">역할</label>
-                <select
+                {/* 관리자 역할 선택 (추가) */}
+                <Select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-                  <option value="MANAGER">MANAGER</option>
-                  <option value="STAFF">STAFF</option>
-                </select>
+                  onChange={(val) => setFormData({ ...formData, role: val })}
+                  options={[
+                    { value: "SUPER_ADMIN", label: "SUPER_ADMIN" },
+                    { value: "MANAGER", label: "MANAGER" },
+                    { value: "STAFF", label: "STAFF" },
+                  ]}
+                  className="w-full"
+                />
               </div>
             </div>
 
@@ -362,28 +389,33 @@ export default function AdminsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">역할</label>
-                <select
+                {/* 관리자 역할 선택 (수정) */}
+                <Select
                   value={editFormData.role}
-                  onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-                  <option value="MANAGER">MANAGER</option>
-                  <option value="STAFF">STAFF</option>
-                  <option value="ADMIN">ADMIN</option>
-                </select>
+                  onChange={(val) => setEditFormData({ ...editFormData, role: val })}
+                  options={[
+                    { value: "SUPER_ADMIN", label: "SUPER_ADMIN" },
+                    { value: "MANAGER", label: "MANAGER" },
+                    { value: "STAFF", label: "STAFF" },
+                    { value: "ADMIN", label: "ADMIN" },
+                  ]}
+                  className="w-full"
+                />
               </div>
 
-              <div>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editFormData.isActive}
-                    onChange={(e) => setEditFormData({ ...editFormData, isActive: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">활성 상태</span>
-                </label>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">활성 상태</span>
+                <button
+                  type="button"
+                  onClick={() => setEditFormData({ ...editFormData, isActive: !editFormData.isActive })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    editFormData.isActive ? "bg-blue-600" : "bg-gray-300"
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    editFormData.isActive ? "translate-x-6" : "translate-x-1"
+                  }`} />
+                </button>
               </div>
 
               <div>

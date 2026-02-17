@@ -116,7 +116,7 @@ export default function PrivacyPage() {
             <div className="bg-blue-50 rounded-lg p-6">
               <p className="mb-2"><strong>개인정보 보호책임자</strong></p>
               <ul className="space-y-1 text-sm">
-                <li>성명: 심재형</li>
+                <li>성명: 이종양</li>
                 <li>직책: 대표이사</li>
                 <li>연락처: 1588-0320</li>
                 <li>이메일: admin@boryoung.com</li>
@@ -135,7 +135,7 @@ export default function PrivacyPage() {
           
           <section className="bg-gray-50 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">부칙</h2>
-            <p>본 개인정보처리방침은 2024년 1월 1일부터 시행됩니다.</p>
+            <p>본 개인정보처리방침은 2025년 1월 1일부터 시행됩니다.</p>
             <p className="mt-2 text-sm text-gray-600">
               본 방침은 법령, 정책 또는 보안기술의 변경에 따라 내용이 추가, 삭제 및 수정될 수 있으며,
               변경 시에는 웹사이트를 통해 공지하겠습니다.

@@ -12,7 +12,7 @@ export type ProductCardDTO = {
   thumbnailUrl?: string;
 };
 
-export type HomeTabKey = "JAPAN" | "SEA" | "TAIWAN" | "JEJU" | "DOMESTIC";
+export type HomeTabKey = "JAPAN" | "THAILAND" | "VIETNAM" | "TAIWAN" | "LAOS" | "GUAM_SAIPAN" | "EUROPE_HAWAII" | "MONGOLIA" | "OTHER" | "GROUP" | "DOMESTIC";
 
 export type HomeTab = {
   key: HomeTabKey;
@@ -98,6 +98,7 @@ export type CollectionSection = {
 
 export type MagazineItem = {
   id: string;
+  slug?: string;
   title: string;
   description: string;
   imageUrl: string;

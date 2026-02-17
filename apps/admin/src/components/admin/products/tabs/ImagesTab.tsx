@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Upload, X, Loader2, Save } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 const IMAGE_TYPES = [
   { value: "THUMBNAIL", label: "썸네일" },
@@ -159,20 +160,18 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
             </div>
             <div className="p-2 bg-white">
               <div className="flex items-center justify-between">
-                <select
+                {/* 이미지 타입 선택 */}
+                <Select
                   value={img.type || "DETAIL"}
-                  onChange={(e) => {
+                  onChange={(val) => {
                     setImages((prev) =>
-                      prev.map((i, j) => (j === idx ? { ...i, type: e.target.value } : i))
+                      prev.map((i, j) => (j === idx ? { ...i, type: val } : i))
                     );
                     markChanged();
                   }}
-                  className="text-xs border rounded px-1 py-0.5"
-                >
-                  {IMAGE_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
+                  options={IMAGE_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+                  className="w-28"
+                />
                 <button
                   onClick={() => setThumbnail(idx)}
                   className={`text-xs px-2 py-0.5 rounded ${

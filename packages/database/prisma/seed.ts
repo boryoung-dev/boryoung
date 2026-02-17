@@ -5,47 +5,40 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // 1. 카테고리 생성
+  // 1. 카테고리 생성 (국가/지역 기준)
   const categories = await Promise.all([
     prisma.category.create({
-      data: {
-        name: '일본 골프',
-        slug: 'japan-golf',
-        description: '일본의 명문 골프장을 경험하세요',
-        sortOrder: 1,
-      },
+      data: { name: '일본', slug: 'japan', description: '일본 골프 투어', sortOrder: 1 },
     }),
     prisma.category.create({
-      data: {
-        name: '동남아 여행',
-        slug: 'southeast-asia',
-        description: '동남아의 아름다운 리조트와 골프',
-        sortOrder: 2,
-      },
+      data: { name: '태국', slug: 'thailand', description: '태국 골프 투어', sortOrder: 2 },
     }),
     prisma.category.create({
-      data: {
-        name: '대만 골프',
-        slug: 'taiwan-golf',
-        description: '대만의 프리미엄 골프 코스',
-        sortOrder: 3,
-      },
+      data: { name: '베트남', slug: 'vietnam', description: '베트남 골프 & 리조트', sortOrder: 3 },
     }),
     prisma.category.create({
-      data: {
-        name: '제주 골프',
-        slug: 'jeju-golf',
-        description: '제주도의 아름다운 골프장',
-        sortOrder: 4,
-      },
+      data: { name: '대만', slug: 'taiwan', description: '대만 프리미엄 골프', sortOrder: 4 },
     }),
     prisma.category.create({
-      data: {
-        name: '국내 골프',
-        slug: 'korea-golf',
-        description: '국내 골프 패키지',
-        sortOrder: 5,
-      },
+      data: { name: '라오스', slug: 'laos', description: '라오스 골프 투어', sortOrder: 5 },
+    }),
+    prisma.category.create({
+      data: { name: '괌 및 사이판', slug: 'guam-saipan', description: '괌·사이판 골프 리조트', sortOrder: 6 },
+    }),
+    prisma.category.create({
+      data: { name: '유럽 및 하와이', slug: 'europe-hawaii', description: '유럽·하와이 골프 투어', sortOrder: 7 },
+    }),
+    prisma.category.create({
+      data: { name: '몽골(울란바토르)', slug: 'mongolia', description: '몽골 골프 투어', sortOrder: 8 },
+    }),
+    prisma.category.create({
+      data: { name: '기타', slug: 'other', description: '기타 지역 골프 투어', sortOrder: 9 },
+    }),
+    prisma.category.create({
+      data: { name: '단체여행(인센티브)', slug: 'group-travel', description: '단체 골프 투어 및 인센티브', sortOrder: 10 },
+    }),
+    prisma.category.create({
+      data: { name: '국내 및 제주도', slug: 'domestic-jeju', description: '국내·제주 골프 패키지', sortOrder: 11 },
     }),
   ]);
 
@@ -65,8 +58,8 @@ async function main() {
 
   console.log(`✅ ${tags.length}개 태그 생성`);
 
-  // 3. 샘플 상품 생성 (일본 골프)
-  const japanCategory = categories[0];
+  // 3. 샘플 상품 생성 (일본)
+  const japanCategory = categories[0]; // 일본
   const product1 = await prisma.tourProduct.create({
     data: {
       slug: 'fukuoka-golf-3days',
@@ -192,8 +185,8 @@ async function main() {
       title: '다낭 골프 & 리조트 4박5일',
       subtitle: '5성급 리조트에서 즐기는 골프',
       excerpt: '베트남 다낭의 프리미엄 골프 리조트',
-      categoryId: categories[1].id,
-      destination: 'SOUTHEAST_ASIA',
+      categoryId: categories[2].id, // 베트남
+      destination: 'VIETNAM',
       nights: 4,
       days: 5,
       durationText: '4박5일',

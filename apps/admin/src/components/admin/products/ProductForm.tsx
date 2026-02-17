@@ -54,8 +54,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
     basePrice: initialData?.basePrice || null,
     originalPrice: initialData?.originalPrice || null,
     content: initialData?.content || "",
-    inclusions: initialData?.inclusions || [],
-    exclusions: initialData?.exclusions || [],
+    inclusions: Array.isArray(initialData?.inclusions) ? initialData.inclusions : [],
+    exclusions: Array.isArray(initialData?.exclusions) ? initialData.exclusions : [],
     metaTitle: initialData?.metaTitle || "",
     metaDescription: initialData?.metaDescription || "",
     naverUrl: initialData?.naverUrl || "",
@@ -129,16 +129,16 @@ export function ProductForm({ initialData }: ProductFormProps) {
   return (
     <div>
       {/* 탭 네비게이션 */}
-      <div className="bg-white rounded-t-lg border-b">
-        <div className="flex overflow-x-auto">
+      <div className="bg-white rounded-t-lg border-b border-gray-200">
+        <div className="flex gap-1 overflow-x-auto px-4 pt-3">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+              className={`px-4 py-2 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors ${
                 activeTab === tab.id
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  ? "bg-blue-50 text-blue-700 border border-gray-200 border-b-white -mb-px"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
               {tab.label}

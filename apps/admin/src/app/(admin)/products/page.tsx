@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Search, Eye, Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Eye, Edit2, Trash2, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 interface Product {
   id: string;
@@ -87,6 +88,23 @@ export default function AdminProductsPage() {
     } catch {}
   };
 
+  const handleToggle = async (id: string, field: "isActive" | "isFeatured", current: boolean) => {
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: "PUT",
+        headers: { ...authHeaders as any, "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: !current }),
+      });
+      if (res.ok) {
+        setProducts((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, [field]: !current } : p))
+        );
+      }
+    } catch {
+      alert("변경 실패");
+    }
+  };
+
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`"${title}" 상품을 삭제하시겠습니까?`)) return;
     try {
@@ -127,33 +145,33 @@ export default function AdminProductsPage() {
               />
             </div>
           </div>
-          <select
+          <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
-          >
-            <option value="all">전체 상태</option>
-            <option value="active">활성</option>
-            <option value="inactive">비활성</option>
-          </select>
-          <select
+            onChange={setStatusFilter}
+            options={[
+              { value: "all", label: "전체 상태" },
+              { value: "active", label: "활성" },
+              { value: "inactive", label: "비활성" },
+            ]}
+            className="w-32"
+          />
+          <Select
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
-          >
-            <option value="">전체 카테고리</option>
-            {categories.map((cat: any) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
+            onChange={setCategoryFilter}
+            options={[
+              { value: "", label: "전체 카테고리" },
+              ...categories.map((cat: any) => ({ value: cat.id, label: cat.name })),
+            ]}
+            className="w-40"
+          />
         </div>
       </div>
 
       {/* 상품 테이블 */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b">
-          <span className="text-sm text-gray-600">
-            총 {pagination.total}개 상품
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <span className="text-sm text-gray-500">
+            총 <span className="font-medium text-gray-900">{pagination.total}</span>개 상품
           </span>
         </div>
         {isLoading ? (
@@ -161,96 +179,126 @@ export default function AdminProductsPage() {
         ) : products.length === 0 ? (
           <div className="p-8 text-center text-gray-500">상품이 없습니다</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">상품</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">카테고리</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">가격</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">상태</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">조회/예약</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">작업</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {products.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                          {product.thumbnail ? (
-                            <img src={product.thumbnail} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No img</div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-gray-900 line-clamp-1">{product.title}</div>
-                          <div className="text-xs text-gray-500">{product.destination}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{product.category.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {product.basePrice ? `${product.basePrice.toLocaleString()}원` : "가격 문의"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${product.isActive ? "bg-green-500" : "bg-gray-300"}`} />
-                        <span className="text-sm">{product.isActive ? "활성" : "비활성"}</span>
-                        {product.isFeatured && (
-                          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">추천</span>
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">가격</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">활성</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">추천</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">조회</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">예약</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">작업</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {products.map((product) => (
+                <tr key={product.id} className="hover:bg-gray-50">
+                  {/* 상품 (썸네일 + 제목 + 카테고리 + 지역) */}
+                  <td className="px-6 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        {product.thumbnail ? (
+                          <img src={product.thumbnail} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-[10px]">No img</div>
                         )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <Eye className="w-3 h-3" /> {product.viewCount}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate max-w-[280px]">{product.title}</div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="inline-flex px-1.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded">{product.category.name}</span>
+                          <span className="text-[11px] text-gray-400">{product.destination}</span>
+                        </div>
                       </div>
-                      <div className="text-xs">{product._count.bookings}건 예약</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/products/${product.id}/edit`}
-                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(product.id, product.title)}
-                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </td>
+                  {/* 가격 */}
+                  <td className="px-4 py-3 text-right">
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.basePrice ? `${product.basePrice.toLocaleString()}` : "-"}
+                    </span>
+                    {product.basePrice && <span className="text-xs text-gray-400">원</span>}
+                  </td>
+                  {/* 활성 토글 */}
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => handleToggle(product.id, "isActive", product.isActive)}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                        product.isActive ? "bg-green-500" : "bg-gray-300"
+                      }`}
+                      title={product.isActive ? "활성 → 비활성" : "비활성 → 활성"}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
+                        product.isActive ? "translate-x-[18px]" : "translate-x-[3px]"
+                      }`} />
+                    </button>
+                  </td>
+                  {/* 추천 토글 */}
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => handleToggle(product.id, "isFeatured", product.isFeatured)}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        product.isFeatured
+                          ? "text-yellow-500 bg-yellow-50 hover:bg-yellow-100"
+                          : "text-gray-300 hover:text-yellow-400 hover:bg-gray-50"
+                      }`}
+                      title={product.isFeatured ? "추천 해제" : "추천 설정"}
+                    >
+                      <Star className={`w-4 h-4 ${product.isFeatured ? "fill-current" : ""}`} />
+                    </button>
+                  </td>
+                  {/* 조회 */}
+                  <td className="px-4 py-3 text-center text-sm text-gray-500">
+                    {product.viewCount}
+                  </td>
+                  {/* 예약 */}
+                  <td className="px-4 py-3 text-center text-sm text-gray-500">
+                    {product._count.bookings}
+                  </td>
+                  {/* 작업 */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href={`/products/${product.id}/edit`}
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="수정"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(product.id, product.title)}
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="삭제"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
 
         {/* 페이지네이션 */}
         {pagination.totalPages > 1 && (
-          <div className="px-6 py-4 border-t flex items-center justify-between">
-            <span className="text-sm text-gray-600">
+          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-sm text-gray-500">
               {pagination.page} / {pagination.totalPages} 페이지
             </span>
             <div className="flex gap-2">
               <button
                 onClick={() => fetchProducts(pagination.page - 1)}
                 disabled={pagination.page <= 1}
-                className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => fetchProducts(pagination.page + 1)}
                 disabled={pagination.page >= pagination.totalPages}
-                className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

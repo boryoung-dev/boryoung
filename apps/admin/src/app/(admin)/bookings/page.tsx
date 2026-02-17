@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { Eye } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -62,7 +63,7 @@ export default function AdminBookingsPage() {
     };
     return (
       <span
-        className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[status] || ""}`}
+        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${styles[status] || ""}`}
       >
         {labels[status] || status}
       </span>
@@ -70,11 +71,11 @@ export default function AdminBookingsPage() {
   };
 
   const filterButtons = [
-    { value: "", label: "전체", activeClass: "bg-blue-600 text-white" },
-    { value: "PENDING", label: "접수", activeClass: "bg-yellow-600 text-white" },
-    { value: "CONFIRMED", label: "확정", activeClass: "bg-blue-600 text-white" },
-    { value: "COMPLETED", label: "완료", activeClass: "bg-green-600 text-white" },
-    { value: "CANCELLED", label: "취소", activeClass: "bg-red-600 text-white" },
+    { value: "", label: "전체" },
+    { value: "PENDING", label: "접수" },
+    { value: "CONFIRMED", label: "확정" },
+    { value: "COMPLETED", label: "완료" },
+    { value: "CANCELLED", label: "취소" },
   ];
 
   return (
@@ -90,9 +91,9 @@ export default function AdminBookingsPage() {
               <button
                 key={btn.value}
                 onClick={() => setFilter(btn.value)}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm ${
+                className={`px-4 py-2 rounded-lg font-medium text-sm ${
                   filter === btn.value
-                    ? btn.activeClass
+                    ? "bg-blue-600 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
@@ -121,25 +122,25 @@ export default function AdminBookingsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     예약자
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     상품명
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     인원
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     희망일
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     상태
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     신청일
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     작업
                   </th>
                 </tr>
@@ -178,12 +179,15 @@ export default function AdminBookingsPage() {
                       {new Date(booking.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <Link
-                        href={`/bookings/${booking.id}`}
-                        className="text-blue-600 hover:text-blue-700 font-semibold"
-                      >
-                        상세보기
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/bookings/${booking.id}`}
+                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="상세보기"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

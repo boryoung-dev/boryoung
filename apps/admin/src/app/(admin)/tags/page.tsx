@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 interface Tag {
   id: string;
@@ -94,6 +95,20 @@ export default function AdminTagsPage() {
     }
   };
 
+  const handleToggleActive = async (id: string, isActive: boolean) => {
+    try {
+      const res = await fetch(`/api/tags/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...authHeaders } as any,
+        body: JSON.stringify({ isActive }),
+      });
+      const data = await res.json();
+      if (data.success) fetchTags();
+    } catch {
+      alert("상태 변경 중 오류가 발생했습니다");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -145,7 +160,7 @@ export default function AdminTagsPage() {
     };
     return (
       <span
-        className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[type]}`}
+        className={`inline-flex px-2 py-1 text-xs font-medium ${styles[type]} rounded`}
       >
         {labels[type]}
       </span>
@@ -182,25 +197,25 @@ export default function AdminTagsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     이름
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     슬러그
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     타입
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     연결 상품
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     정렬순서
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     상태
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     작업
                   </th>
                 </tr>
@@ -226,31 +241,33 @@ export default function AdminTagsPage() {
                       {tag.sortOrder}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          tag.isActive
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
+                      <button
+                        onClick={() => handleToggleActive(tag.id, !tag.isActive)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          tag.isActive ? "bg-blue-600" : "bg-gray-300"
                         }`}
+                        title={tag.isActive ? "비활성화" : "활성화"}
                       >
-                        {tag.isActive ? "활성" : "비활성"}
-                      </span>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          tag.isActive ? "translate-x-6" : "translate-x-1"
+                        }`} />
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleEdit(tag)}
-                          className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1"
+                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="수정"
                         >
                           <Pencil className="w-4 h-4" />
-                          수정
                         </button>
                         <button
                           onClick={() => handleDelete(tag.id, tag.name)}
-                          className="text-red-600 hover:text-red-700 font-semibold flex items-center gap-1"
+                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="삭제"
                         >
                           <Trash2 className="w-4 h-4" />
-                          삭제
                         </button>
                       </div>
                     </td>
@@ -314,22 +331,20 @@ export default function AdminTagsPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   타입 *
                 </label>
-                <select
+                {/* 태그 타입 선택 */}
+                <Select
                   value={formData.type}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      type: e.target.value as Tag["type"],
-                    }))
+                  onChange={(val) =>
+                    setFormData((prev) => ({ ...prev, type: val as Tag["type"] }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="FEATURE">특징</option>
-                  <option value="DURATION">기간</option>
-                  <option value="PRICE_RANGE">가격대</option>
-                  <option value="ACCOMMODATION">숙박</option>
-                </select>
+                  options={[
+                    { value: "FEATURE", label: "특징" },
+                    { value: "DURATION", label: "기간" },
+                    { value: "PRICE_RANGE", label: "가격대" },
+                    { value: "ACCOMMODATION", label: "숙박" },
+                  ]}
+                  className="w-full"
+                />
               </div>
 
               <div>
@@ -349,25 +364,19 @@ export default function AdminTagsPage() {
                 />
               </div>
 
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      isActive: e.target.checked,
-                    }))
-                  }
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <label
-                  htmlFor="isActive"
-                  className="ml-2 text-sm font-semibold text-gray-700"
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">활성화</span>
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    formData.isActive ? "bg-blue-600" : "bg-gray-300"
+                  }`}
                 >
-                  활성화
-                </label>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    formData.isActive ? "translate-x-6" : "translate-x-1"
+                  }`} />
+                </button>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">

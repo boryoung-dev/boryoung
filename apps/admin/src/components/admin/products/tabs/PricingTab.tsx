@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Trash2, Save, Loader2 } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 interface PriceItem {
   id?: string;
@@ -154,28 +155,32 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">가격 유형</label>
-              <select
+              {/* 가격 유형 선택 */}
+              <Select
                 value={opt.priceType}
-                onChange={(e) => updateOption(idx, "priceType", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              >
-                <option value="PER_PERSON">1인당</option>
-                <option value="PER_ROOM">1실당</option>
-                <option value="ADDITIONAL">추가</option>
-              </select>
+                onChange={(val) => updateOption(idx, "priceType", val)}
+                options={[
+                  { value: "PER_PERSON", label: "1인당" },
+                  { value: "PER_ROOM", label: "1실당" },
+                  { value: "ADDITIONAL", label: "추가" },
+                ]}
+                className="w-full"
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">시즌</label>
-              <select
+              {/* 시즌 선택 */}
+              <Select
                 value={opt.season}
-                onChange={(e) => updateOption(idx, "season", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              >
-                <option value="">전체 시즌</option>
-                <option value="PEAK">성수기</option>
-                <option value="REGULAR">일반</option>
-                <option value="OFF">비수기</option>
-              </select>
+                onChange={(val) => updateOption(idx, "season", val)}
+                options={[
+                  { value: "", label: "전체 시즌" },
+                  { value: "PEAK", label: "성수기" },
+                  { value: "REGULAR", label: "일반" },
+                  { value: "OFF", label: "비수기" },
+                ]}
+                className="w-full"
+              />
             </div>
             <div className="flex items-end gap-4">
               <label className="flex items-center gap-2 text-sm">

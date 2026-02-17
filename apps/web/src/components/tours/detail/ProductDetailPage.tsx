@@ -56,9 +56,9 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
       </div>
 
       {/* 콘텐츠 섹션: Main + Sidebar */}
-      <div className="bg-[#FAFAFA] px-15 pb-15">
-        <div className="mx-auto max-w-[1440px]">
-          <div className="flex gap-10">
+      <div className="bg-[#FAFAFA] px-6 md:px-10 lg:px-15 pt-8 pb-15">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="flex gap-8 lg:gap-12">
             {/* 메인 콘텐츠 */}
             <div className="flex-1">
               {activeTab === "intro" && (

@@ -11,19 +11,28 @@ export function MagazineSection(props: Extract<HomeSection, { type: "magazine" }
       <div className="max-w-[1200px] mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl md:text-3xl font-bold">{props.title}</h2>
-            <Link href="/tours" className="text-sm text-gray-500 font-medium hover:text-black">전체보기</Link>
+            <Link href="/magazine" className="text-sm text-gray-500 font-medium hover:text-black">전체보기</Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {props.items.map((item) => (
-            <div key={item.id} className="group cursor-pointer flex gap-4 md:flex-col">
+            <Link key={item.id} href={`/magazine/${item.slug || item.id}`} className="group cursor-pointer flex gap-4 md:flex-col">
               <div className="relative w-32 md:w-full aspect-video rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                    No Image
+                  </div>
+                )}
               </div>
               
               <div className="flex flex-col justify-center">
@@ -37,7 +46,7 @@ export function MagazineSection(props: Extract<HomeSection, { type: "magazine" }
                   {item.description}
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

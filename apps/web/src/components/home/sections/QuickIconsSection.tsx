@@ -11,6 +11,9 @@ import {
   Clock,
   MapPin,
   Globe,
+  Flame,
+  Crown,
+  CalendarDays,
 } from "lucide-react";
 
 const ICONS: Record<string, React.ReactNode> = {
@@ -22,6 +25,9 @@ const ICONS: Record<string, React.ReactNode> = {
   clock: <Clock className="w-6 h-6" strokeWidth={1.5} />,
   map: <MapPin className="w-6 h-6" strokeWidth={1.5} />,
   globe: <Globe className="w-6 h-6" strokeWidth={1.5} />,
+  flame: <Flame className="w-6 h-6" strokeWidth={1.5} />,
+  crown: <Crown className="w-6 h-6" strokeWidth={1.5} />,
+  calendar: <CalendarDays className="w-6 h-6" strokeWidth={1.5} />,
 };
 
 const DEFAULT_ICON = ICONS.globe;

@@ -15,14 +15,14 @@ export const homeSections: HomeSection[] = [
     type: "quickIcons",
     isVisible: true,
     items: [
-      { label: "해외골프", iconName: "plane", linkUrl: "/tours?search=해외골프" },
-      { label: "54홀", iconName: "flag", linkUrl: "/tours?search=54홀" },
-      { label: "가성비", iconName: "tag", linkUrl: "/tours?search=가성비" },
-      { label: "프리미엄", iconName: "star", linkUrl: "/tours?search=프리미엄" },
-      { label: "단체", iconName: "users", linkUrl: "/tours?search=단체" },
-      { label: "단기", iconName: "clock", linkUrl: "/tours?search=단기" },
-      { label: "베트남", iconName: "map", linkUrl: "/tours?category=southeast-asia" },
-      { label: "일본", iconName: "map", linkUrl: "/tours?category=japan-golf" }
+      { label: "일본", iconName: "plane", linkUrl: "/tours?category=japan" },
+      { label: "태국", iconName: "sun", linkUrl: "/tours?category=thailand" },
+      { label: "베트남", iconName: "palmtree", linkUrl: "/tours?category=vietnam" },
+      { label: "대만", iconName: "mountain", linkUrl: "/tours?category=taiwan" },
+      { label: "괌·사이판", iconName: "waves", linkUrl: "/tours?category=guam-saipan" },
+      { label: "몽골", iconName: "compass", linkUrl: "/tours?category=mongolia" },
+      { label: "국내·제주", iconName: "map", linkUrl: "/tours?category=domestic-jeju" },
+      { label: "단체여행", iconName: "users", linkUrl: "/tours?category=group-travel" }
     ]
   },
   {
@@ -80,10 +80,15 @@ export const homeSections: HomeSection[] = [
     title: "카테고리별 인기 상품",
     tabs: [
       { key: "JAPAN", label: "일본" },
-      { key: "SEA", label: "동남아" },
+      { key: "THAILAND", label: "태국" },
+      { key: "VIETNAM", label: "베트남" },
       { key: "TAIWAN", label: "대만" },
-      { key: "JEJU", label: "제주" },
-      { key: "DOMESTIC", label: "국내" }
+      { key: "LAOS", label: "라오스" },
+      { key: "GUAM_SAIPAN", label: "괌·사이판" },
+      { key: "EUROPE_HAWAII", label: "유럽·하와이" },
+      { key: "MONGOLIA", label: "몽골" },
+      { key: "GROUP", label: "단체여행" },
+      { key: "DOMESTIC", label: "국내·제주" },
     ],
     itemsPerTab: 16
   },
