@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/common/SiteHeader";
+import { SiteFooter } from "@/components/common/SiteFooter";
 import { KakaoFloating } from "@/components/common/KakaoFloating";
 import { MagazinePageClient } from "@/components/magazine/MagazinePageClient";
 
@@ -36,6 +37,7 @@ export default async function MagazinePage() {
         <MagazinePageClient posts={serialized} />
       </main>
 
+      <SiteFooter />
       <KakaoFloating />
     </div>
   );

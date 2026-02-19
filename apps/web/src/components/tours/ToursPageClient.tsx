@@ -17,7 +17,16 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "newest", label: "최신순" },
 ];
 
-const MAX_PRICE = 5000000;
+const PRICE_STEP = 100000;
+
+function formatPrice(value: number): string {
+  if (value >= 10000) {
+    const man = Math.floor(value / 10000);
+    const remainder = value % 10000;
+    return remainder > 0 ? `${man}만 ${remainder.toLocaleString()}원` : `${man}만 원`;
+  }
+  return `${value.toLocaleString()}원`;
+}
 
 export function ToursPageClient({
   initialProducts,
@@ -37,11 +46,24 @@ export function ToursPageClient({
   const [searchQuery] = useState(initialFilters.search || "");
   const [selectedCategory, setSelectedCategory] = useState(initialFilters.category);
   const [selectedTag] = useState(initialFilters.tag);
-  const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("recommended");
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
+
+  // 상품 데이터에서 가격 범위 동적 추출
+  const priceRange = useMemo(() => {
+    const prices = initialProducts
+      .map((p: Product) => p.basePrice)
+      .filter((p: number | null): p is number => p != null && p > 0);
+    if (prices.length === 0) return { min: 0, max: 5000000 };
+    const min = Math.floor(Math.min(...prices) / PRICE_STEP) * PRICE_STEP;
+    const max = Math.ceil(Math.max(...prices) / PRICE_STEP) * PRICE_STEP;
+    return { min, max };
+  }, [initialProducts]);
+
+  const [minPrice, setMinPrice] = useState(priceRange.min);
+  const [maxPrice, setMaxPrice] = useState(priceRange.max);
 
   // 상품 데이터에서 여행지 목록 동적 추출
   const destinations = useMemo(() => {
@@ -72,7 +94,8 @@ export function ToursPageClient({
   };
 
   const handleResetFilters = () => {
-    setMaxPrice(MAX_PRICE);
+    setMinPrice(priceRange.min);
+    setMaxPrice(priceRange.max);
     setSelectedDestinations([]);
     setSortKey("recommended");
     if (selectedCategory || searchQuery) {
@@ -91,9 +114,9 @@ export function ToursPageClient({
     let result = [...initialProducts];
 
     // 가격 필터
-    if (maxPrice < MAX_PRICE) {
+    if (minPrice > priceRange.min || maxPrice < priceRange.max) {
       result = result.filter(
-        (p) => !p.basePrice || p.basePrice <= maxPrice
+        (p) => !p.basePrice || (p.basePrice >= minPrice && p.basePrice <= maxPrice)
       );
     }
 
@@ -122,7 +145,7 @@ export function ToursPageClient({
     }
 
     return result;
-  }, [initialProducts, maxPrice, selectedDestinations, sortKey]);
+  }, [initialProducts, minPrice, maxPrice, priceRange, selectedDestinations, sortKey]);
 
   const currentSortLabel =
     SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? "추천순";
@@ -145,24 +168,58 @@ export function ToursPageClient({
 
         {/* 가격대 필터 */}
         <div className="bg-white rounded-[24px] p-6 space-y-4">
-          <h3 className="text-[16px] font-semibold text-[#18181B]">가격대</h3>
+          <div className="flex items-baseline justify-between">
+            <h3 className="text-[16px] font-semibold text-[#18181B]">1인 가격</h3>
+            <span className="text-[13px] text-[#71717A]">
+              {formatPrice(minPrice)} ~ {formatPrice(maxPrice)}
+            </span>
+          </div>
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm text-[#71717A]">
-              <span>₩0</span>
-              <span>
-                ₩{maxPrice.toLocaleString()}
-                {maxPrice >= MAX_PRICE ? "+" : ""}
-              </span>
+            <div className="flex items-center justify-between text-xs text-[#A1A1AA]">
+              <span>{formatPrice(priceRange.min)}</span>
+              <span>{formatPrice(priceRange.max)}</span>
             </div>
-            <input
-              type="range"
-              min={0}
-              max={MAX_PRICE}
-              step={100000}
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="w-full h-1 bg-[#E4E4E7] rounded-full appearance-none cursor-pointer accent-[#8B5CF6]"
-            />
+            {/* 듀얼 레인지 슬라이더 */}
+            <div className="relative h-7 flex items-center">
+              {/* 트랙 배경 */}
+              <div className="absolute left-0 right-0 h-1 bg-[#E4E4E7] rounded-full" />
+              {/* 활성 트랙 */}
+              <div
+                className="absolute h-1 bg-[#8B5CF6] rounded-full"
+                style={{
+                  left: `${((minPrice - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
+                  right: `${100 - ((maxPrice - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
+                }}
+              />
+              {/* 최소 핸들 */}
+              <input
+                type="range"
+                min={priceRange.min}
+                max={priceRange.max}
+                step={PRICE_STEP}
+                value={minPrice}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setMinPrice(Math.min(v, maxPrice - PRICE_STEP));
+                }}
+                className="absolute w-full h-1 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#8B5CF6] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#8B5CF6] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+                style={{ zIndex: minPrice > priceRange.max - PRICE_STEP * 2 ? 5 : 3 }}
+              />
+              {/* 최대 핸들 */}
+              <input
+                type="range"
+                min={priceRange.min}
+                max={priceRange.max}
+                step={PRICE_STEP}
+                value={maxPrice}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setMaxPrice(Math.max(v, minPrice + PRICE_STEP));
+                }}
+                className="absolute w-full h-1 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#8B5CF6] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#8B5CF6] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+                style={{ zIndex: 4 }}
+              />
+            </div>
           </div>
         </div>
 

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { SiteHeader } from "@/components/common/SiteHeader";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { SiteFooter } from "@/components/common/SiteFooter";
+import { KakaoFloating } from "@/components/common/KakaoFloating";
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle2 } from "lucide-react";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -30,9 +32,7 @@ export default function ContactPage() {
     try {
       const res = await fetch("/api/inquiries", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
@@ -40,13 +40,7 @@ export default function ContactPage() {
 
       if (data.success) {
         setIsSubmitted(true);
-        setFormData({
-          name: "",
-          phone: "",
-          email: "",
-          content: "",
-        });
-        // 3초 후 성공 메시지 숨김
+        setFormData({ name: "", phone: "", email: "", content: "" });
         setTimeout(() => setIsSubmitted(false), 5000);
       } else {
         setError(data.error || "문의 접수에 실패했습니다.");
@@ -59,197 +53,211 @@ export default function ContactPage() {
     }
   };
 
+  const contactInfo = [
+    {
+      icon: Phone,
+      label: "대표전화",
+      value: "1588-0320",
+      href: "tel:1588-0320",
+      sub: "직통 02-730-1220",
+    },
+    {
+      icon: Phone,
+      label: "야간/휴일",
+      value: "010-5514-5831",
+      href: "tel:010-5514-5831",
+    },
+    {
+      icon: Mail,
+      label: "팩스",
+      value: "02-2647-2083",
+    },
+    {
+      icon: MapPin,
+      label: "주소",
+      value: "경기도 김포시 태장로 795번길 23, 537호(장기동)",
+    },
+    {
+      icon: Clock,
+      label: "운영 시간",
+      value: "평일 09:00 - 18:00",
+      sub: "주말/공휴일 휴무",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#FAFAFA] font-sans text-[color:var(--fg)] antialiased">
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">문의하기</h1>
-          <p className="text-lg text-gray-600">
+      {/* 히어로 */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#667eea] to-[#764ba2] py-16">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_70%)]" />
+        <div className="relative mx-auto max-w-[1440px] px-6 text-center">
+          <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">
+            문의하기
+          </h1>
+          <p className="text-lg text-white/80">
             궁금하신 사항이 있으시면 언제든지 연락주세요
           </p>
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <main className="mx-auto max-w-5xl px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* 연락처 정보 */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl p-6">
-              <h2 className="text-2xl font-bold mb-6">연락처</h2>
-
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-6 h-6 text-blue-600" />
+          <div className="lg:col-span-2 space-y-5">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-5">연락처 안내</h2>
+              <div className="space-y-5">
+                {contactInfo.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-medium text-gray-400 uppercase tracking-wider">{item.label}</div>
+                      {item.href ? (
+                        <a href={item.href} className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                          {item.value}
+                        </a>
+                      ) : (
+                        <div className="text-sm font-medium text-gray-900">{item.value}</div>
+                      )}
+                      {item.sub && <div className="text-xs text-gray-500 mt-0.5">{item.sub}</div>}
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold mb-1">전화</div>
-                    <a
-                      href="tel:02-1234-5678"
-                      className="text-blue-600 hover:underline text-lg"
-                    >
-                      02-1234-5678
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-semibold mb-1">이메일</div>
-                    <a
-                      href="mailto:contact@boryoung.com"
-                      className="text-blue-600 hover:underline"
-                    >
-                      contact@boryoung.com
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-semibold mb-1">주소</div>
-                    <p className="text-gray-600">
-                      서울특별시 강남구 테헤란로 123
-                      <br />
-                      보령빌딩 5층
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-semibold mb-1">운영 시간</div>
-                    <p className="text-gray-600">
-                      평일: 09:00 - 18:00
-                      <br />
-                      주말/공휴일: 휴무
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* 카카오톡 문의 */}
-            <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
+            {/* 카카오톡 상담 */}
+            <div className="bg-[#FEE500] rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-6 h-6"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                <div className="w-10 h-10 bg-[#371D1E]/10 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-[#371D1E]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.94-.122.49.178.483.376.351.155-.103 2.48-1.708 3.48-2.392.52.076 1.054.117 1.654.117 4.97 0 9-3.185 9-7.115C21 6.185 16.97 3 12 3z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold">카카오톡 상담</h3>
+                <div>
+                  <h3 className="font-bold text-[#371D1E]">카카오톡 상담</h3>
+                  <p className="text-xs text-[#371D1E]/70">빠른 상담을 원하시면 카카오톡으로!</p>
+                </div>
               </div>
-              <p className="text-gray-700 mb-4">
-                카카오톡으로 빠른 상담을 받아보세요!
-              </p>
-              <button className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-3 rounded-lg transition">
+              <a
+                href="https://pf.kakao.com/_placeholder"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center bg-[#371D1E] text-[#FEE500] font-semibold py-3 rounded-xl hover:bg-[#271310] transition-colors text-sm"
+              >
                 카카오톡 채널 추가
-              </button>
+              </a>
             </div>
           </div>
 
           {/* 문의 폼 */}
-          <div className="bg-white rounded-xl p-8">
-            <h2 className="text-2xl font-bold mb-6">문의 남기기</h2>
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <h2 className="text-lg font-bold text-gray-900 mb-6">문의 남기기</h2>
 
-            {isSubmitted && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-800 font-medium">
-                  문의가 성공적으로 접수되었습니다!
-                </p>
-                <p className="text-green-600 text-sm mt-1">
-                  빠른 시일 내에 연락드리겠습니다.
-                </p>
-              </div>
-            )}
+              {isSubmitted && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-green-800 font-medium text-sm">문의가 성공적으로 접수되었습니다!</p>
+                    <p className="text-green-600 text-xs mt-1">빠른 시일 내에 연락드리겠습니다.</p>
+                  </div>
+                </div>
+              )}
 
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-800">{error}</p>
-              </div>
-            )}
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl">
+                  <p className="text-red-800 text-sm">{error}</p>
+                </div>
+              )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  이름 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      이름 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      placeholder="홍길동"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      연락처 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                      placeholder="010-1234-5678"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                    />
+                  </div>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  연락처 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    이메일
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="example@email.com"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  이메일
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    문의 내용 <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="content"
+                    value={formData.content}
+                    onChange={handleChange}
+                    required
+                    rows={5}
+                    placeholder="여행 일정, 인원, 원하시는 여행지 등을 자유롭게 작성해주세요"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow resize-none"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  문의 내용 <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="content"
-                  value={formData.content}
-                  onChange={handleChange}
-                  required
-                  rows={6}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="문의하실 내용을 자유롭게 작성해주세요"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "제출 중..." : "문의하기"}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  {isSubmitting ? (
+                    "제출 중..."
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      문의하기
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </main>
+
+      <SiteFooter />
+      <KakaoFloating />
     </div>
   );
 }

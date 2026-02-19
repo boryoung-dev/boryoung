@@ -31,14 +31,20 @@ export function CategoryForm({
     parentId: category?.parentId || parentCategory?.id || null,
   });
 
-  const generateSlug = () => {
-    const slug = formData.name
+  const toSlug = (text: string) =>
+    text
       .toLowerCase()
       .replace(/[^a-z0-9가-힣\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
       .trim();
-    setFormData((prev) => ({ ...prev, slug }));
+
+  const handleNameChange = (name: string) => {
+    if (isEdit) {
+      setFormData((p) => ({ ...p, name }));
+    } else {
+      setFormData((p) => ({ ...p, name, slug: toSlug(name) }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,32 +106,13 @@ export function CategoryForm({
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+              onChange={(e) => handleNameChange(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="일본골프"
+              placeholder="일본"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Slug <span className="text-red-500">*</span>
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formData.slug}
-                onChange={(e) => setFormData((p) => ({ ...p, slug: e.target.value }))}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="japan-golf"
-              />
-              <button
-                type="button"
-                onClick={generateSlug}
-                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200"
-              >
-                자동
-              </button>
-            </div>
+            {formData.slug && (
+              <p className="mt-1 text-xs text-gray-400">slug: {formData.slug}</p>
+            )}
           </div>
 
           <div>

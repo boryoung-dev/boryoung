@@ -2,63 +2,128 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// 이전 카테고리 → 새 카테고리 매핑 (이름 기준)
+const OLD_TO_NEW_CATEGORY: Record<string, string> = {
+  '일본 골프': 'japan',
+  '동남아 골프': 'vietnam',    // 동남아 → 베트남(대표)으로 매핑
+  '대만 골프': 'taiwan',
+  '제주 골프': 'domestic-jeju',
+  '프리미엄': 'other',
+};
+
+const CATEGORIES = [
+  { name: '일본', slug: 'japan', description: '일본 골프 투어', sortOrder: 1 },
+  { name: '태국', slug: 'thailand', description: '태국 골프 투어', sortOrder: 2 },
+  { name: '베트남', slug: 'vietnam', description: '베트남 골프 & 리조트', sortOrder: 3 },
+  { name: '대만', slug: 'taiwan', description: '대만 프리미엄 골프', sortOrder: 4 },
+  { name: '라오스', slug: 'laos', description: '라오스 골프 투어', sortOrder: 5 },
+  { name: '괌 및 사이판', slug: 'guam-saipan', description: '괌·사이판 골프 리조트', sortOrder: 6 },
+  { name: '유럽 및 하와이', slug: 'europe-hawaii', description: '유럽·하와이 골프 투어', sortOrder: 7 },
+  { name: '몽골(울란바토르)', slug: 'mongolia', description: '몽골 골프 투어', sortOrder: 8 },
+  { name: '기타', slug: 'other', description: '기타 지역 골프 투어', sortOrder: 9 },
+  { name: '단체여행(인센티브)', slug: 'group-travel', description: '단체 골프 투어 및 인센티브', sortOrder: 10 },
+  { name: '국내 및 제주도', slug: 'domestic-jeju', description: '국내·제주 골프 패키지', sortOrder: 11 },
+];
+
+async function migrateOldCategories() {
+  const existing = await prisma.category.findMany();
+  if (existing.length === 0) return;
+
+  // 새 카테고리가 이미 있으면 마이그레이션 불필요
+  const hasNewCats = existing.some(c => CATEGORIES.some(nc => nc.slug === c.slug));
+  if (hasNewCats) {
+    console.log('✅ 새 카테고리 이미 존재, 마이그레이션 스킵');
+    return;
+  }
+
+  console.log('🔄 이전 카테고리 마이그레이션 시작...');
+
+  // 새 카테고리 먼저 생성 (upsert)
+  const newCats: Record<string, string> = {};
+  for (const cat of CATEGORIES) {
+    const created = await prisma.category.upsert({
+      where: { slug: cat.slug },
+      update: { name: cat.name, description: cat.description, sortOrder: cat.sortOrder },
+      create: cat,
+    });
+    newCats[cat.slug] = created.id;
+  }
+
+  // 이전 카테고리의 상품을 새 카테고리로 이동
+  for (const oldCat of existing) {
+    const newSlug = OLD_TO_NEW_CATEGORY[oldCat.name];
+    if (newSlug && newCats[newSlug]) {
+      const moved = await prisma.tourProduct.updateMany({
+        where: { categoryId: oldCat.id },
+        data: { categoryId: newCats[newSlug] },
+      });
+      if (moved.count > 0) {
+        console.log(`  📦 "${oldCat.name}" → "${newSlug}": ${moved.count}개 상품 이동`);
+      }
+    }
+  }
+
+  // 상품이 없는 이전 카테고리 삭제
+  for (const oldCat of existing) {
+    if (OLD_TO_NEW_CATEGORY[oldCat.name]) {
+      const productCount = await prisma.tourProduct.count({ where: { categoryId: oldCat.id } });
+      if (productCount === 0) {
+        await prisma.category.delete({ where: { id: oldCat.id } });
+        console.log(`  🗑️ 이전 카테고리 "${oldCat.name}" 삭제`);
+      }
+    }
+  }
+
+  console.log('✅ 카테고리 마이그레이션 완료');
+}
+
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // 1. 카테고리 생성 (국가/지역 기준)
-  const categories = await Promise.all([
-    prisma.category.create({
-      data: { name: '일본', slug: 'japan', description: '일본 골프 투어', sortOrder: 1 },
-    }),
-    prisma.category.create({
-      data: { name: '태국', slug: 'thailand', description: '태국 골프 투어', sortOrder: 2 },
-    }),
-    prisma.category.create({
-      data: { name: '베트남', slug: 'vietnam', description: '베트남 골프 & 리조트', sortOrder: 3 },
-    }),
-    prisma.category.create({
-      data: { name: '대만', slug: 'taiwan', description: '대만 프리미엄 골프', sortOrder: 4 },
-    }),
-    prisma.category.create({
-      data: { name: '라오스', slug: 'laos', description: '라오스 골프 투어', sortOrder: 5 },
-    }),
-    prisma.category.create({
-      data: { name: '괌 및 사이판', slug: 'guam-saipan', description: '괌·사이판 골프 리조트', sortOrder: 6 },
-    }),
-    prisma.category.create({
-      data: { name: '유럽 및 하와이', slug: 'europe-hawaii', description: '유럽·하와이 골프 투어', sortOrder: 7 },
-    }),
-    prisma.category.create({
-      data: { name: '몽골(울란바토르)', slug: 'mongolia', description: '몽골 골프 투어', sortOrder: 8 },
-    }),
-    prisma.category.create({
-      data: { name: '기타', slug: 'other', description: '기타 지역 골프 투어', sortOrder: 9 },
-    }),
-    prisma.category.create({
-      data: { name: '단체여행(인센티브)', slug: 'group-travel', description: '단체 골프 투어 및 인센티브', sortOrder: 10 },
-    }),
-    prisma.category.create({
-      data: { name: '국내 및 제주도', slug: 'domestic-jeju', description: '국내·제주 골프 패키지', sortOrder: 11 },
-    }),
-  ]);
+  // 0. 이전 카테고리 마이그레이션 (기존 DB에서 실행 시)
+  await migrateOldCategories();
 
-  console.log(`✅ ${categories.length}개 카테고리 생성`);
+  // 1. 카테고리 upsert (국가/지역 기준)
+  const categories = await Promise.all(
+    CATEGORIES.map(cat =>
+      prisma.category.upsert({
+        where: { slug: cat.slug },
+        update: { name: cat.name, description: cat.description, sortOrder: cat.sortOrder },
+        create: cat,
+      })
+    )
+  );
 
-  // 2. 태그 생성
-  const tags = await Promise.all([
-    prisma.tag.create({ data: { name: '가성비', slug: 'value', type: 'PRICE_RANGE' } }),
-    prisma.tag.create({ data: { name: '프리미엄', slug: 'premium', type: 'PRICE_RANGE' } }),
-    prisma.tag.create({ data: { name: '54홀', slug: '54-holes', type: 'FEATURE' } }),
-    prisma.tag.create({ data: { name: '단기', slug: 'short', type: 'DURATION' } }),
-    prisma.tag.create({ data: { name: '장기', slug: 'long', type: 'DURATION' } }),
-    prisma.tag.create({ data: { name: '2인출발', slug: '2-people', type: 'FEATURE' } }),
-    prisma.tag.create({ data: { name: '단체', slug: 'group', type: 'FEATURE' } }),
-    prisma.tag.create({ data: { name: '5성급호텔', slug: '5-star', type: 'ACCOMMODATION' } }),
-  ]);
+  console.log(`✅ ${categories.length}개 카테고리 준비 완료`);
 
-  console.log(`✅ ${tags.length}개 태그 생성`);
+  // 2. 태그 upsert
+  const TAG_DATA = [
+    { name: '가성비', slug: 'value', type: 'PRICE_RANGE' },
+    { name: '프리미엄', slug: 'premium', type: 'PRICE_RANGE' },
+    { name: '54홀', slug: '54-holes', type: 'FEATURE' },
+    { name: '단기', slug: 'short', type: 'DURATION' },
+    { name: '장기', slug: 'long', type: 'DURATION' },
+    { name: '2인출발', slug: '2-people', type: 'FEATURE' },
+    { name: '단체', slug: 'group', type: 'FEATURE' },
+    { name: '5성급호텔', slug: '5-star', type: 'ACCOMMODATION' },
+  ];
+  const tags = await Promise.all(
+    TAG_DATA.map(t =>
+      prisma.tag.upsert({
+        where: { slug: t.slug },
+        update: { name: t.name, type: t.type },
+        create: t,
+      })
+    )
+  );
 
-  // 3. 샘플 상품 생성 (일본)
+  console.log(`✅ ${tags.length}개 태그 준비 완료`);
+
+  // 3. 샘플 상품 생성 (기존 데이터 있으면 스킵)
+  const existingProducts = await prisma.tourProduct.count();
+  if (existingProducts > 0) {
+    console.log(`✅ 이미 ${existingProducts}개 상품 존재, 샘플 생성 스킵`);
+  } else {
   const japanCategory = categories[0]; // 일본
   const product1 = await prisma.tourProduct.create({
     data: {
@@ -214,11 +279,14 @@ async function main() {
     },
   });
 
-  console.log(`✅ ${2}개 상품 생성`);
+  console.log(`✅ 샘플 상품 생성 완료`);
+  } // end if (existingProducts === 0)
 
   // 4. 블로그 포스트
-  await prisma.blogPost.create({
-    data: {
+  await prisma.blogPost.upsert({
+    where: { slug: 'golf-trip-essentials' },
+    update: {},
+    create: {
       slug: 'golf-trip-essentials',
       title: '골프 여행 필수 준비물',
       excerpt: '해외 골프 여행 시 꼭 챙겨야 할 것들',
@@ -231,7 +299,7 @@ async function main() {
     },
   });
 
-  console.log('✅ 블로그 포스트 생성');
+  console.log('✅ 블로그 포스트 준비 완료');
 
   console.log('🎉 Seeding 완료!');
 }

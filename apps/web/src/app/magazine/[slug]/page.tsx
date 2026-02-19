@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/common/SiteHeader";
+import { SiteFooter } from "@/components/common/SiteFooter";
 import { KakaoFloating } from "@/components/common/KakaoFloating";
 
 interface Props {
@@ -139,6 +140,7 @@ export default async function MagazineDetailPage({ params }: Props) {
         )}
       </main>
 
+      <SiteFooter />
       <KakaoFloating />
     </div>
   );

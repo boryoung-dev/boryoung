@@ -309,23 +309,9 @@ export default function AdminTagsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  슬러그 *
-                </label>
-                <input
-                  type="text"
-                  value={formData.slug}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, slug: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  이름 입력 시 자동 생성됩니다
-                </p>
-              </div>
+              {formData.slug && (
+                <p className="text-xs text-gray-400">slug: {formData.slug}</p>
+              )}
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">

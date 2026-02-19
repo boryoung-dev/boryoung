@@ -1,4 +1,6 @@
 import { SiteHeader } from "@/components/common/SiteHeader";
+import { SiteFooter } from "@/components/common/SiteFooter";
+import { KakaoFloating } from "@/components/common/KakaoFloating";
 import { Globe, Users, Award, Heart } from "lucide-react";
 
 export const metadata = {
@@ -110,6 +112,9 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
+
+      <SiteFooter />
+      <KakaoFloating />
     </div>
   );
 }
