@@ -111,7 +111,7 @@ export default async function MagazineDetailPage({ params }: Props) {
           <section className="border-t border-gray-200 pt-10">
             <h2 className="text-xl font-bold mb-6">관련 글</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedPosts.map((related) => (
+              {relatedPosts.map((related: typeof relatedPosts[number]) => (
                 <Link
                   key={related.id}
                   href={`/magazine/${related.slug}`}
