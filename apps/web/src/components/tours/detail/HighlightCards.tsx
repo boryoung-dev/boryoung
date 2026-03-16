@@ -1,17 +1,10 @@
 "use client";
 
 import { Calendar, Users, Plane, MapPin } from "lucide-react";
+import type { TourProductDetail, HighlightCard } from "@/lib/types";
 
 interface HighlightCardsProps {
-  product: any;
-}
-
-interface HighlightCard {
-  icon: any;
-  iconColor: string;
-  iconBg: string;
-  label: string;
-  value: string;
+  product: TourProductDetail;
 }
 
 export function HighlightCards({ product }: HighlightCardsProps) {
@@ -20,8 +13,8 @@ export function HighlightCards({ product }: HighlightCardsProps) {
   if (product.durationText) {
     cards.push({
       icon: Calendar,
-      iconColor: "#8B5CF6",
-      iconBg: "rgba(139, 92, 246, 0.125)",
+      iconColor: "var(--brand)",
+      iconBg: "color-mix(in srgb, var(--brand) 12.5%, transparent)",
       label: "여행 기간",
       value: product.durationText,
     });
@@ -80,8 +73,8 @@ export function HighlightCards({ product }: HighlightCardsProps) {
               <Icon className="w-6 h-6" style={{ color: card.iconColor }} />
             </div>
             <div>
-              <div className="text-sm text-[#71717A] mb-1">{card.label}</div>
-              <div className="text-xl font-semibold text-[#18181B]">
+              <div className="text-sm text-[color:var(--muted)] mb-1">{card.label}</div>
+              <div className="text-xl font-semibold text-[color:var(--fg)]">
                 {card.value}
               </div>
             </div>

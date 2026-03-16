@@ -1,15 +1,18 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/common/SiteHeader";
 import { SiteFooter } from "@/components/common/SiteFooter";
 import { KakaoFloating } from "@/components/common/KakaoFloating";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { SITE_URL, SITE_NAME } from "@/lib/seo";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await prisma.blogPost.findUnique({ where: { slug } });
 
@@ -17,9 +20,40 @@ export async function generateMetadata({ params }: Props) {
     return { title: "글을 찾을 수 없습니다" };
   }
 
+  const title = `${post.title} - 보령항공여행 매거진`;
+  const description = post.excerpt || post.title;
+  const url = `${SITE_URL}/magazine/${slug}`;
+
   return {
-    title: `${post.title} - 보령항공여행 매거진`,
-    description: post.excerpt || post.title,
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "article",
+      siteName: SITE_NAME,
+      ...(post.publishedAt && { publishedTime: post.publishedAt.toISOString() }),
+      ...(post.thumbnail && {
+        images: [
+          {
+            url: post.thumbnail,
+            width: 1200,
+            height: 630,
+            alt: post.title,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(post.thumbnail && { images: [post.thumbnail] }),
+    },
   };
 }
 
@@ -49,15 +83,47 @@ export default async function MagazineDetailPage({ params }: Props) {
     take: 3,
   });
 
+  // JSON-LD: BlogPosting 구조화 데이터
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt || post.title,
+    url: `${SITE_URL}/magazine/${slug}`,
+    ...(post.thumbnail && { image: post.thumbnail }),
+    datePublished: (post.publishedAt || post.createdAt).toISOString(),
+    dateModified: post.updatedAt.toISOString(),
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${SITE_URL}/magazine/${slug}`,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-[color:var(--bg)] font-sans text-[color:var(--fg)] antialiased">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <SiteHeader />
 
       <main className="max-w-[800px] mx-auto px-4 md:px-6 py-12">
         {/* 뒤로가기 */}
         <Link
           href="/magazine"
-          className="inline-flex items-center text-sm text-gray-500 hover:text-black mb-8"
+          className="inline-flex items-center text-sm text-[color:var(--muted)] hover:text-[color:var(--fg)] mb-8"
         >
           &larr; 매거진 목록
         </Link>
@@ -69,12 +135,12 @@ export default async function MagazineDetailPage({ params }: Props) {
               {post.category}
             </span>
           )}
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-[color:var(--muted)]">
             {post.publishedAt
               ? new Date(post.publishedAt).toLocaleDateString("ko-KR")
               : new Date(post.createdAt).toLocaleDateString("ko-KR")}
           </span>
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-[color:var(--muted)]">
             조회 {post.viewCount.toLocaleString()}
           </span>
         </div>
@@ -86,7 +152,7 @@ export default async function MagazineDetailPage({ params }: Props) {
 
         {/* 썸네일 */}
         {post.thumbnail && (
-          <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 mb-8">
+          <div className="relative aspect-video rounded-xl overflow-hidden bg-[color:var(--surface)] mb-8">
             <img
               src={post.thumbnail}
               alt={post.title}
@@ -98,9 +164,9 @@ export default async function MagazineDetailPage({ params }: Props) {
         {/* 본문 */}
         <article className="prose prose-lg max-w-none mb-16">
           {post.contentHtml ? (
-            <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.contentHtml) }} />
           ) : (
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            <div className="whitespace-pre-wrap text-[color:var(--fg)] leading-relaxed">
               {post.content}
             </div>
           )}
@@ -108,7 +174,7 @@ export default async function MagazineDetailPage({ params }: Props) {
 
         {/* 관련 글 */}
         {relatedPosts.length > 0 && (
-          <section className="border-t border-gray-200 pt-10">
+          <section className="border-t border-[color:var(--border)] pt-10">
             <h2 className="text-xl font-bold mb-6">관련 글</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {relatedPosts.map((related) => (
@@ -117,7 +183,7 @@ export default async function MagazineDetailPage({ params }: Props) {
                   href={`/magazine/${related.slug}`}
                   className="group"
                 >
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100 mb-2">
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-[color:var(--surface)] mb-2">
                     {related.thumbnail ? (
                       <img
                         src={related.thumbnail}
@@ -125,12 +191,12 @@ export default async function MagazineDetailPage({ params }: Props) {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                      <div className="w-full h-full flex items-center justify-center text-[color:var(--muted)] text-sm">
                         No Image
                       </div>
                     )}
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 group-hover:underline">
+                  <h3 className="text-sm font-bold text-[color:var(--fg)] group-hover:underline">
                     {related.title}
                   </h3>
                 </Link>

@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import type { ProductImage } from "@/lib/types";
 
 interface ImageLightboxProps {
-  images: any[];
+  images: ProductImage[];
   initialIndex: number;
   onClose: () => void;
 }
@@ -82,7 +83,7 @@ export function ImageLightbox({ images, initialIndex, onClose }: ImageLightboxPr
       {/* 썸네일 바 */}
       {images.length > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto max-w-[80vw] px-4">
-          {images.map((img: any, idx: number) => (
+          {images.map((img, idx) => (
             <button
               key={img.id}
               onClick={() => setCurrentIndex(idx)}

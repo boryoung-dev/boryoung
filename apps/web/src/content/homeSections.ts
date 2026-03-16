@@ -28,7 +28,7 @@ export const homeSections: HomeSection[] = [
   {
     type: "ranking",
     isVisible: true,
-    title: "이번 달 BEST 인기상품 🔥",
+    title: "MD추천 및 베스트상품",
     items: [
       {
         id: "r1", rank: 1, title: "[다낭] 5성급 쉐라톤 풀빌라 3박5일", price: "899,000원~",
@@ -55,29 +55,39 @@ export const homeSections: HomeSection[] = [
   {
     type: "collection",
     isVisible: true,
-    title: "MD 강력 추천 기획전",
+    title: "국가별 추천 골프여행",
     items: [
       {
-        id: "c1", title: "일본 골프의 정석", subTitle: "규슈/오키나와/홋카이도 BEST",
+        id: "c1", title: "일본 골프여행", subTitle: "규슈·오키나와·홋카이도 명문 코스",
         imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80",
-        badges: ["시즌오픈", "D-5"]
+        badges: ["인기", "시내+골프텔"]
       },
       {
-        id: "c2", title: "동남아 럭셔리", subTitle: "5성급 호텔 + VIP 의전",
-        imageUrl: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80",
-        badges: ["프리미엄"]
+        id: "c2", title: "베트남 골프여행", subTitle: "다낭·호치민·하노이 리조트 골프",
+        imageUrl: "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=800&q=80",
+        badges: ["가성비"]
       },
       {
-        id: "c3", title: "2인 출발 OK", subTitle: "조인 걱정 없는 프라이빗 라운드",
-        imageUrl: "https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?w=800&q=80",
-        badges: ["상시출발"]
+        id: "c3", title: "태국 골프여행", subTitle: "방콕·치앙마이·파타야 무제한 라운딩",
+        imageUrl: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80",
+        badges: ["노팁·노옵션"]
+      },
+      {
+        id: "c4", title: "대만 골프여행", subTitle: "타이베이 근교 명문 골프장",
+        imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+        badges: ["단기일정"]
+      },
+      {
+        id: "c5", title: "괌·사이판 골프여행", subTitle: "오션뷰 리조트 + 골프 패키지",
+        imageUrl: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
+        badges: ["가족추천"]
       }
     ]
   },
   {
     type: "categoryTabs",
     isVisible: true,
-    title: "카테고리별 인기 상품",
+    title: "국가별 골프여행 상품",
     tabs: [
       { key: "JAPAN", label: "일본" },
       { key: "THAILAND", label: "태국" },
@@ -94,8 +104,8 @@ export const homeSections: HomeSection[] = [
   },
   {
     type: "magazine",
-    isVisible: true,
-    title: "알아두면 좋은 골프 팁 ⛳️",
+    isVisible: false,
+    title: "알아두면 좋은 골프 팁",
     items: [
       {
         id: "m1", category: "준비물", title: "해외 골프여행, 캐디백 항공커버 필수일까?",
@@ -116,7 +126,7 @@ export const homeSections: HomeSection[] = [
   },
   {
     type: "curations",
-    isVisible: true,
+    isVisible: false,
     title: "추천 컬렉션",
     items: [
       {

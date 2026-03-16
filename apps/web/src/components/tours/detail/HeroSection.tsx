@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, Heart } from "lucide-react";
+import { Star, Phone } from "lucide-react";
 
 interface HeroSectionProps {
   product: any;
@@ -67,7 +67,7 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
         {/* 배지 컨테이너 */}
         <div className="flex items-center gap-3 mb-4">
           {product.isFeatured && (
-            <span className="bg-[#8B5CF6] text-white text-sm font-medium px-4 py-1.5 rounded-full">
+            <span className="bg-[color:var(--brand)] text-white text-sm font-medium px-4 py-1.5 rounded-full">
               베스트셀러
             </span>
           )}
@@ -79,13 +79,13 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
         </div>
 
         {/* 타이틀 */}
-        <h1 className="text-[36px] font-bold text-[#18181B] leading-[1.2] mb-2">
+        <h1 className="text-[36px] font-bold text-[color:var(--fg)] leading-[1.2] mb-2">
           {product.title}
         </h1>
 
         {/* 서브타이틀 */}
         {product.subtitle && (
-          <p className="text-lg text-[#71717A] mb-4">
+          <p className="text-lg text-[color:var(--muted)] mb-4">
             {product.subtitle}
           </p>
         )}
@@ -100,50 +100,57 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
                   className={`w-4 h-4 ${
                     i < Math.round(Number(avgRating))
                       ? "fill-[#FACC15] text-[#FACC15]"
-                      : "fill-[#E4E4E7] text-[#E4E4E7]"
+                      : "fill-[color:var(--border)] text-[color:var(--border)]"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-base font-semibold text-[#18181B]">{avgRating}</span>
-            <span className="text-sm text-[#71717A]">({product.reviews.length}개 리뷰)</span>
+            <span className="text-base font-semibold text-[color:var(--fg)]">{avgRating}</span>
+            <span className="text-sm text-[color:var(--muted)]">({product.reviews.length}개 리뷰)</span>
           </div>
         )}
 
         {/* 가격 섹션 */}
-        <div className="bg-white rounded-[24px] p-6 border border-[#F4F4F5] mb-6">
-          <div className="text-sm text-[#71717A] mb-2">1인 기준</div>
+        <div className="bg-white rounded-[24px] p-6 border border-[color:var(--surface)] mb-6">
+          <div className="text-sm text-[color:var(--muted)] mb-2">1인 기준</div>
           <div className="flex items-end gap-2">
             {product.basePrice ? (
               <>
-                <span className="text-[32px] font-bold text-[#18181B]">
+                <span className="text-[32px] font-bold text-[color:var(--fg)]">
                   {product.basePrice.toLocaleString()}원
                 </span>
                 {product.originalPrice && product.originalPrice > product.basePrice && (
-                  <span className="text-lg text-[#71717A] line-through mb-1">
+                  <span className="text-lg text-[color:var(--muted)] line-through mb-1">
                     {product.originalPrice.toLocaleString()}원
                   </span>
                 )}
               </>
             ) : (
-              <span className="text-2xl font-bold text-[#18181B]">가격 문의</span>
+              <span className="text-2xl font-bold text-[color:var(--fg)]">가격 문의</span>
             )}
           </div>
         </div>
 
         {/* CTA 버튼 */}
         <div className="flex gap-3">
-          <button
-            onClick={onBooking}
-            className="flex-1 h-14 bg-[#8B5CF6] text-white rounded-[28px] font-semibold text-base hover:opacity-90 transition"
+          <a
+            href="tel:1588-0320"
+            className="flex-1 h-14 bg-[color:var(--brand)] text-white rounded-[28px] font-semibold text-base hover:opacity-90 transition flex items-center justify-center gap-2"
           >
-            예약하기
-          </button>
-          <button
-            className="w-14 h-14 border border-[#E4E4E7] rounded-[28px] flex items-center justify-center hover:bg-[#F4F4F5] transition"
+            <Phone className="w-5 h-5" />
+            전화 상담하기
+          </a>
+          <a
+            href="https://pf.kakao.com/_xgxoBxj"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-14 h-14 bg-[#FAE100] rounded-[28px] flex items-center justify-center hover:opacity-90 transition"
+            title="카카오톡 상담"
           >
-            <Heart className="w-5 h-5 text-[#71717A]" />
-          </button>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#3C1E1E">
+              <path d="M12 3C6.48 3 2 6.58 2 10.9c0 2.78 1.86 5.22 4.65 6.6l-.95 3.53c-.08.3.26.54.52.37l4.17-2.74c.53.06 1.06.09 1.61.09 5.52 0 10-3.58 10-7.95C22 6.58 17.52 3 12 3z"/>
+            </svg>
+          </a>
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ export async function GET() {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    
+
     const [
       todayBookings,
       weekBookings,
@@ -15,6 +15,10 @@ export async function GET() {
       pendingBookings,
       totalProducts,
       activeProducts,
+      pendingInquiries,
+      totalInquiries,
+      recentInquiries,
+      productsByCategory,
     ] = await Promise.all([
       prisma.booking.count({
         where: {
@@ -42,8 +46,21 @@ export async function GET() {
           isActive: true,
         },
       }),
+      prisma.inquiry.count({
+        where: { status: 'PENDING' },
+      }),
+      prisma.inquiry.count(),
+      prisma.inquiry.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+      prisma.tourProduct.groupBy({
+        by: ['destination'],
+        _count: { id: true },
+        where: { isActive: true },
+      }),
     ]);
-    
+
     return NextResponse.json({
       success: true,
       stats: {
@@ -53,7 +70,14 @@ export async function GET() {
         pendingBookings,
         totalProducts,
         activeProducts,
+        pendingInquiries,
+        totalInquiries,
       },
+      recentInquiries,
+      productsByCategory: productsByCategory.map(p => ({
+        destination: p.destination,
+        count: p._count.id,
+      })),
     });
     
   } catch (error) {

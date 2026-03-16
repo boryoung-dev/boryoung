@@ -1,9 +1,10 @@
 "use client";
 
 import { Images } from "lucide-react";
+import type { ProductImage } from "@/lib/types";
 
 interface ImageGalleryProps {
-  images: any[];
+  images: ProductImage[];
   onImageClick: (index: number) => void;
 }
 
@@ -19,7 +20,7 @@ export function ImageGallery({ images, onImageClick }: ImageGalleryProps) {
       <h2 className="text-2xl font-bold text-[color:var(--fg)] mb-4">사진</h2>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {displayImages.map((img: any, idx: number) => (
+        {displayImages.map((img, idx) => (
           <button
             key={img.id}
             onClick={() => onImageClick(idx)}

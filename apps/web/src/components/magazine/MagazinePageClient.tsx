@@ -39,8 +39,8 @@ export function MagazinePageClient({ posts }: { posts: Post[] }) {
             onClick={() => setActiveCategory(null)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               activeCategory === null
-                ? "bg-black text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-[color:var(--fg)] text-[color:var(--bg)]"
+                : "bg-[color:var(--surface)] text-[color:var(--fg)] hover:bg-[color:var(--surface-3)]"
             }`}
           >
             전체
@@ -51,8 +51,8 @@ export function MagazinePageClient({ posts }: { posts: Post[] }) {
               onClick={() => setActiveCategory(cat)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 activeCategory === cat
-                  ? "bg-black text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-[color:var(--fg)] text-[color:var(--bg)]"
+                  : "bg-[color:var(--surface)] text-[color:var(--fg)] hover:bg-[color:var(--surface-3)]"
               }`}
             >
               {cat}
@@ -63,7 +63,7 @@ export function MagazinePageClient({ posts }: { posts: Post[] }) {
 
       {/* 게시글 목록 */}
       {filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20 text-[color:var(--muted)]">
           <p className="text-lg">아직 등록된 글이 없습니다.</p>
         </div>
       ) : (
@@ -74,7 +74,7 @@ export function MagazinePageClient({ posts }: { posts: Post[] }) {
               href={`/magazine/${post.slug}`}
               className="group"
             >
-              <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 mb-3">
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-[color:var(--surface)] mb-3">
                 {post.thumbnail ? (
                   <img
                     src={post.thumbnail}
@@ -82,7 +82,7 @@ export function MagazinePageClient({ posts }: { posts: Post[] }) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                  <div className="w-full h-full flex items-center justify-center text-[color:var(--muted)] text-sm">
                     No Image
                   </div>
                 )}
@@ -92,15 +92,15 @@ export function MagazinePageClient({ posts }: { posts: Post[] }) {
                   {post.category}
                 </span>
               )}
-              <h2 className="text-lg font-bold text-gray-900 mb-1 group-hover:underline decoration-1 underline-offset-4">
+              <h2 className="text-lg font-bold text-[color:var(--fg)] mb-1 group-hover:underline decoration-1 underline-offset-4">
                 {post.title}
               </h2>
               {post.excerpt && (
-                <p className="text-sm text-gray-500 line-clamp-2">
+                <p className="text-sm text-[color:var(--muted)] line-clamp-2">
                   {post.excerpt}
                 </p>
               )}
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-[color:var(--muted)] mt-2">
                 {post.publishedAt
                   ? new Date(post.publishedAt).toLocaleDateString("ko-KR")
                   : new Date(post.createdAt).toLocaleDateString("ko-KR")}

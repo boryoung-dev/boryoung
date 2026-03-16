@@ -12,7 +12,7 @@ export function BookingProductSummary({ product }: BookingProductSummaryProps) {
     product.images?.[0]?.url;
 
   return (
-    <div className="flex gap-4 p-4 bg-gray-50 rounded-xl">
+    <div className="flex gap-4 p-4 bg-[color:var(--surface)] rounded-xl">
       {thumbnail && (
         <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
           <img
@@ -24,13 +24,13 @@ export function BookingProductSummary({ product }: BookingProductSummaryProps) {
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <div className="text-xs text-blue-600 font-medium mb-1">
+        <div className="text-xs text-[color:var(--brand)] font-medium mb-1">
           {product.category?.name}
         </div>
-        <h3 className="text-sm font-bold text-gray-900 line-clamp-2">
+        <h3 className="text-sm font-bold text-[color:var(--fg)] line-clamp-2">
           {product.title}
         </h3>
-        <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
+        <div className="flex items-center gap-3 mt-1.5 text-xs text-[color:var(--muted)]">
           {product.durationText && (
             <span className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
@@ -45,7 +45,7 @@ export function BookingProductSummary({ product }: BookingProductSummaryProps) {
           )}
         </div>
         {product.basePrice && (
-          <div className="mt-1.5 text-sm font-bold text-blue-600">
+          <div className="mt-1.5 text-sm font-bold text-[color:var(--brand)]">
             {product.basePrice.toLocaleString()}원~
           </div>
         )}

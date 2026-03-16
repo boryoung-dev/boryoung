@@ -89,7 +89,7 @@ export function HeroSection(props: {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <div className="w-full py-6">
+    <div className="w-full py-2">
       <div className="relative group">
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
@@ -99,7 +99,7 @@ export function HeroSection(props: {
                 className="min-w-0 flex-[0_0_92%] sm:flex-[0_0_85%] px-2 sm:px-3"
               >
                 <div
-                  className={`relative w-full aspect-[4/5] sm:aspect-[21/9] rounded-2xl overflow-hidden transition-opacity duration-300 ${
+                  className={`relative w-full aspect-[2/1] sm:aspect-[7/2] rounded-2xl overflow-hidden transition-opacity duration-300 ${
                     index === selectedIndex ? "opacity-100" : "opacity-40"
                   }`}
                 >

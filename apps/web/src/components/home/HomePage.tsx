@@ -1,18 +1,25 @@
 import { homeSections } from "@/content/homeSections";
 import { getHomeProductsByTab, getRankingProducts, getCollectionItems } from "@/lib/home/seed";
-import type { HomeSection } from "@/lib/home/types";
+import type { HomeSection, HomeTabKey } from "@/lib/home/types";
 import { prisma } from "@/lib/prisma";
 
-import { CurationsSection } from "./sections/CurationsSection";
 import { CategoryTabsSection } from "./sections/CategoryTabsSection.client";
 import { QuickIconsSection } from "./sections/QuickIconsSection";
 import { HeroSection } from "./sections/HeroSection";
 import { RankingSection } from "./sections/RankingSection";
 import { CollectionSection } from "./sections/CollectionSection";
-import { MagazineSection } from "./sections/MagazineSection";
+import { CountrySection } from "./sections/CountrySection";
 import { SiteHeader } from "../common/SiteHeader";
 import { KakaoFloating } from "../common/KakaoFloating";
 import { SiteFooter } from "../common/SiteFooter";
+
+// 메인에 개별 섹션으로 보여줄 국가 목록
+const COUNTRY_SECTIONS: { key: HomeTabKey; title: string; subtitle: string; bg: string }[] = [
+  { key: "JAPAN", title: "일본 골프여행 추천", subtitle: "시내골프·골프텔·명문코스 다양한 구성", bg: "bg-white" },
+  { key: "VIETNAM", title: "베트남 골프여행 추천", subtitle: "다낭·호치민·하노이 리조트 골프", bg: "bg-[color:var(--surface)]" },
+  { key: "THAILAND", title: "태국 골프여행 추천", subtitle: "방콕·치앙마이·파타야 무제한 라운딩", bg: "bg-white" },
+  { key: "TAIWAN", title: "대만 골프여행 추천", subtitle: "타이베이 근교 명문 골프장", bg: "bg-[color:var(--surface)]" },
+];
 
 export async function HomePage() {
   const categoryTabs = homeSections.find(
@@ -21,7 +28,7 @@ export async function HomePage() {
 
   // DB에서 데이터 가져오기
   const now = new Date();
-  const [productsByTab, rankingItems, collectionItems, banners, blogPosts, dbCurations, dbQuickIcons] = await Promise.all([
+  const [productsByTab, rankingItems, collectionItems, banners, dbQuickIcons] = await Promise.all([
     getHomeProductsByTab(categoryTabs?.itemsPerTab ?? 8),
     getRankingProducts(),
     getCollectionItems(),
@@ -38,85 +45,74 @@ export async function HomePage() {
       },
       orderBy: { sortOrder: "asc" },
     }),
-    prisma.blogPost.findMany({
-      where: { isPublished: true },
-      orderBy: { publishedAt: "desc" },
-      take: 3,
-    }),
-    prisma.curation.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
-    }),
     prisma.quickIcon.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: "asc" },
     }),
   ]);
 
+  // 섹션별 데이터 준비
+  const heroSection = homeSections.find((s): s is Extract<HomeSection, { type: "hero" }> => s.type === "hero" && s.isVisible);
+  const quickIconsSection = homeSections.find((s): s is Extract<HomeSection, { type: "quickIcons" }> => s.type === "quickIcons" && s.isVisible);
+  const rankingSection = homeSections.find((s): s is Extract<HomeSection, { type: "ranking" }> => s.type === "ranking" && s.isVisible);
+  const collectionSection = homeSections.find((s): s is Extract<HomeSection, { type: "collection" }> => s.type === "collection" && s.isVisible);
+  const categoryTabsSection = homeSections.find((s): s is Extract<HomeSection, { type: "categoryTabs" }> => s.type === "categoryTabs" && s.isVisible);
+
+  const quickIconItems = dbQuickIcons.length > 0
+    ? dbQuickIcons.map(q => ({ label: q.label, iconName: q.iconName, linkUrl: q.linkUrl }))
+    : quickIconsSection?.items || [];
+
+  const rankItems = rankingItems.length > 0 ? rankingItems : rankingSection?.items || [];
+  const collItems = collectionItems.length > 0 ? collectionItems : collectionSection?.items || [];
+
   return (
     <div className="min-h-screen bg-[color:var(--bg)] font-sans text-[color:var(--fg)] antialiased selection:bg-[color:var(--brand)] selection:text-white">
       <SiteHeader />
-      
+
       <main className="flex flex-col w-full">
-        {homeSections
-          .filter((s) => s.isVisible)
-          .map((section, idx) => {
-            const key = `${section.type}_${idx}`;
-            
-            if (section.type === "hero") {
-              return <HeroSection key={key} {...section} banners={banners} />;
-            }
+        {/* 1. 히어로 배너 */}
+        {heroSection && (
+          <HeroSection {...heroSection} banners={banners} />
+        )}
 
-            if (section.type === "quickIcons") {
-              const items = dbQuickIcons.length > 0
-                ? dbQuickIcons.map(q => ({ label: q.label, iconName: q.iconName, linkUrl: q.linkUrl }))
-                : section.items;
-              return <QuickIconsSection key={key} {...section} items={items} />;
-            }
+        {/* 2. 퀵 아이콘 (국가 바로가기) */}
+        {quickIconsSection && (
+          <QuickIconsSection {...quickIconsSection} items={quickIconItems} />
+        )}
 
-            if (section.type === "ranking") {
-              // DB 데이터가 있으면 사용, 없으면 하드코딩 데이터
-              const items = rankingItems.length > 0 ? rankingItems : section.items;
-              return <RankingSection key={key} {...section} items={items} />;
-            }
+        {/* 3. MD추천 및 베스트상품 */}
+        {rankingSection && (
+          <RankingSection {...rankingSection} items={rankItems} />
+        )}
 
-            if (section.type === "collection") {
-              // DB 데이터가 있으면 사용, 없으면 하드코딩 데이터
-              const items = collectionItems.length > 0 ? collectionItems : section.items;
-              return <CollectionSection key={key} {...section} items={items} />;
-            }
+        {/* 4. 국가별 추천 골프여행 (가로 스크롤 카드) */}
+        {collectionSection && (
+          <CollectionSection {...collectionSection} items={collItems} />
+        )}
 
-            if (section.type === "categoryTabs") {
-              return (
-                <CategoryTabsSection
-                  key={key}
-                  title={section.title}
-                  tabs={section.tabs}
-                  productsByTab={productsByTab}
-                />
-              );
-            }
+        {/* 5. 국가별 개별 섹션: 일본 → 베트남 → 태국 → 대만 */}
+        {COUNTRY_SECTIONS.map((country) => (
+          <CountrySection
+            key={country.key}
+            title={country.title}
+            subtitle={country.subtitle}
+            tabKey={country.key}
+            products={productsByTab[country.key] || []}
+            bgColor={country.bg}
+          />
+        ))}
 
-            if (section.type === "curations") {
-              const items = dbCurations.length > 0
-                ? dbCurations.map(c => ({ id: c.id, title: c.title, description: c.description || '', imageUrl: c.imageUrl || undefined, linkUrl: c.linkUrl || undefined }))
-                : section.items;
-              return <CurationsSection key={key} title={section.title} items={items} />;
-            }
-
-            if (section.type === "magazine") {
-              const items = blogPosts.length > 0
-                ? blogPosts.map(p => ({ id: p.id, slug: p.slug, category: p.category || '팁', title: p.title, description: p.excerpt || '', imageUrl: p.thumbnail || '' }))
-                : section.items;
-              return <MagazineSection key={key} {...section} items={items} />;
-            }
-
-            return null;
-          })}
+        {/* 6. 전체 국가별 탭 (나머지 국가 포함) */}
+        {categoryTabsSection && (
+          <CategoryTabsSection
+            title={categoryTabsSection.title}
+            tabs={categoryTabsSection.tabs}
+            productsByTab={productsByTab}
+          />
+        )}
       </main>
 
       <SiteFooter />
-
       <KakaoFloating />
     </div>
   );

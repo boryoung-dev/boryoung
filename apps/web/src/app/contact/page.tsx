@@ -90,7 +90,7 @@ export default function ContactPage() {
       <SiteHeader />
 
       {/* 히어로 */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#667eea] to-[#764ba2] py-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[color:var(--brand)] to-[#0058b0] py-16">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_70%)]" />
         <div className="relative mx-auto max-w-[1440px] px-6 text-center">
           <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">
@@ -106,24 +106,24 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* 연락처 정보 */}
           <div className="lg:col-span-2 space-y-5">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-5">연락처 안내</h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-[color:var(--border)] p-6">
+              <h2 className="text-lg font-bold text-[color:var(--fg)] mb-5">연락처 안내</h2>
               <div className="space-y-5">
                 {contactInfo.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-blue-600" />
+                    <div className="w-10 h-10 bg-[color:var(--brand)]/5 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-[color:var(--brand)]" />
                     </div>
                     <div>
-                      <div className="text-xs font-medium text-gray-400 uppercase tracking-wider">{item.label}</div>
+                      <div className="text-xs font-medium text-[color:var(--muted)] uppercase tracking-wider">{item.label}</div>
                       {item.href ? (
-                        <a href={item.href} className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                        <a href={item.href} className="text-sm font-semibold text-[color:var(--fg)] hover:text-[color:var(--brand)] transition-colors">
                           {item.value}
                         </a>
                       ) : (
-                        <div className="text-sm font-medium text-gray-900">{item.value}</div>
+                        <div className="text-sm font-medium text-[color:var(--fg)]">{item.value}</div>
                       )}
-                      {item.sub && <div className="text-xs text-gray-500 mt-0.5">{item.sub}</div>}
+                      {item.sub && <div className="text-xs text-[color:var(--muted)] mt-0.5">{item.sub}</div>}
                     </div>
                   </div>
                 ))}
@@ -144,7 +144,7 @@ export default function ContactPage() {
                 </div>
               </div>
               <a
-                href="https://pf.kakao.com/_placeholder"
+                href="https://pf.kakao.com/_xgxoBxj"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full text-center bg-[#371D1E] text-[#FEE500] font-semibold py-3 rounded-xl hover:bg-[#271310] transition-colors text-sm"
@@ -156,8 +156,8 @@ export default function ContactPage() {
 
           {/* 문의 폼 */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h2 className="text-lg font-bold text-gray-900 mb-6">문의 남기기</h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-[color:var(--border)] p-8">
+              <h2 className="text-lg font-bold text-[color:var(--fg)] mb-6">문의 남기기</h2>
 
               {isSubmitted && (
                 <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3">
@@ -178,7 +178,7 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
                       이름 <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -188,11 +188,11 @@ export default function ContactPage() {
                       onChange={handleChange}
                       required
                       placeholder="홍길동"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
                       연락처 <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -202,13 +202,13 @@ export default function ContactPage() {
                       onChange={handleChange}
                       required
                       placeholder="010-1234-5678"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
                     이메일
                   </label>
                   <input
@@ -217,12 +217,12 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="example@email.com"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                    className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
                     문의 내용 <span className="text-red-500">*</span>
                   </label>
                   <textarea
@@ -232,14 +232,14 @@ export default function ContactPage() {
                     required
                     rows={5}
                     placeholder="여행 일정, 인원, 원하시는 여행지 등을 자유롭게 작성해주세요"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow resize-none"
+                    className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="w-full flex items-center justify-center gap-2 bg-[color:var(--brand)] text-white py-3 rounded-xl font-semibold hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   {isSubmitting ? (
                     "제출 중..."

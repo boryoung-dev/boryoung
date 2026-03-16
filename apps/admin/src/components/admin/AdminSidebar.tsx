@@ -19,12 +19,14 @@ import {
   FileText,
   LayoutGrid,
   Zap,
+  FileUp,
 } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
   { href: "/banners", label: "배너 관리", icon: Image },
   { href: "/products", label: "상품 관리", icon: Package },
+  { href: "/products/import", label: "엑셀 일괄등록", icon: FileUp },
   { href: "/categories", label: "카테고리", icon: FolderTree },
   { href: "/tags", label: "태그 관리", icon: Tags },
   { href: "/blog-posts", label: "매거진 관리", icon: FileText },

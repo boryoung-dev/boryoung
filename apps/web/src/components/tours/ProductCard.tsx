@@ -6,15 +6,15 @@ type Product = {
   slug: string;
   title: string;
   subtitle?: string;
-  thumbnail?: string;
-  durationText?: string;
-  basePrice?: number;
-  originalPrice?: number;
+  thumbnail?: string | null;
+  durationText?: string | null;
+  basePrice?: number | null;
+  originalPrice?: number | null;
   isFeatured?: boolean;
-  category: {
+  category?: {
     name: string;
-  };
-  tagList: Array<{ name: string; slug: string }>;
+  } | null;
+  tagList?: Array<{ name: string; slug: string }>;
 };
 
 export function ProductCard({ product }: { product: Product }) {
@@ -31,7 +31,7 @@ export function ProductCard({ product }: { product: Product }) {
     <Link href={`/tours/${product.slug}`} className="group">
       <div className="bg-white rounded-[32px] overflow-hidden hover:shadow-xl transition-all duration-500 h-full flex flex-col">
         {/* 썸네일 */}
-        <div className="relative h-[240px] overflow-hidden bg-gray-100">
+        <div className="relative h-[240px] overflow-hidden bg-[color:var(--surface)]">
           {product.thumbnail ? (
             <img
               src={product.thumbnail}
@@ -40,7 +40,7 @@ export function ProductCard({ product }: { product: Product }) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#71717A]">
+            <div className="w-full h-full flex items-center justify-center text-[color:var(--muted)]">
               이미지 없음
             </div>
           )}
@@ -48,7 +48,7 @@ export function ProductCard({ product }: { product: Product }) {
           {/* 배지 (좌상단) */}
           <div className="absolute top-4 left-4 flex gap-2">
             {product.isFeatured && (
-              <span className="bg-[#8B5CF6] text-white text-[12px] font-semibold px-3 py-1.5 rounded-full">
+              <span className="bg-[color:var(--brand)] text-[color:var(--brand-foreground)] text-[12px] font-semibold px-3 py-1.5 rounded-full">
                 베스트
               </span>
             )}
@@ -63,12 +63,12 @@ export function ProductCard({ product }: { product: Product }) {
         {/* 카드 콘텐츠 */}
         <div className="p-6 flex-1 flex flex-col gap-3">
           {/* 타이틀 */}
-          <h3 className="text-[18px] font-semibold text-[#18181B] line-clamp-2 group-hover:text-[#8B5CF6] transition-colors">
+          <h3 className="text-[18px] font-semibold text-[color:var(--fg)] line-clamp-2 group-hover:text-[color:var(--brand)] transition-colors">
             {product.title}
           </h3>
 
           {/* 설명 */}
-          <p className="text-[14px] text-[#71717A] line-clamp-1">
+          <p className="text-[14px] text-[color:var(--muted)] line-clamp-1">
             {product.durationText ? `${product.durationText} • ` : ""}
             {product.subtitle || "프리미엄 여행 패키지"}
           </p>
@@ -82,12 +82,12 @@ export function ProductCard({ product }: { product: Product }) {
                   className={`w-4 h-4 ${
                     star <= Math.floor(rating)
                       ? "fill-[#FACC15] text-[#FACC15]"
-                      : "fill-[#E4E4E7] text-[#E4E4E7]"
+                      : "fill-[color:var(--border)] text-[color:var(--border)]"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-[14px] text-[#71717A]">
+            <span className="text-[14px] text-[color:var(--muted)]">
               {rating} ({reviewCount})
             </span>
           </div>
@@ -96,17 +96,17 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="mt-auto pt-3">
             {product.basePrice ? (
               <div className="flex items-baseline gap-2">
-                <span className="text-[20px] font-bold text-[#8B5CF6]">
+                <span className="text-[20px] font-bold text-[color:var(--brand)]">
                   ₩{product.basePrice.toLocaleString()}
                 </span>
                 {product.originalPrice && product.originalPrice > product.basePrice && (
-                  <span className="text-[14px] text-[#A1A1AA] line-through">
+                  <span className="text-[14px] text-[color:var(--muted)] line-through">
                     ₩{product.originalPrice.toLocaleString()}
                   </span>
                 )}
               </div>
             ) : (
-              <span className="text-[18px] font-semibold text-[#71717A]">
+              <span className="text-[18px] font-semibold text-[color:var(--muted)]">
                 가격 문의
               </span>
             )}

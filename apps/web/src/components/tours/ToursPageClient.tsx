@@ -3,10 +3,7 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { PackageOpen, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
-
-type Product = any;
-type Category = any;
-type Tag = any;
+import type { TourProductSummary, Category, Tag } from "@/lib/types";
 
 type SortKey = "recommended" | "priceLow" | "priceHigh" | "newest";
 
@@ -34,7 +31,7 @@ export function ToursPageClient({
   tags,
   initialFilters,
 }: {
-  initialProducts: Product[];
+  initialProducts: TourProductSummary[];
   categories: Category[];
   tags: Tag[];
   initialFilters: {
@@ -54,7 +51,7 @@ export function ToursPageClient({
   // 상품 데이터에서 가격 범위 동적 추출
   const priceRange = useMemo(() => {
     const prices = initialProducts
-      .map((p: Product) => p.basePrice)
+      .map((p) => p.basePrice)
       .filter((p: number | null): p is number => p != null && p > 0);
     if (prices.length === 0) return { min: 0, max: 5000000 };
     const min = Math.floor(Math.min(...prices) / PRICE_STEP) * PRICE_STEP;
@@ -68,7 +65,7 @@ export function ToursPageClient({
   // 상품 데이터에서 여행지 목록 동적 추출
   const destinations = useMemo(() => {
     const destSet = new Set<string>();
-    initialProducts.forEach((p: Product) => {
+    initialProducts.forEach((p) => {
       if (p.destination) destSet.add(p.destination);
     });
     return Array.from(destSet).sort();
@@ -156,11 +153,11 @@ export function ToursPageClient({
       <aside className="w-[309px] flex-shrink-0 space-y-6 hidden lg:block">
         {/* 필터 헤더 */}
         <div className="flex items-center justify-between">
-          <h2 className="text-[20px] font-semibold text-[#18181B]">필터</h2>
+          <h2 className="text-[20px] font-semibold text-[color:var(--fg)]">필터</h2>
           <button
             type="button"
             onClick={handleResetFilters}
-            className="text-[14px] font-medium text-[#8B5CF6] hover:text-[#7C3AED] transition-colors"
+            className="text-[14px] font-medium text-[color:var(--brand)] hover:opacity-80 transition-colors"
           >
             초기화
           </button>
@@ -169,23 +166,23 @@ export function ToursPageClient({
         {/* 가격대 필터 */}
         <div className="bg-white rounded-[24px] p-6 space-y-4">
           <div className="flex items-baseline justify-between">
-            <h3 className="text-[16px] font-semibold text-[#18181B]">1인 가격</h3>
-            <span className="text-[13px] text-[#71717A]">
+            <h3 className="text-[16px] font-semibold text-[color:var(--fg)]">1인 가격</h3>
+            <span className="text-[13px] text-[color:var(--muted)]">
               {formatPrice(minPrice)} ~ {formatPrice(maxPrice)}
             </span>
           </div>
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs text-[#A1A1AA]">
+            <div className="flex items-center justify-between text-xs text-[color:var(--muted)]">
               <span>{formatPrice(priceRange.min)}</span>
               <span>{formatPrice(priceRange.max)}</span>
             </div>
             {/* 듀얼 레인지 슬라이더 */}
             <div className="relative h-7 flex items-center">
               {/* 트랙 배경 */}
-              <div className="absolute left-0 right-0 h-1 bg-[#E4E4E7] rounded-full" />
+              <div className="absolute left-0 right-0 h-1 bg-[color:var(--border)] rounded-full" />
               {/* 활성 트랙 */}
               <div
-                className="absolute h-1 bg-[#8B5CF6] rounded-full"
+                className="absolute h-1 bg-[color:var(--brand)] rounded-full"
                 style={{
                   left: `${((minPrice - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
                   right: `${100 - ((maxPrice - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
@@ -202,7 +199,7 @@ export function ToursPageClient({
                   const v = Number(e.target.value);
                   setMinPrice(Math.min(v, maxPrice - PRICE_STEP));
                 }}
-                className="absolute w-full h-1 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#8B5CF6] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#8B5CF6] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+                className="absolute w-full h-1 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[color:var(--brand)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[color:var(--brand)] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
                 style={{ zIndex: minPrice > priceRange.max - PRICE_STEP * 2 ? 5 : 3 }}
               />
               {/* 최대 핸들 */}
@@ -216,7 +213,7 @@ export function ToursPageClient({
                   const v = Number(e.target.value);
                   setMaxPrice(Math.max(v, minPrice + PRICE_STEP));
                 }}
-                className="absolute w-full h-1 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#8B5CF6] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#8B5CF6] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+                className="absolute w-full h-1 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[color:var(--brand)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[color:var(--brand)] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
                 style={{ zIndex: 4 }}
               />
             </div>
@@ -225,7 +222,7 @@ export function ToursPageClient({
 
         {/* 여행지 필터 */}
         <div className="bg-white rounded-[24px] p-6 space-y-4">
-          <h3 className="text-[16px] font-semibold text-[#18181B]">여행지</h3>
+          <h3 className="text-[16px] font-semibold text-[color:var(--fg)]">여행지</h3>
           <div className="space-y-3">
             {destinations.map((dest) => (
               <label
@@ -236,15 +233,15 @@ export function ToursPageClient({
                 <div
                   className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
                     selectedDestinations.includes(dest)
-                      ? "bg-[#8B5CF6] border-[#8B5CF6]"
-                      : "border-[#D4D4D8] group-hover:border-[#8B5CF6]"
+                      ? "bg-[color:var(--brand)] border-[color:var(--brand)]"
+                      : "border-[color:var(--border)] group-hover:border-[color:var(--brand)]"
                   }`}
                 >
                   {selectedDestinations.includes(dest) && (
                     <Check className="w-3.5 h-3.5 text-white" />
                   )}
                 </div>
-                <span className="text-[14px] text-[#18181B]">{dest}</span>
+                <span className="text-[14px] text-[color:var(--fg)]">{dest}</span>
               </label>
             ))}
           </div>
@@ -253,27 +250,27 @@ export function ToursPageClient({
         {/* 카테고리 필터 */}
         {categories.length > 0 && (
           <div className="bg-white rounded-[24px] p-6 space-y-3">
-            <h3 className="text-[16px] font-semibold text-[#18181B] mb-4">카테고리</h3>
+            <h3 className="text-[16px] font-semibold text-[color:var(--fg)] mb-4">카테고리</h3>
             <button
               type="button"
               onClick={() => handleCategoryClick(undefined)}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                 !selectedCategory
-                  ? "bg-[#8B5CF6]/10 text-[#8B5CF6] font-medium"
-                  : "text-[#71717A] hover:bg-gray-50"
+                  ? "bg-[color:var(--brand)]/10 text-[color:var(--brand)] font-medium"
+                  : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
               }`}
             >
               전체
             </button>
-            {categories.map((cat: Category) => (
+            {categories.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => handleCategoryClick(cat.slug)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                   selectedCategory === cat.slug
-                    ? "bg-[#8B5CF6]/10 text-[#8B5CF6] font-medium"
-                    : "text-[#71717A] hover:bg-gray-50"
+                    ? "bg-[color:var(--brand)]/10 text-[color:var(--brand)] font-medium"
+                    : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
                 }`}
               >
                 {cat.name}
@@ -287,20 +284,20 @@ export function ToursPageClient({
       <div className="flex-1 space-y-6">
         {/* 정렬 바 */}
         <div className="flex items-center justify-between">
-          <p className="text-[15px] text-[#71717A]">
-            총 <span className="font-semibold text-[#18181B]">{filteredProducts.length}</span>개의 여행 상품
+          <p className="text-[15px] text-[color:var(--muted)]">
+            총 <span className="font-semibold text-[color:var(--fg)]">{filteredProducts.length}</span>개의 여행 상품
           </p>
           <div ref={sortRef} className="relative">
             <button
               type="button"
               onClick={() => setSortOpen((v) => !v)}
-              className="flex items-center gap-2 border border-[#E4E4E7] rounded-[20px] px-4 py-2.5 bg-white hover:border-[#8B5CF6] transition-colors"
+              className="flex items-center gap-2 border border-[color:var(--border)] rounded-[20px] px-4 py-2.5 bg-white hover:border-[color:var(--brand)] transition-colors"
             >
-              <span className="text-sm text-[#18181B]">{currentSortLabel}</span>
-              <ChevronDown className={`w-4 h-4 text-[#71717A] transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+              <span className="text-sm text-[color:var(--fg)]">{currentSortLabel}</span>
+              <ChevronDown className={`w-4 h-4 text-[color:var(--muted)] transition-transform ${sortOpen ? "rotate-180" : ""}`} />
             </button>
             {sortOpen && (
-              <div className="absolute right-0 top-full mt-2 w-40 bg-white rounded-xl shadow-lg border border-[#E4E4E7] py-1 z-20">
+              <div className="absolute right-0 top-full mt-2 w-40 bg-white rounded-xl shadow-lg border border-[color:var(--border)] py-1 z-20">
                 {SORT_OPTIONS.map((opt) => (
                   <button
                     key={opt.key}
@@ -311,8 +308,8 @@ export function ToursPageClient({
                     }}
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
                       sortKey === opt.key
-                        ? "bg-[#8B5CF6]/10 text-[#8B5CF6] font-medium"
-                        : "text-[#18181B] hover:bg-gray-50"
+                        ? "bg-[color:var(--brand)]/10 text-[color:var(--brand)] font-medium"
+                        : "text-[color:var(--fg)] hover:bg-[color:var(--surface)]"
                     }`}
                   >
                     {opt.label}
@@ -326,15 +323,15 @@ export function ToursPageClient({
         {/* 상품 그리드 */}
         {filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-[32px] shadow-sm">
-            <PackageOpen className="w-16 h-16 text-[#E4E4E7] mb-4" />
-            <p className="text-lg font-medium text-[#18181B] mb-2">검색 결과가 없습니다</p>
-            <p className="text-sm text-[#71717A]">
+            <PackageOpen className="w-16 h-16 text-[color:var(--border)] mb-4" />
+            <p className="text-lg font-medium text-[color:var(--fg)] mb-2">검색 결과가 없습니다</p>
+            <p className="text-sm text-[color:var(--muted)]">
               다른 검색어나 필터를 시도해 보세요
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product: Product) => (
+            {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

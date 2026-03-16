@@ -1,23 +1,24 @@
 "use client";
 
 import { Star } from "lucide-react";
+import type { Review } from "@/lib/types";
 
 interface ReviewSectionProps {
-  reviews: any[];
+  reviews: Review[];
 }
 
 export function ReviewSection({ reviews }: ReviewSectionProps) {
   if (!reviews || reviews.length === 0) return null;
 
   const avgRating =
-    reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length;
+    reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
 
   // 별점 분포 계산
   const distribution = [5, 4, 3, 2, 1].map((star) => ({
     star,
-    count: reviews.filter((r: any) => r.rating === star).length,
+    count: reviews.filter((r) => r.rating === star).length,
     percentage:
-      (reviews.filter((r: any) => r.rating === star).length / reviews.length) *
+      (reviews.filter((r) => r.rating === star).length / reviews.length) *
       100,
   }));
 
@@ -25,11 +26,11 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
     <div className="space-y-6">
       {/* 별점 통계 */}
       <div className="bg-white rounded-[32px] p-8">
-        <h2 className="text-2xl font-bold text-[#18181B] mb-6">후기 요약</h2>
+        <h2 className="text-2xl font-bold text-[color:var(--fg)] mb-6">후기 요약</h2>
         <div className="flex items-start gap-8">
           {/* 평균 별점 */}
           <div className="text-center">
-            <div className="text-5xl font-bold text-[#18181B]">
+            <div className="text-5xl font-bold text-[color:var(--fg)]">
               {avgRating.toFixed(1)}
             </div>
             <div className="flex items-center gap-0.5 mt-2">
@@ -39,12 +40,12 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
                   className={`w-5 h-5 ${
                     i < Math.round(avgRating)
                       ? "fill-[#FACC15] text-[#FACC15]"
-                      : "fill-[#E4E4E7] text-[#E4E4E7]"
+                      : "fill-[color:var(--border)] text-[color:var(--border)]"
                   }`}
                 />
               ))}
             </div>
-            <div className="text-sm text-[#71717A] mt-2">
+            <div className="text-sm text-[color:var(--muted)] mt-2">
               {reviews.length}개 리뷰
             </div>
           </div>
@@ -53,15 +54,15 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
           <div className="flex-1 space-y-2">
             {distribution.map((d) => (
               <div key={d.star} className="flex items-center gap-3">
-                <span className="text-sm text-[#71717A] w-3">{d.star}</span>
+                <span className="text-sm text-[color:var(--muted)] w-3">{d.star}</span>
                 <Star className="w-4 h-4 fill-[#FACC15] text-[#FACC15]" />
-                <div className="flex-1 h-2 bg-[#F4F4F5] rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-[color:var(--surface)] rounded-full overflow-hidden">
                   <div
                     className="h-full bg-[#FACC15] rounded-full"
                     style={{ width: `${d.percentage}%` }}
                   />
                 </div>
-                <span className="text-xs text-[#71717A] w-10 text-right">{d.count}개</span>
+                <span className="text-xs text-[color:var(--muted)] w-10 text-right">{d.count}개</span>
               </div>
             ))}
           </div>
@@ -70,7 +71,7 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
 
       {/* 리뷰 목록 */}
       <div className="space-y-5">
-        {reviews.map((review: any) => (
+        {reviews.map((review) => (
           <div
             key={review.id}
             className="bg-white rounded-[24px] p-6"
@@ -78,40 +79,40 @@ export function ReviewSection({ reviews }: ReviewSectionProps) {
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 {/* 아바타 */}
-                <div className="w-10 h-10 bg-[#F4F4F5] rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-[#71717A]">
+                <div className="w-10 h-10 bg-[color:var(--surface)] rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-[color:var(--muted)]">
                     {review.authorName.charAt(0)}
                   </span>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-[#18181B]">
+                    <span className="font-semibold text-[color:var(--fg)]">
                       {review.authorName}
                     </span>
                     {review.isVerified && (
-                      <span className="text-xs bg-[#8B5CF6]/10 text-[#8B5CF6] px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-[color:var(--brand)]/10 text-[color:var(--brand)] px-2 py-0.5 rounded-full">
                         인증
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-sm text-[#18181B] font-medium">
+                    <span className="text-sm text-[color:var(--fg)] font-medium">
                       {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
                     </span>
                   </div>
                 </div>
               </div>
               {review.travelDate && (
-                <span className="text-sm text-[#71717A]">
+                <span className="text-sm text-[color:var(--muted)]">
                   {new Date(review.travelDate).toLocaleDateString()}
                 </span>
               )}
             </div>
 
             {review.title && (
-              <h4 className="font-medium text-[#18181B] mb-2">{review.title}</h4>
+              <h4 className="font-medium text-[color:var(--fg)] mb-2">{review.title}</h4>
             )}
-            <p className="text-[#71717A] text-sm leading-relaxed">
+            <p className="text-[color:var(--muted)] text-sm leading-relaxed">
               {review.content}
             </p>
           </div>

@@ -18,8 +18,8 @@ export function TourFilters({ destinations }: TourFiltersProps) {
             onClick={() => setSelected(dest.key)}
             className={`px-6 py-3 rounded-full font-semibold transition-all ${
               selected === dest.key
-                ? 'bg-blue-600 text-white shadow-lg scale-105'
-                : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-400 hover:text-blue-600'
+                ? 'bg-[color:var(--brand)] text-white shadow-lg scale-105'
+                : 'bg-white text-[color:var(--fg)] border border-[color:var(--border)] hover:border-[color:var(--brand)] hover:text-[color:var(--brand)]'
             }`}
           >
             {dest.key}
@@ -29,8 +29,8 @@ export function TourFilters({ destinations }: TourFiltersProps) {
       </div>
 
       {selected !== '전체' && (
-        <div className="mt-6 text-sm text-gray-600">
-          <span className="font-semibold text-gray-900">{selected}</span> 상품 {destinations.find(d => d.key === selected)?.count}개
+        <div className="mt-6 text-sm text-[color:var(--muted)]">
+          <span className="font-semibold text-[color:var(--fg)]">{selected}</span> 상품 {destinations.find(d => d.key === selected)?.count}개
         </div>
       )}
     </div>

@@ -9,9 +9,10 @@ import { BookingOptions } from "./BookingOptions";
 import { BookingContactForm } from "./BookingContactForm";
 import { BookingPriceCalculator } from "./BookingPriceCalculator";
 import { BookingConfirmation } from "./BookingConfirmation";
+import type { TourProductDetail } from "@/lib/types";
 
 interface BookingModalProps {
-  product: any;
+  product: TourProductDetail;
   onClose: () => void;
 }
 
@@ -54,13 +55,22 @@ export function BookingModal({ product, onClose }: BookingModalProps) {
   );
   const totalPrice = baseTotal + optionsTotal;
 
+  const [submitError, setSubmitError] = useState("");
+
   const handleSubmit = async () => {
     if (!contactInfo.name || !contactInfo.phone) {
-      alert("이름과 연락처를 입력해주세요");
+      setSubmitError("이름과 연락처를 입력해주세요");
+      return;
+    }
+
+    const phoneDigits = contactInfo.phone.replace(/-/g, "");
+    if (!/^01[016789]\d{7,8}$/.test(phoneDigits)) {
+      setSubmitError("올바른 전화번호를 입력해주세요");
       return;
     }
 
     setIsSubmitting(true);
+    setSubmitError("");
     try {
       const res = await fetch("/api/bookings", {
         method: "POST",
@@ -78,15 +88,26 @@ export function BookingModal({ product, onClose }: BookingModalProps) {
         }),
       });
 
+      if (!res.ok) {
+        const text = await res.text();
+        try {
+          const errData = JSON.parse(text);
+          setSubmitError(errData.error || `서버 오류가 발생했습니다 (${res.status})`);
+        } catch {
+          setSubmitError(`서버 오류가 발생했습니다 (${res.status})`);
+        }
+        return;
+      }
+
       const data = await res.json();
       if (data.success) {
         setBookingNumber(data.bookingNumber);
         setStep("confirmed");
       } else {
-        alert(data.error || "예약 처리에 실패했습니다");
+        setSubmitError(data.error || "예약 처리에 실패했습니다");
       }
     } catch {
-      alert("오류가 발생했습니다. 다시 시도해주세요.");
+      setSubmitError("네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -113,12 +134,12 @@ export function BookingModal({ product, onClose }: BookingModalProps) {
       <div className="relative bg-white w-full sm:w-[520px] sm:max-h-[90vh] max-h-[85vh] sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom">
         {/* 헤더 */}
         <div className="flex items-center justify-between px-6 py-4 border-b flex-shrink-0">
-          <h2 className="text-lg font-bold text-gray-900">
+          <h2 className="text-lg font-bold text-[color:var(--fg)]">
             {step === "confirmed" ? "예약 완료" : "예약 문의"}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600"
+            className="p-1 text-[color:var(--muted)] hover:text-[color:var(--fg)]"
           >
             <X className="w-5 h-5" />
           </button>
@@ -139,7 +160,7 @@ export function BookingModal({ product, onClose }: BookingModalProps) {
 
               {/* 날짜 선택 */}
               <BookingDatePicker
-                scheduleDates={product.scheduleDates}
+                scheduleDates={Array.isArray(product.scheduleDates) ? product.scheduleDates as unknown as { date: string; status: string }[] : null}
                 selectedDate={selectedDate}
                 onDateChange={setSelectedDate}
               />
@@ -180,11 +201,14 @@ export function BookingModal({ product, onClose }: BookingModalProps) {
 
         {/* 하단 버튼 (예약 폼일 때만) */}
         {step === "form" && (
-          <div className="px-6 py-4 border-t flex-shrink-0">
+          <div className="px-6 py-4 border-t flex-shrink-0 space-y-2">
+            {submitError && (
+              <p className="text-sm text-red-600 text-center">{submitError}</p>
+            )}
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold text-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-[color:var(--brand)] text-[color:var(--brand-foreground)] rounded-xl font-semibold text-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "접수 중..." : "예약 문의하기"}
             </button>

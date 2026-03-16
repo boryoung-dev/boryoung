@@ -42,17 +42,17 @@ export function KakaoFloating() {
         {/* 전화 상담 */}
         <a
           href="tel:1588-0320"
-          className="flex items-center gap-2 pl-4 pr-3 py-2.5 bg-white rounded-full shadow-lg border border-gray-100 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 pl-4 pr-3 py-2.5 bg-[color:var(--surface-2)] rounded-full shadow-lg border border-[color:var(--border)] text-sm font-medium text-[color:var(--fg)] hover:bg-[color:var(--surface)] transition-colors"
         >
           <span>전화 상담</span>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--brand)] text-[color:var(--brand-foreground)]">
             <Phone className="w-4 h-4" />
           </div>
         </a>
 
         {/* 카카오톡 상담 */}
         <a
-          href="https://pf.kakao.com/_placeholder"
+          href="https://pf.kakao.com/_xgxoBxj"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 pl-4 pr-3 py-2.5 bg-[#FAE100] rounded-full shadow-lg border border-[#E5CC00] text-sm font-bold text-[#371D1E] hover:bg-[#F5D800] transition-colors"
@@ -79,7 +79,7 @@ export function KakaoFloating() {
           shadow-lg transition-all duration-500 ease-out
           hover:scale-110 active:scale-95
           ${expanded
-            ? "bg-gray-800 text-white rounded-full"
+            ? "bg-[color:var(--fg)] text-white rounded-full"
             : `bg-[#FAE100] text-[#371D1E] ${SHAPES[shapeIdx]}`
           }
           ${bounce && !expanded ? "animate-floating-bounce" : ""}

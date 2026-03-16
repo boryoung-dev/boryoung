@@ -45,7 +45,7 @@ export function CurationsSection(props: {
                 type="button"
                 onClick={() => emblaApi?.scrollPrev()}
                 disabled={!canScrollPrev}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:opacity-30"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[color:var(--surface-3)] text-[color:var(--muted)] transition hover:bg-[color:var(--border)] disabled:opacity-30"
                 aria-label="이전"
               >
                 <span className="text-lg">‹</span>
@@ -54,7 +54,7 @@ export function CurationsSection(props: {
                 type="button"
                 onClick={() => emblaApi?.scrollNext()}
                 disabled={!canScrollNext}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:opacity-30"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[color:var(--surface-3)] text-[color:var(--muted)] transition hover:bg-[color:var(--border)] disabled:opacity-30"
                 aria-label="다음"
               >
                 <span className="text-lg">›</span>
@@ -72,7 +72,7 @@ export function CurationsSection(props: {
               <Link
                 href={it.linkUrl || "/tours"}
                 key={it.id}
-                className="group relative flex h-[480px] min-w-0 flex-[0_0_320px] sm:flex-[0_0_380px] cursor-pointer flex-col justify-between overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-sm transition-all duration-500 hover:shadow-xl hover:scale-[1.01]"
+                className="group relative flex h-[480px] min-w-0 flex-[0_0_320px] sm:flex-[0_0_380px] cursor-pointer flex-col justify-between overflow-hidden rounded-[2.5rem] bg-[color:var(--surface-2)] p-8 shadow-sm transition-all duration-500 hover:shadow-xl hover:scale-[1.01]"
               >
                 {it.imageUrl ? (
                   <>

@@ -34,7 +34,7 @@ export function BookingOptions({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-[color:var(--fg)] mb-2">
         추가 옵션
       </label>
       <div className="space-y-2">
@@ -46,16 +46,16 @@ export function BookingOptions({
               onClick={() => toggleOption(opt)}
               className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-sm transition-colors text-left ${
                 selected
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300"
+                  ? "border-[color:var(--brand)] bg-[color:var(--brand)]/5"
+                  : "border-[color:var(--border)] hover:border-[color:var(--muted)]"
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                     selected
-                      ? "border-blue-600 bg-blue-600"
-                      : "border-gray-300"
+                      ? "border-[color:var(--brand)] bg-[color:var(--brand)]"
+                      : "border-[color:var(--border)]"
                   }`}
                 >
                   {selected && (
@@ -75,15 +75,15 @@ export function BookingOptions({
                   )}
                 </div>
                 <div>
-                  <div className={`font-medium ${selected ? "text-blue-700" : "text-gray-900"}`}>
+                  <div className={`font-medium ${selected ? "text-[color:var(--brand)]" : "text-[color:var(--fg)]"}`}>
                     {opt.name}
                   </div>
                   {opt.description && (
-                    <div className="text-xs text-gray-500">{opt.description}</div>
+                    <div className="text-xs text-[color:var(--muted)]">{opt.description}</div>
                   )}
                 </div>
               </div>
-              <span className={`font-semibold ${selected ? "text-blue-600" : "text-gray-700"}`}>
+              <span className={`font-semibold ${selected ? "text-[color:var(--brand)]" : "text-[color:var(--fg)]"}`}>
                 +{opt.price.toLocaleString()}원
               </span>
             </button>
