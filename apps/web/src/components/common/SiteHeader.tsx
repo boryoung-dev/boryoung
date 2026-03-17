@@ -37,11 +37,10 @@ export function SiteHeader() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full bg-white transition-shadow duration-200 ${
-          // 스크롤 시 미세한 라인만, 평상시엔 더 가벼운 그림자
+        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
           scrolled
-            ? "shadow-[0_1px_0_rgba(0,0,0,0.04)]"
-            : "shadow-[0_1px_0_rgba(0,0,0,0.04)]"
+            ? "bg-white/80 backdrop-blur-xl shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+            : "bg-white"
         }`}
       >
         {/* 헤더 높이: h-16 → h-[72px] (더 여유 있게) */}

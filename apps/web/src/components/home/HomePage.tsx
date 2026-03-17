@@ -49,14 +49,22 @@ export async function HomePage() {
           <div className="relative">
             <HeroSection {...heroSection} banners={banners} />
             {/* 국가 바로가기 (히어로 하단) */}
-            <div className="flex justify-center flex-wrap gap-4 md:gap-8 py-5 border-b border-[color:var(--border)]">
-              {["일본", "태국", "베트남", "대만", "괌·사이판", "국내·제주"].map((country) => (
+            <div className="flex justify-center flex-wrap gap-2 md:gap-3 py-5">
+              {[
+                { name: "일본", emoji: "🇯🇵" },
+                { name: "태국", emoji: "🇹🇭" },
+                { name: "베트남", emoji: "🇻🇳" },
+                { name: "대만", emoji: "🇹🇼" },
+                { name: "괌·사이판", emoji: "🇬🇺" },
+                { name: "국내·제주", emoji: "🏌️" },
+              ].map((country) => (
                 <Link
-                  key={country}
-                  href={`/tours?country=${country}`}
-                  className="text-[12px] md:text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors font-medium"
+                  key={country.name}
+                  href={`/tours?country=${country.name}`}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[color:var(--surface)] hover:bg-[color:var(--border)]/50 text-[13px] text-[color:var(--fg)] font-medium transition-all duration-200 hover:shadow-sm"
                 >
-                  {country}
+                  <span className="text-[15px]">{country.emoji}</span>
+                  {country.name}
                 </Link>
               ))}
             </div>
