@@ -1,0 +1,675 @@
+"use client";
+
+import { useState } from "react";
+import {
+  X,
+  Sparkles,
+  Loader2,
+  Copy,
+  Check,
+  RefreshCw,
+  Send,
+  Search,
+  ImageIcon,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
+
+// === 타입 정의 ===
+
+interface SuggestedImage {
+  keyword: string;
+  alt: string;
+}
+
+interface ImageResult {
+  id: string;
+  url: string;
+  thumbUrl: string;
+  author: string;
+  authorUrl: string;
+  alt: string;
+}
+
+interface GeneratedContent {
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  tags: string[];
+  suggestedImages: SuggestedImage[];
+}
+
+interface SEOCheck {
+  label: string;
+  passed: boolean;
+  detail: string;
+}
+
+interface AIWriterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  /** AI 생성 결과를 기존 에디터로 전달하는 콜백 */
+  onSendToEditor: (data: {
+    title: string;
+    excerpt: string;
+    content: string;
+    category: string;
+    tags: string[];
+  }) => void;
+}
+
+// === 톤 옵션 ===
+const TONE_OPTIONS = [
+  { value: "professional", label: "전문적" },
+  { value: "friendly", label: "친근한" },
+  { value: "casual", label: "캐주얼" },
+] as const;
+
+// === 카테고리 옵션 ===
+const CATEGORY_OPTIONS = [
+  { value: "", label: "자동 추천" },
+  { value: "준비물", label: "준비물" },
+  { value: "코스공략", label: "코스공략" },
+  { value: "여행팁", label: "여행팁" },
+  { value: "장비리뷰", label: "장비리뷰" },
+  { value: "기타", label: "기타" },
+];
+
+// === HTML → 마크다운 변환 ===
+function htmlToMarkdown(html: string): string {
+  // turndown은 클라이언트에서 dynamic import로 사용
+  // 간단한 변환 폴백 (turndown 로드 실패 시)
+  let md = html;
+  md = md.replace(/<h2[^>]*>(.*?)<\/h2>/gi, "\n## $1\n");
+  md = md.replace(/<h3[^>]*>(.*?)<\/h3>/gi, "\n### $1\n");
+  md = md.replace(/<p[^>]*>(.*?)<\/p>/gi, "\n$1\n");
+  md = md.replace(/<strong>(.*?)<\/strong>/gi, "**$1**");
+  md = md.replace(/<em>(.*?)<\/em>/gi, "*$1*");
+  md = md.replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1");
+  md = md.replace(/<ul[^>]*>|<\/ul>/gi, "");
+  md = md.replace(/<ol[^>]*>|<\/ol>/gi, "");
+  md = md.replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*\/?>/gi, "![$2]($1)");
+  md = md.replace(/<br\s*\/?>/gi, "\n");
+  md = md.replace(/<[^>]+>/g, "");
+  md = md.replace(/\n{3,}/g, "\n\n");
+  return md.trim();
+}
+
+async function convertHtmlToMarkdown(html: string): Promise<string> {
+  try {
+    const TurndownService = (await import("turndown")).default;
+    const turndown = new TurndownService({
+      headingStyle: "atx",
+      bulletListMarker: "-",
+    });
+    return turndown.turndown(html);
+  } catch {
+    // turndown 로드 실패 시 폴백
+    return htmlToMarkdown(html);
+  }
+}
+
+// === SEO 점수 계산 ===
+function calculateSEOChecks(
+  title: string,
+  excerpt: string,
+  content: string,
+  keywords: string
+): SEOCheck[] {
+  const keywordList = keywords
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean);
+  const plainContent = content.replace(/<[^>]+>/g, "");
+  const contentLength = plainContent.length;
+
+  // 키워드 밀도 계산
+  let keywordCount = 0;
+  for (const kw of keywordList) {
+    const regex = new RegExp(kw, "gi");
+    keywordCount += (plainContent.match(regex) || []).length;
+  }
+  const density =
+    contentLength > 0 ? ((keywordCount * keywordList[0]?.length || 0) / contentLength) * 100 : 0;
+
+  // H2 태그 수
+  const h2Count = (content.match(/<h2/gi) || []).length;
+
+  return [
+    {
+      label: "제목 길이",
+      passed: title.length > 0 && title.length <= 60,
+      detail: `${title.length}/60자`,
+    },
+    {
+      label: "발췌문 길이",
+      passed: excerpt.length > 0 && excerpt.length <= 150,
+      detail: `${excerpt.length}/150자`,
+    },
+    {
+      label: "본문 길이",
+      passed: contentLength >= 1500 && contentLength <= 2500,
+      detail: `${contentLength}자 (권장: 1500~2500)`,
+    },
+    {
+      label: "키워드 포함",
+      passed: keywordList.some((kw) => title.includes(kw)),
+      detail: keywordList.some((kw) => title.includes(kw))
+        ? "제목에 키워드 포함됨"
+        : "제목에 키워드 없음",
+    },
+    {
+      label: "키워드 밀도",
+      passed: density >= 0.5 && density <= 3,
+      detail: `${density.toFixed(1)}% (권장: 1~2%)`,
+    },
+    {
+      label: "서브헤딩(H2)",
+      passed: h2Count >= 3,
+      detail: `${h2Count}개 (권장: 3개 이상)`,
+    },
+  ];
+}
+
+// === 컴포넌트 ===
+
+export default function AIWriterModal({
+  isOpen,
+  onClose,
+  onSendToEditor,
+}: AIWriterModalProps) {
+  const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
+
+  // 단계: "input" | "result"
+  const [step, setStep] = useState<"input" | "result">("input");
+
+  // 입력 폼 상태
+  const [topic, setTopic] = useState("");
+  const [keywords, setKeywords] = useState("");
+  const [tone, setTone] = useState("professional");
+  const [category, setCategory] = useState("");
+
+  // 생성 결과 상태
+  const [generating, setGenerating] = useState(false);
+  const [result, setResult] = useState<GeneratedContent | null>(null);
+  const [editableTitle, setEditableTitle] = useState("");
+  const [editableContent, setEditableContent] = useState("");
+
+  // 이미지 검색 상태
+  const [imageSearching, setImageSearching] = useState<string | null>(null);
+  const [searchedImages, setSearchedImages] = useState<Record<string, ImageResult[]>>({});
+
+  // === 핸들러 ===
+
+  // AI 글 생성
+  const handleGenerate = async () => {
+    if (!topic.trim() || !keywords.trim()) {
+      toast("주제와 키워드를 입력해주세요", "error");
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/blog-posts/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        } as any,
+        body: JSON.stringify({ topic, keywords, tone, category }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        toast(data.error || "AI 글 생성에 실패했습니다", "error");
+        return;
+      }
+
+      const generated: GeneratedContent = {
+        title: data.title,
+        excerpt: data.excerpt,
+        content: data.content,
+        category: data.category || category,
+        tags: data.tags || [],
+        suggestedImages: data.suggestedImages || [],
+      };
+
+      setResult(generated);
+      setEditableTitle(generated.title);
+      setEditableContent(generated.content);
+      setSearchedImages({});
+      setStep("result");
+    } catch (error) {
+      console.error("AI 글 생성 실패:", error);
+      toast("AI 글 생성 중 오류가 발생했습니다", "error");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  // 이미지 검색
+  const handleImageSearch = async (keyword: string) => {
+    setImageSearching(keyword);
+    try {
+      const res = await fetch(
+        `/api/images/search?query=${encodeURIComponent(keyword)}&perPage=6`,
+        {
+          headers: authHeaders as any,
+        }
+      );
+      const data = await res.json();
+
+      if (data.success) {
+        setSearchedImages((prev) => ({
+          ...prev,
+          [keyword]: data.images,
+        }));
+      } else {
+        toast("이미지 검색에 실패했습니다", "error");
+      }
+    } catch {
+      toast("이미지 검색 중 오류가 발생했습니다", "error");
+    } finally {
+      setImageSearching(null);
+    }
+  };
+
+  // 이미지 본문에 삽입
+  const handleInsertImage = (image: ImageResult) => {
+    const imgHtml = `<figure><img src="${image.url}" alt="${image.alt}" style="width:100%;border-radius:8px;" /><figcaption style="text-align:center;color:#666;font-size:0.9em;margin-top:4px;">${image.alt} (${image.author})</figcaption></figure>`;
+
+    // 첫 번째 </h2> 이후, 또는 첫 번째 </p> 이후에 삽입
+    const insertAfterH2 = editableContent.indexOf("</h2>");
+    const insertAfterP = editableContent.indexOf("</p>");
+    // 두 번째 </p> 찾기 (도입부 다음)
+    const secondP = editableContent.indexOf("</p>", insertAfterP + 1);
+    const insertPos = secondP !== -1 ? secondP + 4 : insertAfterH2 !== -1 ? insertAfterH2 + 5 : insertAfterP !== -1 ? insertAfterP + 4 : 0;
+
+    const before = editableContent.slice(0, insertPos);
+    const after = editableContent.slice(insertPos);
+    setEditableContent(before + "\n" + imgHtml + "\n" + after);
+    toast("이미지가 본문에 삽입되었습니다", "success");
+  };
+
+  // 에디터로 보내기
+  const handleSendToEditor = () => {
+    if (!result) return;
+    onSendToEditor({
+      title: editableTitle,
+      excerpt: result.excerpt,
+      content: editableContent,
+      category: result.category,
+      tags: result.tags,
+    });
+    handleClose();
+  };
+
+  // HTML 복사
+  const handleCopyHtml = async () => {
+    try {
+      await navigator.clipboard.writeText(editableContent);
+      toast("HTML이 복사되었습니다", "success");
+    } catch {
+      toast("복사에 실패했습니다", "error");
+    }
+  };
+
+  // 마크다운 복사
+  const handleCopyMarkdown = async () => {
+    try {
+      const md = await convertHtmlToMarkdown(editableContent);
+      await navigator.clipboard.writeText(md);
+      toast("마크다운이 복사되었습니다", "success");
+    } catch {
+      toast("복사에 실패했습니다", "error");
+    }
+  };
+
+  // 다시 생성 (1단계로 돌아가기)
+  const handleRegenerate = () => {
+    setStep("input");
+    setResult(null);
+    setEditableTitle("");
+    setEditableContent("");
+    setSearchedImages({});
+  };
+
+  // 모달 닫기
+  const handleClose = () => {
+    setStep("input");
+    setTopic("");
+    setKeywords("");
+    setTone("professional");
+    setCategory("");
+    setResult(null);
+    setEditableTitle("");
+    setEditableContent("");
+    setSearchedImages({});
+    setGenerating(false);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  // SEO 체크리스트
+  const seoChecks =
+    result && step === "result"
+      ? calculateSEOChecks(editableTitle, result.excerpt, editableContent, keywords)
+      : [];
+  const seoScore = seoChecks.filter((c) => c.passed).length;
+  const seoTotal = seoChecks.length;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        {/* 헤더 */}
+        <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white z-10">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-purple-600" />
+            <h2 className="text-xl font-bold">AI 글 작성</h2>
+            {step === "result" && (
+              <span className="text-sm text-gray-500 ml-2">미리보기</span>
+            )}
+          </div>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          {/* === 1단계: 입력 === */}
+          {step === "input" && (
+            <div className="space-y-5">
+              {/* 주제 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  주제 / 제목 *
+                </label>
+                <input
+                  type="text"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="예: 태국 골프 여행 준비물 총정리"
+                />
+              </div>
+
+              {/* 키워드 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  키워드 * <span className="text-gray-400 font-normal">(콤마로 구분)</span>
+                </label>
+                <input
+                  type="text"
+                  value={keywords}
+                  onChange={(e) => setKeywords(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="예: 태국 골프, 골프 여행 준비물, 방콕 골프장"
+                />
+              </div>
+
+              {/* 톤 선택 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  톤
+                </label>
+                <div className="flex gap-3">
+                  {TONE_OPTIONS.map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`flex items-center gap-2 px-4 py-2 border rounded-lg cursor-pointer transition-colors ${
+                        tone === opt.value
+                          ? "border-purple-500 bg-purple-50 text-purple-700"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="tone"
+                        value={opt.value}
+                        checked={tone === opt.value}
+                        onChange={(e) => setTone(e.target.value)}
+                        className="sr-only"
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* 카테고리 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  카테고리 <span className="text-gray-400 font-normal">(선택)</span>
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                >
+                  {CATEGORY_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 생성 버튼 */}
+              <button
+                onClick={handleGenerate}
+                disabled={generating || !topic.trim() || !keywords.trim()}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {generating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    AI가 글을 작성하고 있습니다...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    AI로 글 생성
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* === 2단계: 결과 미리보기 === */}
+          {step === "result" && result && (
+            <div className="space-y-6">
+              {/* 제목 (수정 가능) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  제목
+                </label>
+                <input
+                  type="text"
+                  value={editableTitle}
+                  onChange={(e) => setEditableTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg font-semibold"
+                />
+              </div>
+
+              {/* 발췌문 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  발췌문 (메타 디스크립션)
+                </label>
+                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  {result.excerpt}
+                </p>
+              </div>
+
+              {/* 카테고리 & 태그 */}
+              <div className="flex flex-wrap gap-2">
+                {result.category && (
+                  <span className="inline-flex px-3 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
+                    {result.category}
+                  </span>
+                )}
+                {result.tags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+
+              {/* SEO 점수 */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-medium text-gray-700">
+                    SEO 점수
+                  </span>
+                  <span
+                    className={`text-sm font-bold ${
+                      seoScore >= 5
+                        ? "text-green-600"
+                        : seoScore >= 3
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                    }`}
+                  >
+                    {seoScore}/{seoTotal}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {seoChecks.map((check, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm">
+                      {check.passed ? (
+                        <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                      )}
+                      <span className="text-gray-600">
+                        {check.label}: {check.detail}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 이미지 삽입 */}
+              {result.suggestedImages.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    추천 이미지
+                  </label>
+                  <div className="space-y-4">
+                    {result.suggestedImages.map((img, i) => (
+                      <div key={i}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <button
+                            onClick={() => handleImageSearch(img.keyword)}
+                            disabled={imageSearching === img.keyword}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                          >
+                            {imageSearching === img.keyword ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Search className="w-3.5 h-3.5" />
+                            )}
+                            &quot;{img.keyword}&quot; 검색
+                          </button>
+                          <span className="text-xs text-gray-400">
+                            {img.alt}
+                          </span>
+                        </div>
+
+                        {/* 검색된 이미지 그리드 */}
+                        {searchedImages[img.keyword] && (
+                          <div className="grid grid-cols-3 gap-2">
+                            {searchedImages[img.keyword].map((photo) => (
+                              <button
+                                key={photo.id}
+                                onClick={() =>
+                                  handleInsertImage({
+                                    ...photo,
+                                    alt: img.alt,
+                                  })
+                                }
+                                className="relative group rounded-lg overflow-hidden border border-gray-200 hover:border-purple-400 transition-colors"
+                              >
+                                <img
+                                  src={photo.thumbUrl}
+                                  alt={photo.alt}
+                                  className="w-full h-24 object-cover"
+                                  loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                  <ImageIcon className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                                <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1.5 py-0.5 text-[10px] text-white truncate">
+                                  {photo.author}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* HTML 미리보기 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  본문 미리보기
+                </label>
+                <div
+                  className="prose prose-sm max-w-none border border-gray-200 rounded-lg p-4 max-h-[400px] overflow-y-auto"
+                  dangerouslySetInnerHTML={{ __html: editableContent }}
+                />
+              </div>
+
+              {/* 액션 버튼들 */}
+              <div className="flex flex-wrap gap-3 pt-2">
+                <button
+                  onClick={handleSendToEditor}
+                  className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  <Send className="w-4 h-4" />
+                  에디터로 보내기
+                </button>
+                <button
+                  onClick={handleCopyHtml}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Copy className="w-4 h-4" />
+                  HTML 복사
+                </button>
+                <button
+                  onClick={handleCopyMarkdown}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Check className="w-4 h-4" />
+                  마크다운 복사
+                </button>
+                <button
+                  onClick={handleRegenerate}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  다시 생성
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

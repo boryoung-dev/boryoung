@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Pencil, Trash2, X, FileText, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, Sparkles } from "lucide-react";
 import Select from "@/components/ui/Select";
 import { TiptapEditor } from "@/components/editor/TiptapEditor";
+import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
+import AIWriterModal from "@/components/blog/AIWriterModal";
 
 interface BlogPost {
   id: string;
@@ -55,6 +57,7 @@ export default function BlogPostsPage() {
   });
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
   const [filterPublished, setFilterPublished] = useState<"all" | "published" | "draft">("all");
+  const [aiModalOpen, setAiModalOpen] = useState(false);
 
   useEffect(() => {
     if (Object.keys(authHeaders).length > 0 && !isLoading) {
@@ -101,7 +104,6 @@ export default function BlogPostsPage() {
 
   const openEditModal = async (post: BlogPost) => {
     try {
-      // 상세 정보 조회 (content 포함)
       const res = await fetch(`/api/blog-posts/${post.id}`, {
         headers: authHeaders as any
       });
@@ -197,94 +199,77 @@ export default function BlogPostsPage() {
 
   if (isLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">로딩 중...</div>
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        로딩 중...
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div>
+      {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">매거진 관리</h1>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          글 작성
-        </button>
+        <h1 className="text-2xl font-bold text-gray-900">매거진 관리</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setAiModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 font-semibold text-sm transition-all shadow-sm"
+          >
+            <Sparkles className="w-4 h-4" /> AI 글 작성
+          </button>
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> 글 작성
+          </button>
+        </div>
       </div>
 
       {/* 필터 탭 */}
       <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setFilterPublished("all")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filterPublished === "all"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          전체
-        </button>
-        <button
-          onClick={() => setFilterPublished("published")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filterPublished === "published"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          발행됨
-        </button>
-        <button
-          onClick={() => setFilterPublished("draft")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filterPublished === "draft"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          비공개
-        </button>
+        {[
+          { value: "all" as const, label: "전체" },
+          { value: "published" as const, label: "발행됨" },
+          { value: "draft" as const, label: "비공개" },
+        ].map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setFilterPublished(tab.value)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+              filterPublished === tab.value
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-100 transition-colors"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {filteredPosts.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <p>등록된 블로그 글이 없습니다</p>
+        <div className="py-16 text-center">
+          <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-sm text-gray-500">등록된 블로그 글이 없습니다</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  썸네일
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  제목
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  카테고리
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  발행 상태
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  생성일
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  작업
-                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">썸네일</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">제목</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">카테고리</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">발행 상태</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">생성일</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">작업</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {filteredPosts.map((post) => (
-                <tr key={post.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
+                <tr key={post.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
                       {post.thumbnail ? (
                         <img
                           src={post.thumbnail}
@@ -301,57 +286,45 @@ export default function BlogPostsPage() {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <div className="font-medium text-gray-900">{post.title}</div>
                     {post.excerpt && (
-                      <div className="text-sm text-gray-500 mt-1 line-clamp-1">
-                        {post.excerpt}
-                      </div>
+                      <div className="text-sm text-gray-500 mt-1 line-clamp-1">{post.excerpt}</div>
                     )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     {post.category ? (
-                      <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                         {post.category}
                       </span>
                     ) : (
                       <span className="text-gray-400 text-sm">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                  <td className="px-4 py-3">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                       post.isPublished
                         ? "bg-green-100 text-green-800"
                         : "bg-gray-100 text-gray-600"
                     }`}>
-                      {post.isPublished ? (
-                        <>
-                          <Eye className="w-3 h-3" />
-                          발행됨
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff className="w-3 h-3" />
-                          비공개
-                        </>
-                      )}
+                      {post.isPublished ? "발행됨" : "비공개"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-4 py-3 text-sm text-gray-500">
                     {new Date(post.createdAt).toLocaleDateString("ko-KR")}
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => openEditModal(post)}
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="수정"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(post.id)}
-                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="삭제"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -365,138 +338,133 @@ export default function BlogPostsPage() {
         </div>
       )}
 
+      {/* AI 글 작성 모달 */}
+      <AIWriterModal
+        isOpen={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        onSendToEditor={(data) => {
+          setEditingPost(null);
+          setFormData({
+            title: data.title,
+            category: data.category || "",
+            excerpt: data.excerpt || "",
+            content: data.content,
+            thumbnail: "",
+            isPublished: false,
+          });
+          setThumbnailPreview("");
+          setAiModalOpen(false);
+          setModalOpen(true);
+        }}
+      />
+
       {/* 생성/수정 모달 */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white z-10">
-              <h2 className="text-xl font-bold">
-                {editingPost ? "글 수정" : "글 작성"}
-              </h2>
-              <button
-                onClick={() => setModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    제목 *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    카테고리
-                  </label>
-                  {/* 블로그 카테고리 선택 */}
-                  <Select
-                    value={formData.category}
-                    onChange={(val) => setFormData({ ...formData, category: val })}
-                    options={[
-                      { value: "", label: "선택 안함" },
-                      { value: "준비물", label: "준비물" },
-                      { value: "코스공략", label: "코스공략" },
-                      { value: "여행팁", label: "여행팁" },
-                      { value: "장비리뷰", label: "장비리뷰" },
-                      { value: "기타", label: "기타" },
-                    ]}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    발췌
-                  </label>
-                  <textarea
-                    value={formData.excerpt}
-                    onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                    placeholder="글의 요약 또는 미리보기 텍스트"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    본문 *
-                  </label>
-                  <TiptapEditor
-                    content={formData.content}
-                    onChange={(html) => setFormData({ ...formData, content: html })}
-                    placeholder="블로그 본문을 입력하세요..."
-                    minHeight="300px"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    썸네일 URL
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.thumbnail}
-                    onChange={(e) => handleThumbnailChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  {thumbnailPreview && (
-                    <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
-                      <img
-                        src={thumbnailPreview}
-                        alt="미리보기"
-                        className="w-full h-[200px] object-cover"
-                        onError={() => setThumbnailPreview("")}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isPublished"
-                    checked={formData.isPublished}
-                    onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
-                    발행
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {editingPost ? "수정" : "작성"}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editingPost ? "글 수정" : "글 작성"}
+        size="lg"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setModalOpen(false)} />
+            <ModalConfirmButton
+              type="submit"
+              onClick={() => {
+                document.getElementById("blog-form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+              }}
+            >
+              {editingPost ? "수정" : "작성"}
+            </ModalConfirmButton>
+          </>
+        }
+      >
+        <form id="blog-form" onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">제목 *</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              required
+            />
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">카테고리</label>
+            <Select
+              value={formData.category}
+              onChange={(val) => setFormData({ ...formData, category: val })}
+              options={[
+                { value: "", label: "선택 안함" },
+                { value: "준비물", label: "준비물" },
+                { value: "코스공략", label: "코스공략" },
+                { value: "여행팁", label: "여행팁" },
+                { value: "장비리뷰", label: "장비리뷰" },
+                { value: "기타", label: "기타" },
+              ]}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">발췌</label>
+            <textarea
+              value={formData.excerpt}
+              onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+              rows={2}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm resize-none"
+              placeholder="글의 요약 또는 미리보기 텍스트"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">본문 *</label>
+            <TiptapEditor
+              content={formData.content}
+              onChange={(html) => setFormData({ ...formData, content: html })}
+              placeholder="블로그 본문을 입력하세요..."
+              minHeight="300px"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">썸네일 URL</label>
+            <input
+              type="url"
+              value={formData.thumbnail}
+              onChange={(e) => handleThumbnailChange(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              placeholder="https://example.com/image.jpg"
+            />
+            {thumbnailPreview && (
+              <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+                <img
+                  src={thumbnailPreview}
+                  alt="미리보기"
+                  className="w-full h-[200px] object-cover"
+                  onError={() => setThumbnailPreview("")}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">발행</span>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, isPublished: !formData.isPublished })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                formData.isPublished ? "bg-green-500" : "bg-gray-300"
+              }`}
+            >
+              <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                formData.isPublished ? "translate-x-[22px]" : "translate-x-[2px]"
+              }`} />
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
