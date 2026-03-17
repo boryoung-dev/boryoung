@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Star, Phone } from "lucide-react";
 
 interface HeroSectionProps {
@@ -9,12 +10,15 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ product, onBooking, onImageClick }: HeroSectionProps) {
-  const mainImage =
-    product.images?.find((img: any) => img.isThumbnail)?.url ||
-    product.images?.[0]?.url ||
+  const allImages = product.images || [];
+  const defaultMain =
+    allImages.find((img: any) => img.isThumbnail)?.url ||
+    allImages[0]?.url ||
     "/placeholder.png";
 
-  const thumbnails = product.images?.slice(0, 4) || [];
+  const [selectedImage, setSelectedImage] = useState(defaultMain);
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const thumbnails = allImages.slice(0, 4);
 
   const avgRating =
     product.reviews && product.reviews.length > 0
@@ -28,33 +32,37 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
     <div className="flex flex-col lg:flex-row gap-15">
       {/* 왼쪽: 이미지 섹션 */}
       <div className="w-full lg:w-[55%] flex-shrink-0">
-        {/* 메인 이미지 */}
+        {/* 메인 이미지 — 클릭 시 라이트박스 */}
         <button
-          onClick={() => onImageClick(0)}
-          className="w-full h-[440px] rounded-2xl overflow-hidden mb-3"
+          onClick={() => onImageClick(selectedIdx)}
+          className="w-full h-[440px] rounded-2xl overflow-hidden mb-3 cursor-zoom-in"
         >
           <img
-            src={mainImage}
+            src={selectedImage}
             alt={product.title}
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
           />
         </button>
 
-        {/* 썸네일 4개 */}
-        {thumbnails.length > 0 && (
-          <div className="flex gap-4">
+        {/* 썸네일 — 클릭 시 메인 이미지 교체 */}
+        {thumbnails.length > 1 && (
+          <div className="flex gap-3">
             {thumbnails.map((img: any, idx: number) => (
               <button
                 key={img.id || idx}
-                onClick={() => onImageClick(idx)}
-                className="flex-1 h-[90px] rounded-xl overflow-hidden"
+                onClick={() => { setSelectedImage(img.url); setSelectedIdx(idx); }}
+                className={`flex-1 h-[90px] rounded-xl overflow-hidden transition-all duration-200 ${
+                  selectedImage === img.url
+                    ? "ring-2 ring-[color:var(--fg)] ring-offset-2 opacity-100"
+                    : "opacity-60 hover:opacity-100"
+                }`}
               >
                 <img
                   src={img.url}
                   alt={img.alt || ""}
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover"
                 />
               </button>
             ))}
