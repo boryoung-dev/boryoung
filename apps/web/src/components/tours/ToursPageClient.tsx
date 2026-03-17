@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
-import { PackageOpen, ChevronDown, Check } from "lucide-react";
+import { PackageOpen, ChevronDown } from "lucide-react";
+import { RangeSlider } from "@/components/common/RangeSlider";
+import { Checkbox } from "@/components/common/Checkbox";
 import { ProductCard } from "./ProductCard";
 import type { TourProductSummary, Category, Tag } from "@/lib/types";
 
@@ -165,59 +167,16 @@ export function ToursPageClient({
 
         {/* 가격대 필터 */}
         <div className="bg-white rounded-[24px] p-6 space-y-4">
-          <div className="flex items-baseline justify-between">
-            <h3 className="text-sm font-semibold text-[color:var(--fg)]">1인 가격</h3>
-            <span className="text-[13px] text-[color:var(--muted)]">
-              {formatPrice(minPrice)} ~ {formatPrice(maxPrice)}
-            </span>
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs text-[color:var(--muted)]">
-              <span>{formatPrice(priceRange.min)}</span>
-              <span>{formatPrice(priceRange.max)}</span>
-            </div>
-            {/* 듀얼 레인지 슬라이더 */}
-            <div className="relative h-7 flex items-center">
-              {/* 트랙 배경 */}
-              <div className="absolute left-0 right-0 h-1 bg-[color:var(--border)] rounded-full" />
-              {/* 활성 트랙 */}
-              <div
-                className="absolute h-1 bg-[color:var(--brand)] rounded-full"
-                style={{
-                  left: `${((minPrice - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
-                  right: `${100 - ((maxPrice - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
-                }}
-              />
-              {/* 최소 핸들 */}
-              <input
-                type="range"
-                min={priceRange.min}
-                max={priceRange.max}
-                step={PRICE_STEP}
-                value={minPrice}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  setMinPrice(Math.min(v, maxPrice - PRICE_STEP));
-                }}
-                className="absolute w-full h-1 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[color:var(--brand)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[color:var(--brand)] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
-                style={{ zIndex: minPrice > priceRange.max - PRICE_STEP * 2 ? 5 : 3 }}
-              />
-              {/* 최대 핸들 */}
-              <input
-                type="range"
-                min={priceRange.min}
-                max={priceRange.max}
-                step={PRICE_STEP}
-                value={maxPrice}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  setMaxPrice(Math.max(v, minPrice + PRICE_STEP));
-                }}
-                className="absolute w-full h-1 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[color:var(--brand)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[color:var(--brand)] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
-                style={{ zIndex: 4 }}
-              />
-            </div>
-          </div>
+          <h3 className="text-sm font-semibold text-[color:var(--fg)]">1인 가격</h3>
+          <RangeSlider
+            min={priceRange.min}
+            max={priceRange.max}
+            step={PRICE_STEP}
+            minValue={minPrice}
+            maxValue={maxPrice}
+            onChange={(newMin, newMax) => { setMinPrice(newMin); setMaxPrice(newMax); }}
+            formatLabel={formatPrice}
+          />
         </div>
 
         {/* 여행지 필터 */}
@@ -225,24 +184,12 @@ export function ToursPageClient({
           <h3 className="text-sm font-semibold text-[color:var(--fg)]">여행지</h3>
           <div className="space-y-3">
             {destinations.map((dest) => (
-              <label
+              <Checkbox
                 key={dest}
-                className="flex items-center gap-3 cursor-pointer group"
-                onClick={() => toggleDestination(dest)}
-              >
-                <div
-                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                    selectedDestinations.includes(dest)
-                      ? "bg-[color:var(--brand)] border-[color:var(--brand)]"
-                      : "border-[color:var(--border)] group-hover:border-[color:var(--brand)]"
-                  }`}
-                >
-                  {selectedDestinations.includes(dest) && (
-                    <Check className="w-3.5 h-3.5 text-white" />
-                  )}
-                </div>
-                <span className="text-sm text-[color:var(--muted)]">{dest}</span>
-              </label>
+                checked={selectedDestinations.includes(dest)}
+                onChange={() => toggleDestination(dest)}
+                label={dest}
+              />
             ))}
           </div>
         </div>

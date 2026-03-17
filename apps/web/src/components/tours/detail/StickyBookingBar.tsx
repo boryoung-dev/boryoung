@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Phone } from "lucide-react";
+import { DatePicker } from "@/components/common/DatePicker";
 import type { TourProductDetail } from "@/lib/types";
 
 interface StickyBookingBarProps {
@@ -116,12 +117,10 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
             required
             className="w-full px-4 py-2.5 bg-[color:var(--surface)] border-none rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
           />
-          <input
-            name="departureDate"
-            type="date"
+          <DatePicker
             value={inquiryForm.departureDate}
-            onChange={handleInquiryChange}
-            className="w-full px-4 py-2.5 bg-[color:var(--surface)] border-none rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+            onChange={(val) => setInquiryForm(prev => ({ ...prev, departureDate: val }))}
+            placeholder="출발 희망일"
           />
           <textarea
             name="message"

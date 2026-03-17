@@ -4,7 +4,22 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/common/SiteHeader";
 import { SiteFooter } from "@/components/common/SiteFooter";
 import { KakaoFloating } from "@/components/common/KakaoFloating";
+import { DatePicker } from "@/components/common/DatePicker";
+import { Select } from "@/components/common/Select";
+import { NumberInput } from "@/components/common/NumberInput";
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2 } from "lucide-react";
+
+const destinationOptions = [
+  { value: "", label: "선택해주세요" },
+  { value: "일본", label: "일본" },
+  { value: "태국", label: "태국" },
+  { value: "베트남", label: "베트남" },
+  { value: "대만", label: "대만" },
+  { value: "괌/사이판", label: "괌/사이판" },
+  { value: "몽골", label: "몽골" },
+  { value: "국내/제주", label: "국내/제주" },
+  { value: "기타", label: "기타" },
+];
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -22,7 +37,7 @@ export default function ContactPage() {
   const [error, setError] = useState("");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -231,47 +246,33 @@ export default function ContactPage() {
                     <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
                       희망 여행지
                     </label>
-                    <select
-                      name="destination"
+                    <Select
                       value={formData.destination}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow bg-white"
-                    >
-                      <option value="">선택해주세요</option>
-                      <option value="일본">일본</option>
-                      <option value="태국">태국</option>
-                      <option value="베트남">베트남</option>
-                      <option value="대만">대만</option>
-                      <option value="괌/사이판">괌/사이판</option>
-                      <option value="몽골">몽골</option>
-                      <option value="국내/제주">국내/제주</option>
-                      <option value="기타">기타</option>
-                    </select>
+                      onChange={(val) => setFormData(prev => ({ ...prev, destination: val }))}
+                      options={destinationOptions}
+                      placeholder="선택해주세요"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
                       출발 희망일
                     </label>
-                    <input
-                      type="date"
-                      name="departureDate"
+                    <DatePicker
                       value={formData.departureDate}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
+                      onChange={(val) => setFormData(prev => ({ ...prev, departureDate: val }))}
+                      placeholder="출발 희망일"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
                       여행 인원
                     </label>
-                    <input
-                      type="number"
-                      name="people"
+                    <NumberInput
                       value={formData.people}
-                      onChange={handleChange}
+                      onChange={(val) => setFormData(prev => ({ ...prev, people: val }))}
                       min={1}
+                      max={30}
                       placeholder="2"
-                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
                     />
                   </div>
                 </div>
