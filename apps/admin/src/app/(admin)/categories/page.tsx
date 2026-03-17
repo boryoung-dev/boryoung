@@ -89,20 +89,25 @@ export default function AdminCategoriesPage() {
 
   return (
     <div>
+      {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">카테고리 관리</h1>
         <button
           onClick={() => handleAdd()}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" /> 대분류 추가
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
+      {/* 카테고리 트리 */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {categories.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            카테고리가 없습니다. 대분류를 먼저 추가해주세요.
+          <div className="py-16 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 text-gray-300">
+              <Plus className="w-12 h-12" />
+            </div>
+            <p className="text-sm text-gray-500">카테고리가 없습니다. 대분류를 먼저 추가해주세요.</p>
           </div>
         ) : (
           <CategoryTree

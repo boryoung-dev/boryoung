@@ -62,7 +62,7 @@ interface ProductByCategory {
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   PENDING: { label: "접수", color: "bg-amber-500" },
-  CONFIRMED: { label: "확정", color: "bg-[color:var(--brand)]" },
+  CONFIRMED: { label: "확정", color: "bg-blue-600" },
   COMPLETED: { label: "완료", color: "bg-emerald-500" },
   CANCELLED: { label: "취소", color: "bg-red-400" },
 };
@@ -73,7 +73,6 @@ const inquiryStatusConfig: Record<string, { label: string; color: string }> = {
   CLOSED: { label: "종료", color: "bg-gray-400" },
 };
 
-// 국가 이름 매핑
 const destinationLabels: Record<string, string> = {
   JAPAN: "일본",
   VIETNAM: "베트남",
@@ -125,8 +124,8 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="flex items-center gap-3 text-[color:var(--muted)] text-sm">
-          <div className="w-4 h-4 border-2 border-[color:var(--border)] border-t-[color:var(--brand)] rounded-full animate-spin" />
+        <div className="flex items-center gap-3 text-gray-500 text-sm">
+          <div className="w-4 h-4 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
           불러오는 중...
         </div>
       </div>
@@ -154,8 +153,8 @@ export default function AdminDashboard() {
   return (
     <div className="max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[color:var(--fg)]">대시보드</h1>
-        <p className="text-xs text-[color:var(--muted)]">
+        <h1 className="text-2xl font-bold text-gray-900">대시보드</h1>
+        <p className="text-xs text-gray-500">
           {new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "long" })}
         </p>
       </div>
@@ -168,11 +167,11 @@ export default function AdminDashboard() {
             <Link
               key={action.label}
               href={action.href}
-              className="flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-[color:var(--border)] hover:bg-[color:var(--surface)] transition-colors"
+              className="flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm"
             >
               <span className={`w-2 h-2 rounded-full shrink-0 ${action.dotColor}`} />
-              <Icon className="w-4 h-4 shrink-0 text-[color:var(--muted)]" />
-              <span className="text-sm font-semibold text-[color:var(--fg)]">{action.label}</span>
+              <Icon className="w-4 h-4 shrink-0 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-900">{action.label}</span>
             </Link>
           );
         })}
@@ -185,17 +184,17 @@ export default function AdminDashboard() {
           return (
             <div
               key={card.label}
-              className="bg-[color:var(--bg)] rounded-xl border border-[color:var(--border)] p-5 shadow-[var(--shadow-card)]"
+              className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[12px] font-medium text-[color:var(--muted)]">{card.label}</span>
-                <div className={`p-1.5 rounded-lg bg-[color:var(--surface)]`}>
+                <span className="text-xs font-medium text-gray-500">{card.label}</span>
+                <div className="p-1.5 rounded-lg bg-gray-50">
                   <Icon className={`w-3.5 h-3.5 ${card.color}`} />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[color:var(--fg)] tracking-tight">
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">
                 {card.value.toLocaleString()}
-                <span className="text-sm font-medium text-[color:var(--muted)] ml-0.5">{card.unit}</span>
+                <span className="text-sm font-medium text-gray-500 ml-0.5">{card.unit}</span>
               </p>
             </div>
           );
@@ -207,21 +206,21 @@ export default function AdminDashboard() {
         {/* 왼쪽: 최근 예약 + 최근 문의 */}
         <div className="lg:col-span-2 space-y-4">
           {/* 최근 예약 */}
-          <div className="bg-[color:var(--bg)] rounded-xl border border-[color:var(--border)] shadow-[var(--shadow-card)] overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-5 py-4 flex items-center justify-between">
-              <h2 className="text-[15px] font-bold text-[color:var(--fg)]">최근 예약</h2>
+              <h2 className="text-sm font-bold text-gray-900">최근 예약</h2>
               <Link
                 href="/bookings"
-                className="text-[12px] font-semibold text-[color:var(--brand)] hover:underline"
+                className="text-xs font-semibold text-blue-600 hover:underline"
               >
                 전체 보기
               </Link>
             </div>
 
             {recentBookings.length === 0 ? (
-              <div className="px-5 py-12 text-center border-t border-[color:var(--border)]">
-                <CalendarCheck className="w-8 h-8 text-[color:var(--border)] mx-auto mb-2" />
-                <p className="text-[13px] text-[color:var(--muted)]">최근 예약이 없습니다</p>
+              <div className="px-5 py-12 text-center border-t border-gray-200">
+                <CalendarCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">최근 예약이 없습니다</p>
               </div>
             ) : (
               <div>
@@ -231,20 +230,20 @@ export default function AdminDashboard() {
                     <Link
                       key={booking.id}
                       href={`/bookings/${booking.id}`}
-                      className={`flex items-center gap-4 px-5 py-3.5 hover:bg-[color:var(--surface)] transition-colors ${
-                        i > 0 ? "border-t border-[color:var(--surface)]" : "border-t border-[color:var(--border)]"
+                      className={`flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors ${
+                        i > 0 ? "border-t border-gray-100" : "border-t border-gray-200"
                       }`}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-[13px] font-semibold text-[color:var(--fg)]">{booking.name}</span>
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[color:var(--muted)]">
+                          <span className="text-sm font-semibold text-gray-900">{booking.name}</span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-500">
                             <span className={`w-1.5 h-1.5 rounded-full ${status.color}`} />
                             {status.label}
                           </span>
                         </div>
-                        <p className="text-[12px] text-[color:var(--muted)] truncate">{booking.tourProduct.title}</p>
-                        <div className="flex items-center gap-2.5 mt-1 text-[11px] text-[color:var(--muted)]">
+                        <p className="text-xs text-gray-500 truncate">{booking.tourProduct.title}</p>
+                        <div className="flex items-center gap-2.5 mt-1 text-[11px] text-gray-500">
                           <span className="flex items-center gap-0.5">
                             <Users className="w-3 h-3" />{booking.peopleCount}명
                           </span>
@@ -254,7 +253,7 @@ export default function AdminDashboard() {
                           <span>{new Date(booking.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-[color:var(--border)] shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-gray-300 shrink-0" />
                     </Link>
                   );
                 })}
@@ -263,10 +262,10 @@ export default function AdminDashboard() {
           </div>
 
           {/* 최근 문의 */}
-          <div className="bg-[color:var(--bg)] rounded-xl border border-[color:var(--border)] shadow-[var(--shadow-card)] overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-[15px] font-bold text-[color:var(--fg)]">최근 문의</h2>
+                <h2 className="text-sm font-bold text-gray-900">최근 문의</h2>
                 {(stats?.pendingInquiries || 0) > 0 && (
                   <span className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold">
                     {stats?.pendingInquiries}
@@ -275,16 +274,16 @@ export default function AdminDashboard() {
               </div>
               <Link
                 href="/inquiries"
-                className="text-[12px] font-semibold text-[color:var(--brand)] hover:underline"
+                className="text-xs font-semibold text-blue-600 hover:underline"
               >
                 전체 보기
               </Link>
             </div>
 
             {recentInquiries.length === 0 ? (
-              <div className="px-5 py-12 text-center border-t border-[color:var(--border)]">
-                <MessageSquare className="w-8 h-8 text-[color:var(--border)] mx-auto mb-2" />
-                <p className="text-[13px] text-[color:var(--muted)]">최근 문의가 없습니다</p>
+              <div className="px-5 py-12 text-center border-t border-gray-200">
+                <MessageSquare className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">최근 문의가 없습니다</p>
               </div>
             ) : (
               <div>
@@ -294,20 +293,20 @@ export default function AdminDashboard() {
                     <Link
                       key={inquiry.id}
                       href={`/inquiries`}
-                      className={`flex items-center gap-4 px-5 py-3.5 hover:bg-[color:var(--surface)] transition-colors ${
-                        i > 0 ? "border-t border-[color:var(--surface)]" : "border-t border-[color:var(--border)]"
+                      className={`flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors ${
+                        i > 0 ? "border-t border-gray-100" : "border-t border-gray-200"
                       }`}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-[13px] font-semibold text-[color:var(--fg)]">{inquiry.name}</span>
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[color:var(--muted)]">
+                          <span className="text-sm font-semibold text-gray-900">{inquiry.name}</span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-500">
                             <span className={`w-1.5 h-1.5 rounded-full ${status.color}`} />
                             {status.label}
                           </span>
                         </div>
-                        <p className="text-[12px] text-[color:var(--muted)] truncate">{inquiry.content}</p>
-                        <div className="flex items-center gap-2.5 mt-1 text-[11px] text-[color:var(--muted)]">
+                        <p className="text-xs text-gray-500 truncate">{inquiry.content}</p>
+                        <div className="flex items-center gap-2.5 mt-1 text-[11px] text-gray-500">
                           <span className="flex items-center gap-0.5">
                             <Phone className="w-3 h-3" />{inquiry.phone}
                           </span>
@@ -319,7 +318,7 @@ export default function AdminDashboard() {
                           <span>{new Date(inquiry.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-[color:var(--border)] shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 text-gray-300 shrink-0" />
                     </Link>
                   );
                 })}
@@ -330,33 +329,33 @@ export default function AdminDashboard() {
 
         {/* 오른쪽: 국가별 상품 분포 */}
         <div className="space-y-4">
-          <div className="bg-[color:var(--bg)] rounded-xl border border-[color:var(--border)] shadow-[var(--shadow-card)] overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-5 py-4">
-              <h2 className="text-[15px] font-bold text-[color:var(--fg)]">국가별 활성 상품</h2>
+              <h2 className="text-sm font-bold text-gray-900">국가별 활성 상품</h2>
             </div>
 
             {productsByCategory.length === 0 ? (
-              <div className="px-5 py-12 text-center border-t border-[color:var(--border)]">
-                <Globe className="w-8 h-8 text-[color:var(--border)] mx-auto mb-2" />
-                <p className="text-[13px] text-[color:var(--muted)]">등록된 상품이 없습니다</p>
+              <div className="px-5 py-12 text-center border-t border-gray-200">
+                <Globe className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">등록된 상품이 없습니다</p>
               </div>
             ) : (
-              <div className="px-5 pb-5 space-y-3 border-t border-[color:var(--border)] pt-4">
+              <div className="px-5 pb-5 space-y-3 border-t border-gray-200 pt-4">
                 {productsByCategory
                   .sort((a, b) => b.count - a.count)
                   .map((item) => (
                     <div key={item.destination}>
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[12px] font-medium text-[color:var(--fg)]">
+                        <span className="text-xs font-medium text-gray-900">
                           {destinationLabels[item.destination] || item.destination}
                         </span>
-                        <span className="text-[12px] font-bold text-[color:var(--fg)]">
+                        <span className="text-xs font-bold text-gray-900">
                           {item.count}개
                         </span>
                       </div>
-                      <div className="w-full h-2 bg-[color:var(--surface)] rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[color:var(--brand)] rounded-full transition-all duration-500"
+                          className="h-full bg-blue-600 rounded-full transition-all duration-500"
                           style={{ width: `${(item.count / maxProductCount) * 100}%` }}
                         />
                       </div>
@@ -367,34 +366,34 @@ export default function AdminDashboard() {
           </div>
 
           {/* 요약 정보 카드 */}
-          <div className="bg-[color:var(--bg)] rounded-xl border border-[color:var(--border)] shadow-[var(--shadow-card)] p-5">
-            <h2 className="text-[15px] font-bold text-[color:var(--fg)] mb-4">운영 요약</h2>
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+            <h2 className="text-sm font-bold text-gray-900 mb-4">운영 요약</h2>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[12px] text-[color:var(--muted)]">전체 상품</span>
-                <span className="text-[13px] font-bold text-[color:var(--fg)]">{stats?.totalProducts || 0}개</span>
+                <span className="text-xs text-gray-500">전체 상품</span>
+                <span className="text-sm font-bold text-gray-900">{stats?.totalProducts || 0}개</span>
               </div>
-              <div className="h-px bg-[color:var(--surface)]" />
+              <div className="h-px bg-gray-100" />
               <div className="flex items-center justify-between">
-                <span className="text-[12px] text-[color:var(--muted)]">활성 상품</span>
-                <span className="text-[13px] font-bold text-emerald-600">{stats?.activeProducts || 0}개</span>
+                <span className="text-xs text-gray-500">활성 상품</span>
+                <span className="text-sm font-bold text-emerald-600">{stats?.activeProducts || 0}개</span>
               </div>
-              <div className="h-px bg-[color:var(--surface)]" />
+              <div className="h-px bg-gray-100" />
               <div className="flex items-center justify-between">
-                <span className="text-[12px] text-[color:var(--muted)]">전체 문의</span>
-                <span className="text-[13px] font-bold text-[color:var(--fg)]">{stats?.totalInquiries || 0}건</span>
+                <span className="text-xs text-gray-500">전체 문의</span>
+                <span className="text-sm font-bold text-gray-900">{stats?.totalInquiries || 0}건</span>
               </div>
-              <div className="h-px bg-[color:var(--surface)]" />
+              <div className="h-px bg-gray-100" />
               <div className="flex items-center justify-between">
-                <span className="text-[12px] text-[color:var(--muted)]">미답변 문의</span>
-                <span className={`text-[13px] font-bold ${(stats?.pendingInquiries || 0) > 0 ? "text-rose-600" : "text-[color:var(--fg)]"}`}>
+                <span className="text-xs text-gray-500">미답변 문의</span>
+                <span className={`text-sm font-bold ${(stats?.pendingInquiries || 0) > 0 ? "text-rose-600" : "text-gray-900"}`}>
                   {stats?.pendingInquiries || 0}건
                 </span>
               </div>
-              <div className="h-px bg-[color:var(--surface)]" />
+              <div className="h-px bg-gray-100" />
               <div className="flex items-center justify-between">
-                <span className="text-[12px] text-[color:var(--muted)]">이번달 예약</span>
-                <span className="text-[13px] font-bold text-[color:var(--brand)]">{stats?.monthBookings || 0}건</span>
+                <span className="text-xs text-gray-500">이번달 예약</span>
+                <span className="text-sm font-bold text-blue-600">{stats?.monthBookings || 0}건</span>
               </div>
             </div>
           </div>

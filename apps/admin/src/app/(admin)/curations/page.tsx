@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Pencil, Trash2, X, Eye, EyeOff, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Package } from "lucide-react";
+import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 
@@ -190,7 +191,6 @@ export default function CurationsPage() {
     setProductsModalOpen(true);
 
     try {
-      // 전체 상품 목록 조회
       const productsRes = await fetch("/api/products", {
         headers: authHeaders as any
       });
@@ -199,7 +199,6 @@ export default function CurationsPage() {
         setAllProducts(productsData.products || []);
       }
 
-      // 현재 연결된 상품 조회
       const linkedRes = await fetch(`/api/curations/${curation.id}/products`, {
         headers: authHeaders as any
       });
@@ -215,7 +214,6 @@ export default function CurationsPage() {
     }
   };
 
-  // 상품 선택/해제 토글
   const toggleProductSelection = (productId: string) => {
     setSelectedProductIds(prev =>
       prev.includes(productId)
@@ -224,7 +222,6 @@ export default function CurationsPage() {
     );
   };
 
-  // 상품 연결 저장
   const handleSaveProducts = async () => {
     if (!managingCuration) return;
 
@@ -254,34 +251,34 @@ export default function CurationsPage() {
 
   if (isLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">로딩 중...</div>
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        로딩 중...
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div>
+      {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">큐레이션 관리</h1>
+        <h1 className="text-2xl font-bold text-gray-900">큐레이션 관리</h1>
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
         >
-          <Plus className="w-5 h-5" />
-          큐레이션 추가
+          <Plus className="w-4 h-4" /> 큐레이션 추가
         </button>
       </div>
 
       {curations.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <p>등록된 큐레이션이 없습니다</p>
+        <div className="py-16 text-center">
+          <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-sm text-gray-500">등록된 큐레이션이 없습니다</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {curations.map((curation) => (
-            <div key={curation.id} className="bg-white rounded-lg shadow overflow-hidden">
+            <div key={curation.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
               {curation.imageUrl && (
                 <div className="relative h-[200px] bg-gray-100">
                   <img
@@ -293,27 +290,16 @@ export default function CurationsPage() {
                     }}
                   />
                   <div className="absolute top-2 right-2 flex gap-2">
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                       curation.isActive
                         ? "bg-green-100 text-green-800"
                         : "bg-gray-100 text-gray-800"
                     }`}>
-                      {curation.isActive ? (
-                        <>
-                          <Eye className="w-3 h-3" />
-                          활성
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff className="w-3 h-3" />
-                          비활성
-                        </>
-                      )}
+                      {curation.isActive ? "활성" : "비활성"}
                     </span>
                     {curation._count && (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        <Package className="w-3 h-3" />
-                        {curation._count.products}개
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {curation._count.products}개 상품
                       </span>
                     )}
                   </div>
@@ -327,7 +313,7 @@ export default function CurationsPage() {
                       <p className="text-sm text-gray-600 mb-2 line-clamp-2">{curation.description}</p>
                     )}
                   </div>
-                  <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                  <span className="ml-2 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
                     순서: {curation.sortOrder}
                   </span>
                 </div>
@@ -349,21 +335,21 @@ export default function CurationsPage() {
                 <div className="flex gap-2 mt-4">
                   <button
                     onClick={() => openProductsModal(curation)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-50 text-purple-600 rounded hover:bg-purple-100 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium"
                   >
                     <Package className="w-4 h-4" />
                     상품 관리
                   </button>
                   <button
                     onClick={() => openEditModal(curation)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
                   >
                     <Pencil className="w-4 h-4" />
                     수정
                   </button>
                   <button
                     onClick={() => handleDelete(curation.id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
                   >
                     <Trash2 className="w-4 h-4" />
                     삭제
@@ -376,213 +362,162 @@ export default function CurationsPage() {
       )}
 
       {/* 큐레이션 생성/수정 모달 */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold">
-                {editingCuration ? "큐레이션 수정" : "큐레이션 추가"}
-              </h2>
-              <button
-                onClick={() => setModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    제목 *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    설명
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    이미지 URL
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => handleImageUrlChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  {imagePreview && (
-                    <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
-                      <img
-                        src={imagePreview}
-                        alt="미리보기"
-                        className="w-full h-[200px] object-cover"
-                        onError={() => setImagePreview("")}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    링크 URL
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.linkUrl}
-                    onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    정렬 순서
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.sortOrder}
-                    onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
-                    활성화
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {editingCuration ? "수정" : "추가"}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editingCuration ? "큐레이션 수정" : "큐레이션 추가"}
+        size="md"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setModalOpen(false)} />
+            <ModalConfirmButton
+              type="submit"
+              onClick={() => {
+                document.getElementById("curation-form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+              }}
+            >
+              {editingCuration ? "수정" : "추가"}
+            </ModalConfirmButton>
+          </>
+        }
+      >
+        <form id="curation-form" onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">제목 *</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              required
+            />
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">설명</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">이미지 URL</label>
+            <input
+              type="url"
+              value={formData.imageUrl}
+              onChange={(e) => handleImageUrlChange(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              placeholder="https://example.com/image.jpg"
+            />
+            {imagePreview && (
+              <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+                <img
+                  src={imagePreview}
+                  alt="미리보기"
+                  className="w-full h-[200px] object-cover"
+                  onError={() => setImagePreview("")}
+                />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">링크 URL</label>
+            <input
+              type="url"
+              value={formData.linkUrl}
+              onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              placeholder="https://example.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">정렬 순서</label>
+            <input
+              type="number"
+              value={formData.sortOrder}
+              onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              min="0"
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">활성화</span>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                formData.isActive ? "bg-green-500" : "bg-gray-300"
+              }`}
+            >
+              <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                formData.isActive ? "translate-x-[22px]" : "translate-x-[2px]"
+              }`} />
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* 상품 관리 모달 */}
-      {productsModalOpen && managingCuration && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold">
-                상품 관리: {managingCuration.title}
-              </h2>
-              <button
-                onClick={() => setProductsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
+      <Modal
+        isOpen={productsModalOpen && !!managingCuration}
+        onClose={() => setProductsModalOpen(false)}
+        title={`상품 관리: ${managingCuration?.title || ""}`}
+        size="xl"
+        footer={
+          <>
+            <div className="flex-1 text-sm text-gray-600">
+              선택된 상품: {selectedProductIds.length}개
             </div>
-
-            <div className="flex-1 overflow-y-auto p-6">
-              {productsLoading ? (
-                <div className="text-center py-12 text-gray-500">로딩 중...</div>
-              ) : (
-                <div className="space-y-2">
-                  {allProducts.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500">
-                      등록된 상품이 없습니다
+            <ModalCancelButton onClick={() => setProductsModalOpen(false)} />
+            <ModalConfirmButton onClick={handleSaveProducts}>저장</ModalConfirmButton>
+          </>
+        }
+      >
+        {productsLoading ? (
+          <div className="py-16 text-center text-sm text-gray-500">로딩 중...</div>
+        ) : (
+          <div className="space-y-2">
+            {allProducts.length === 0 ? (
+              <div className="py-16 text-center text-sm text-gray-500">
+                등록된 상품이 없습니다
+              </div>
+            ) : (
+              allProducts.map((product) => {
+                const isSelected = selectedProductIds.includes(product.id);
+                return (
+                  <label
+                    key={product.id}
+                    className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                      isSelected
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleProductSelection(product.id)}
+                      className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-medium">{product.title}</h4>
+                      <p className="text-sm text-gray-600">
+                        {product.destination} · {product.basePrice.toLocaleString()}원
+                      </p>
                     </div>
-                  ) : (
-                    allProducts.map((product) => {
-                      const isSelected = selectedProductIds.includes(product.id);
-                      return (
-                        <label
-                          key={product.id}
-                          className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                            isSelected
-                              ? "border-blue-500 bg-blue-50"
-                              : "border-gray-200 hover:bg-gray-50"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleProductSelection(product.id)}
-                            className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          />
-                          <div className="flex-1">
-                            <h4 className="font-medium">{product.title}</h4>
-                            <p className="text-sm text-gray-600">
-                              {product.destination} · {product.basePrice.toLocaleString()}원
-                            </p>
-                          </div>
-                        </label>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="border-t p-6">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-gray-600">
-                  선택된 상품: {selectedProductIds.length}개
-                </span>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setProductsModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleSaveProducts}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  저장
-                </button>
-              </div>
-            </div>
+                  </label>
+                );
+              })
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }

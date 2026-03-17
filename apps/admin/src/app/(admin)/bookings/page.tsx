@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Eye } from "lucide-react";
+import { Eye, CalendarCheck } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -63,7 +63,7 @@ export default function AdminBookingsPage() {
     };
     return (
       <span
-        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${styles[status] || ""}`}
+        className={`px-2.5 py-1 rounded-full text-xs font-medium ${styles[status] || ""}`}
       >
         {labels[status] || status}
       </span>
@@ -80,109 +80,82 @@ export default function AdminBookingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">예약 관리</h1>
+      {/* 페이지 헤더 */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">예약 관리</h1>
+      </div>
 
       {/* 필터 */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-semibold text-gray-700">상태:</span>
-          <div className="flex gap-2 flex-wrap">
-            {filterButtons.map((btn) => (
-              <button
-                key={btn.value}
-                onClick={() => setFilter(btn.value)}
-                className={`px-4 py-2 rounded-lg font-medium text-sm ${
-                  filter === btn.value
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {btn.label}
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="flex gap-2 mb-6">
+        {filterButtons.map((btn) => (
+          <button
+            key={btn.value}
+            onClick={() => setFilter(btn.value)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+              filter === btn.value
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-100 transition-colors"
+            }`}
+          >
+            {btn.label}
+          </button>
+        ))}
       </div>
 
       {/* 예약 목록 */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900">
-            전체 {bookings.length}건
+          <h2 className="text-sm text-gray-500">
+            전체 <span className="font-medium text-gray-900">{bookings.length}</span>건
           </h2>
         </div>
         {isLoading ? (
-          <div className="px-6 py-8 text-center text-gray-500">로딩 중...</div>
+          <div className="py-16 text-center text-sm text-gray-500">로딩 중...</div>
         ) : bookings.length === 0 ? (
-          <div className="px-6 py-8 text-center text-gray-500">
-            예약이 없습니다
+          <div className="py-16 text-center">
+            <CalendarCheck className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-sm text-gray-500">예약이 없습니다</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    예약자
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    상품명
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    인원
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    희망일
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    상태
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    신청일
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    작업
-                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">예약자</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">상품명</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">인원</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">희망일</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">상태</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">신청일</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">작업</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {bookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {booking.name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {booking.phone}
-                      </div>
+                  <tr key={booking.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="text-sm font-semibold text-gray-900">{booking.name}</div>
+                      <div className="text-xs text-gray-500">{booking.phone}</div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate">
-                        {booking.tourProduct.title}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {booking.tourProduct.destination}
-                      </div>
+                    <td className="px-4 py-3">
+                      <div className="text-sm text-gray-900 max-w-xs truncate">{booking.tourProduct.title}</div>
+                      <div className="text-xs text-gray-500">{booking.tourProduct.destination}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {booking.peopleCount}명
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-4 py-3 text-sm text-gray-900">{booking.peopleCount}명</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
                       {booking.desiredDate
                         ? new Date(booking.desiredDate).toLocaleDateString()
                         : "미정"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(booking.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3">{getStatusBadge(booking.status)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
                       {new Date(booking.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
                         <Link
                           href={`/bookings/${booking.id}`}
-                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="상세보기"
                         >
                           <Eye className="w-4 h-4" />

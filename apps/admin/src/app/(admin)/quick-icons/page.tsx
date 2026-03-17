@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Pencil, Trash2, X, Eye, EyeOff, Plane, Flag, Tag, Star, Users, Clock, MapPin, Globe } from "lucide-react";
+import { Plus, Pencil, Trash2, Plane, Flag, Tag, Star, Users, Clock, MapPin, Globe } from "lucide-react";
 import Select from "@/components/ui/Select";
+import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 
@@ -174,8 +175,8 @@ export default function QuickIconsPage() {
 
   if (isLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">로딩 중...</div>
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        로딩 중...
       </div>
     );
   }
@@ -183,62 +184,50 @@ export default function QuickIconsPage() {
   const SelectedIcon = getIconComponent(formData.iconName);
 
   return (
-    <div className="p-6">
+    <div>
+      {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">빠른아이콘 관리</h1>
+        <h1 className="text-2xl font-bold text-gray-900">빠른아이콘 관리</h1>
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
         >
-          <Plus className="w-5 h-5" />
-          아이콘 추가
+          <Plus className="w-4 h-4" /> 아이콘 추가
         </button>
       </div>
 
       {quickIcons.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <Globe className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <p>등록된 빠른아이콘이 없습니다</p>
+        <div className="py-16 text-center">
+          <Globe className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-sm text-gray-500">등록된 빠른아이콘이 없습니다</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  아이콘
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  레이블
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  링크 URL
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  정렬 순서
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  상태
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  작업
-                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">아이콘</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">레이블</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">링크 URL</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">정렬 순서</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">상태</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">작업</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {quickIcons.map((icon) => {
                 const IconComponent = getIconComponent(icon.iconName);
                 return (
-                  <tr key={icon.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={icon.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                    <td className="px-4 py-3">
                       <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
                         <IconComponent className="w-6 h-6 text-blue-600" />
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3">
                       <div className="text-sm font-medium text-gray-900">{icon.label}</div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <a
                         href={icon.linkUrl}
                         target="_blank"
@@ -248,36 +237,36 @@ export default function QuickIconsPage() {
                         {icon.linkUrl}
                       </a>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                    <td className="px-4 py-3">
+                      <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
                         {icon.sortOrder}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3">
                       <button
                         onClick={() => handleToggleActive(icon.id, !icon.isActive)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          icon.isActive ? "bg-blue-600" : "bg-gray-300"
+                          icon.isActive ? "bg-green-500" : "bg-gray-300"
                         }`}
                         title={icon.isActive ? "비활성화" : "활성화"}
                       >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          icon.isActive ? "translate-x-6" : "translate-x-1"
+                        <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                          icon.isActive ? "translate-x-[22px]" : "translate-x-[2px]"
                         }`} />
                       </button>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => openEditModal(icon)}
-                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="수정"
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(icon.id)}
-                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="삭제"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -292,119 +281,95 @@ export default function QuickIconsPage() {
         </div>
       )}
 
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold">
-                {editingIcon ? "빠른아이콘 수정" : "빠른아이콘 추가"}
-              </h2>
-              <button
-                onClick={() => setModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    레이블 *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.label}
-                    onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="예: 해외골프"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    아이콘 *
-                  </label>
-                  {/* 아이콘 선택 드롭다운 */}
-                  <Select
-                    value={formData.iconName}
-                    onChange={(val) => setFormData({ ...formData, iconName: val })}
-                    options={ICON_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
-                    className="w-full"
-                  />
-                  <div className="mt-3 flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm text-gray-600">미리보기:</span>
-                    <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
-                      <SelectedIcon className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-900">{formData.label || "레이블"}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    링크 URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.linkUrl}
-                    onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    정렬 순서
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.sortOrder}
-                    onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">활성화</span>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.isActive ? "bg-blue-600" : "bg-gray-300"
-                    }`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      formData.isActive ? "translate-x-6" : "translate-x-1"
-                    }`} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {editingIcon ? "수정" : "추가"}
-                </button>
-              </div>
-            </form>
+      {/* 추가/수정 모달 */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editingIcon ? "빠른아이콘 수정" : "빠른아이콘 추가"}
+        size="sm"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setModalOpen(false)} />
+            <ModalConfirmButton
+              type="submit"
+              onClick={() => {
+                document.getElementById("quickicon-form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+              }}
+            >
+              {editingIcon ? "수정" : "추가"}
+            </ModalConfirmButton>
+          </>
+        }
+      >
+        <form id="quickicon-form" onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">레이블 *</label>
+            <input
+              type="text"
+              value={formData.label}
+              onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              placeholder="예: 해외골프"
+              required
+            />
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">아이콘 *</label>
+            <Select
+              value={formData.iconName}
+              onChange={(val) => setFormData({ ...formData, iconName: val })}
+              options={ICON_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+              className="w-full"
+            />
+            <div className="mt-3 flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+              <span className="text-sm text-gray-600">미리보기:</span>
+              <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+                <SelectedIcon className="w-6 h-6 text-blue-600" />
+              </div>
+              <span className="text-sm font-medium text-gray-900">{formData.label || "레이블"}</span>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">링크 URL *</label>
+            <input
+              type="url"
+              value={formData.linkUrl}
+              onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              placeholder="https://example.com"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">정렬 순서</label>
+            <input
+              type="number"
+              value={formData.sortOrder}
+              onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              min="0"
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">활성화</span>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                formData.isActive ? "bg-green-500" : "bg-gray-300"
+              }`}
+            >
+              <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                formData.isActive ? "translate-x-[22px]" : "translate-x-[2px]"
+              }`} />
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

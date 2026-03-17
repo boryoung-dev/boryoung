@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Pencil, Trash2, X, Eye, EyeOff } from "lucide-react";
+import { Pencil, Trash2, Eye, EyeOff, MessageSquare } from "lucide-react";
 import Select from "@/components/ui/Select";
+import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 
@@ -221,144 +222,95 @@ export default function ReviewsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">로딩 중...</p>
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        로딩 중...
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">리뷰 관리</h1>
+    <div>
+      {/* 페이지 헤더 */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">리뷰 관리</h1>
       </div>
 
       {/* 필터 */}
-      <div className="mb-6 flex gap-2">
-        <button
-          onClick={() => setStatusFilter("all")}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            statusFilter === "all"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          전체 ({reviews.length})
-        </button>
-        <button
-          onClick={() => setStatusFilter("published")}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            statusFilter === "published"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          공개 ({reviews.filter((r) => r.isPublished).length})
-        </button>
-        <button
-          onClick={() => setStatusFilter("unpublished")}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            statusFilter === "unpublished"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          비공개 ({reviews.filter((r) => !r.isPublished).length})
-        </button>
+      <div className="flex gap-2 mb-6">
+        {[
+          { value: "all" as const, label: `전체 (${reviews.length})` },
+          { value: "published" as const, label: `공개 (${reviews.filter((r) => r.isPublished).length})` },
+          { value: "unpublished" as const, label: `비공개 (${reviews.filter((r) => !r.isPublished).length})` },
+        ].map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setStatusFilter(tab.value)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+              statusFilter === tab.value
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-100 transition-colors"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* 리뷰 테이블 */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                상품명
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                작성자
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                별점
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                내용
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                공개
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                인증
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                작성일
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                작업
-              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">상품명</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">작성자</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">별점</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">내용</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">공개</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">인증</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">작성일</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">작업</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {filteredReviews.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                  리뷰가 없습니다.
+                <td colSpan={8} className="py-16 text-center">
+                  <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-sm text-gray-500">리뷰가 없습니다.</p>
                 </td>
               </tr>
             ) : (
               filteredReviews.map((review) => (
-                <tr key={review.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {review.product.title}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {review.product.destination}
-                    </div>
+                <tr key={review.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="text-sm font-medium text-gray-900">{review.product.title}</div>
+                    <div className="text-xs text-gray-500">{review.product.destination}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {review.authorName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-500">
-                    {renderStars(review.rating)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-900">{review.authorName}</td>
+                  <td className="px-4 py-3 text-sm text-yellow-500">{renderStars(review.rating)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900">
                     <div className="max-w-xs">
                       {review.title && (
-                        <div className="font-medium mb-1">
-                          {truncateText(review.title, 30)}
-                        </div>
+                        <div className="font-medium mb-1">{truncateText(review.title, 30)}</div>
                       )}
-                      <div className="text-gray-600">
-                        {truncateText(review.content, 50)}
-                      </div>
+                      <div className="text-gray-600">{truncateText(review.content, 50)}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-3">
                     <button
                       onClick={() => handleTogglePublish(review)}
-                      className={`inline-flex items-center px-2.5 py-1.5 rounded text-xs font-medium ${
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                         review.isPublished
                           ? "bg-green-100 text-green-800"
                           : "bg-gray-100 text-gray-800"
                       }`}
                     >
-                      {review.isPublished ? (
-                        <>
-                          <Eye className="w-3 h-3 mr-1" />
-                          공개
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff className="w-3 h-3 mr-1" />
-                          비공개
-                        </>
-                      )}
+                      {review.isPublished ? "공개" : "비공개"}
                     </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-3">
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                         review.isVerified
                           ? "bg-blue-100 text-blue-800"
                           : "bg-gray-100 text-gray-600"
@@ -367,21 +319,19 @@ export default function ReviewsPage() {
                       {review.isVerified ? "인증됨" : "미인증"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(review.createdAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className="px-4 py-3 text-sm text-gray-500">{formatDate(review.createdAt)}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => handleEdit(review)}
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="수정"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(review.id)}
-                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="삭제"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -396,174 +346,133 @@ export default function ReviewsPage() {
       </div>
 
       {/* 수정 모달 */}
-      {isEditModalOpen && editingReview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">리뷰 수정</h2>
+      <Modal
+        isOpen={isEditModalOpen && !!editingReview}
+        onClose={() => setIsEditModalOpen(false)}
+        title="리뷰 수정"
+        size="md"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setIsEditModalOpen(false)} />
+            <ModalConfirmButton onClick={handleSaveEdit}>저장</ModalConfirmButton>
+          </>
+        }
+      >
+        {editingReview && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">상품</label>
+              <div className="px-3 py-2.5 bg-gray-50 rounded-lg text-sm text-gray-700">
+                {editingReview.product.title}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                작성자 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={editFormData.authorName}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, authorName: e.target.value })
+                }
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                별점 <span className="text-red-500">*</span>
+              </label>
+              <Select
+                value={String(editFormData.rating)}
+                onChange={(val) =>
+                  setEditFormData({ ...editFormData, rating: parseInt(val) })
+                }
+                options={[
+                  { value: "5", label: "★★★★★ (5점)" },
+                  { value: "4", label: "★★★★☆ (4점)" },
+                  { value: "3", label: "★★★☆☆ (3점)" },
+                  { value: "2", label: "★★☆☆☆ (2점)" },
+                  { value: "1", label: "★☆☆☆☆ (1점)" },
+                ]}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">제목</label>
+              <input
+                type="text"
+                value={editFormData.title}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, title: e.target.value })
+                }
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                내용 <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={editFormData.content}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, content: e.target.value })
+                }
+                rows={6}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">여행 날짜</label>
+              <input
+                type="date"
+                value={editFormData.travelDate}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, travelDate: e.target.value })
+                }
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              />
+            </div>
+
+            <div className="flex gap-6">
+              <div className="flex items-center justify-between flex-1">
+                <span className="text-sm font-medium text-gray-700">인증된 리뷰</span>
                 <button
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  type="button"
+                  onClick={() => setEditFormData({ ...editFormData, isVerified: !editFormData.isVerified })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    editFormData.isVerified ? "bg-green-500" : "bg-gray-300"
+                  }`}
                 >
-                  <X className="w-6 h-6" />
+                  <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                    editFormData.isVerified ? "translate-x-[22px]" : "translate-x-[2px]"
+                  }`} />
                 </button>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    상품
-                  </label>
-                  <div className="px-3 py-2 bg-gray-50 rounded text-sm text-gray-700">
-                    {editingReview.product.title}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    작성자 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={editFormData.authorName}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        authorName: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    별점 <span className="text-red-500">*</span>
-                  </label>
-                  {/* 별점 선택 */}
-                  <Select
-                    value={String(editFormData.rating)}
-                    onChange={(val) =>
-                      setEditFormData({ ...editFormData, rating: parseInt(val) })
-                    }
-                    options={[
-                      { value: "5", label: "★★★★★ (5점)" },
-                      { value: "4", label: "★★★★☆ (4점)" },
-                      { value: "3", label: "★★★☆☆ (3점)" },
-                      { value: "2", label: "★★☆☆☆ (2점)" },
-                      { value: "1", label: "★☆☆☆☆ (1점)" },
-                    ]}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    제목
-                  </label>
-                  <input
-                    type="text"
-                    value={editFormData.title}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        title: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    내용 <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    value={editFormData.content}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        content: e.target.value,
-                      })
-                    }
-                    rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    여행 날짜
-                  </label>
-                  <input
-                    type="date"
-                    value={editFormData.travelDate}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        travelDate: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div className="flex gap-6">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={editFormData.isVerified}
-                      onChange={(e) =>
-                        setEditFormData({
-                          ...editFormData,
-                          isVerified: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      인증된 리뷰
-                    </span>
-                  </label>
-
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={editFormData.isPublished}
-                      onChange={(e) =>
-                        setEditFormData({
-                          ...editFormData,
-                          isPublished: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      공개
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex items-center justify-between flex-1">
+                <span className="text-sm font-medium text-gray-700">공개</span>
                 <button
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                  type="button"
+                  onClick={() => setEditFormData({ ...editFormData, isPublished: !editFormData.isPublished })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    editFormData.isPublished ? "bg-green-500" : "bg-gray-300"
+                  }`}
                 >
-                  취소
-                </button>
-                <button
-                  onClick={handleSaveEdit}
-                  className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                >
-                  저장
+                  <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                    editFormData.isPublished ? "translate-x-[22px]" : "translate-x-[2px]"
+                  }`} />
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }

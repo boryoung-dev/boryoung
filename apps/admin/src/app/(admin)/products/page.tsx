@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Search, Eye, Edit2, Trash2, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import Select from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
@@ -124,18 +124,19 @@ export default function AdminProductsPage() {
 
   return (
     <div>
+      {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">상품 관리</h1>
         <Link
           href="/products/new"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" /> 상품 등록
         </Link>
       </div>
 
       {/* 필터 */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -145,7 +146,7 @@ export default function AdminProductsPage() {
                 placeholder="상품명 검색..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
@@ -172,34 +173,39 @@ export default function AdminProductsPage() {
       </div>
 
       {/* 상품 테이블 */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
           <span className="text-sm text-gray-500">
             총 <span className="font-medium text-gray-900">{pagination.total}</span>개 상품
           </span>
         </div>
         {isLoading ? (
-          <div className="p-8 text-center text-gray-500">로딩 중...</div>
+          <div className="py-16 text-center text-sm text-gray-500">로딩 중...</div>
         ) : products.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">상품이 없습니다</div>
+          <div className="py-16 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 text-gray-300">
+              <Plus className="w-12 h-12" />
+            </div>
+            <p className="text-sm text-gray-500">상품이 없습니다</p>
+          </div>
         ) : (
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">가격</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">활성</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">추천</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">조회</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">예약</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">작업</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">상품</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">가격</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">활성</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">추천</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">조회</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">예약</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">작업</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {products.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
+                <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
                   {/* 상품 (썸네일 + 제목 + 카테고리 + 지역) */}
-                  <td className="px-6 py-3">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-14 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                         {product.thumbnail ? (
@@ -228,13 +234,13 @@ export default function AdminProductsPage() {
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => handleToggle(product.id, "isActive", product.isActive)}
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         product.isActive ? "bg-green-500" : "bg-gray-300"
                       }`}
                       title={product.isActive ? "활성 → 비활성" : "비활성 → 활성"}
                     >
-                      <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
-                        product.isActive ? "translate-x-[18px]" : "translate-x-[3px]"
+                      <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                        product.isActive ? "translate-x-[22px]" : "translate-x-[2px]"
                       }`} />
                     </button>
                   </td>
@@ -253,26 +259,22 @@ export default function AdminProductsPage() {
                     </button>
                   </td>
                   {/* 조회 */}
-                  <td className="px-4 py-3 text-center text-sm text-gray-500">
-                    {product.viewCount}
-                  </td>
+                  <td className="px-4 py-3 text-center text-sm text-gray-500">{product.viewCount}</td>
                   {/* 예약 */}
-                  <td className="px-4 py-3 text-center text-sm text-gray-500">
-                    {product._count.bookings}
-                  </td>
+                  <td className="px-4 py-3 text-center text-sm text-gray-500">{product._count.bookings}</td>
                   {/* 작업 */}
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
                       <Link
                         href={`/products/${product.id}/edit`}
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="수정"
                       >
                         <Edit2 className="w-4 h-4" />
                       </Link>
                       <button
                         onClick={() => handleDelete(product.id, product.title)}
-                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="삭제"
                       >
                         <Trash2 className="w-4 h-4" />

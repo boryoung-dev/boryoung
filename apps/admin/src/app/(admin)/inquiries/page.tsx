@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { MessageSquare, Reply, Trash2, X, Eye } from "lucide-react";
+import { MessageSquare, Reply, Trash2 } from "lucide-react";
 import Select from "@/components/ui/Select";
+import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 
@@ -150,7 +151,7 @@ export default function InquiriesPage() {
     };
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${
+        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
           styles[status as keyof typeof styles]
         }`}
       >
@@ -171,133 +172,86 @@ export default function InquiriesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600">로딩 중...</div>
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        로딩 중...
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <MessageSquare className="w-6 h-6" />
-          문의 관리
-        </h1>
+    <div>
+      {/* 페이지 헤더 */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">문의 관리</h1>
+      </div>
 
-        {/* 필터 */}
-        <div className="flex gap-2">
+      {/* 필터 */}
+      <div className="flex gap-2 mb-6">
+        {[
+          { value: "all", label: `전체 (${inquiries.length})` },
+          { value: "PENDING", label: `대기중 (${inquiries.filter((i) => i.status === "PENDING").length})` },
+          { value: "REPLIED", label: `답변완료 (${inquiries.filter((i) => i.status === "REPLIED").length})` },
+          { value: "CLOSED", label: `종료 (${inquiries.filter((i) => i.status === "CLOSED").length})` },
+        ].map((tab) => (
           <button
-            onClick={() => setSelectedStatus("all")}
-            className={`px-4 py-2 rounded-lg font-medium ${
-              selectedStatus === "all"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            key={tab.value}
+            onClick={() => setSelectedStatus(tab.value)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+              selectedStatus === tab.value
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-100 transition-colors"
             }`}
           >
-            전체 ({inquiries.length})
+            {tab.label}
           </button>
-          <button
-            onClick={() => setSelectedStatus("PENDING")}
-            className={`px-4 py-2 rounded-lg font-medium ${
-              selectedStatus === "PENDING"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            대기중 ({inquiries.filter((i) => i.status === "PENDING").length})
-          </button>
-          <button
-            onClick={() => setSelectedStatus("REPLIED")}
-            className={`px-4 py-2 rounded-lg font-medium ${
-              selectedStatus === "REPLIED"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            답변완료 ({inquiries.filter((i) => i.status === "REPLIED").length})
-          </button>
-          <button
-            onClick={() => setSelectedStatus("CLOSED")}
-            className={`px-4 py-2 rounded-lg font-medium ${
-              selectedStatus === "CLOSED"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            종료 ({inquiries.filter((i) => i.status === "CLOSED").length})
-          </button>
-        </div>
+        ))}
       </div>
 
       {/* 문의 목록 테이블 */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                이름
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                연락처
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                이메일
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                내용
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                상태
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                접수일
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                작업
-              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">이름</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">연락처</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">이메일</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">내용</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">상태</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">접수일</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">작업</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {filteredInquiries.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                  문의가 없습니다.
+                <td colSpan={7} className="py-16 text-center">
+                  <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-sm text-gray-500">문의가 없습니다.</p>
                 </td>
               </tr>
             ) : (
               filteredInquiries.map((inquiry) => (
-                <tr key={inquiry.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {inquiry.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {inquiry.phone}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {inquiry.email || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                <tr key={inquiry.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{inquiry.name}</td>
+                  <td className="px-4 py-3 text-sm text-gray-500">{inquiry.phone}</td>
+                  <td className="px-4 py-3 text-sm text-gray-500">{inquiry.email || "-"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-500">
                     <div className="max-w-xs truncate">{inquiry.content}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(inquiry.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(inquiry.createdAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className="px-4 py-3">{getStatusBadge(inquiry.status)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-500">{formatDate(inquiry.createdAt)}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => openModal(inquiry)}
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="상세/답변"
                       >
                         <Reply className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(inquiry.id)}
-                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="삭제"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -312,128 +266,90 @@ export default function InquiriesPage() {
       </div>
 
       {/* 상세/답변 모달 */}
-      {isModalOpen && selectedInquiry && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">문의 상세</h2>
-                <button
-                  onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+      <Modal
+        isOpen={isModalOpen && !!selectedInquiry}
+        onClose={closeModal}
+        title="문의 상세"
+        size="md"
+        footer={
+          <>
+            <ModalCancelButton onClick={closeModal} />
+            <ModalConfirmButton onClick={handleUpdate} disabled={isSubmitting}>
+              {isSubmitting ? "처리 중..." : "저장"}
+            </ModalConfirmButton>
+          </>
+        }
+      >
+        {selectedInquiry && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">이름</label>
+              <div className="text-gray-900">{selectedInquiry.name}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">연락처</label>
+              <div className="text-gray-900">{selectedInquiry.phone}</div>
+            </div>
+
+            {selectedInquiry.email && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                <div className="text-gray-900">{selectedInquiry.email}</div>
               </div>
+            )}
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    이름
-                  </label>
-                  <div className="text-gray-900">{selectedInquiry.name}</div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    연락처
-                  </label>
-                  <div className="text-gray-900">{selectedInquiry.phone}</div>
-                </div>
-
-                {selectedInquiry.email && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      이메일
-                    </label>
-                    <div className="text-gray-900">{selectedInquiry.email}</div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    문의 내용
-                  </label>
-                  <div className="bg-gray-50 p-4 rounded-lg whitespace-pre-wrap text-gray-900">
-                    {selectedInquiry.content}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    접수일
-                  </label>
-                  <div className="text-gray-900">
-                    {formatDate(selectedInquiry.createdAt)}
-                  </div>
-                </div>
-
-                {selectedInquiry.repliedAt && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      답변일
-                    </label>
-                    <div className="text-gray-900">
-                      {formatDate(selectedInquiry.repliedAt)}{" "}
-                      {selectedInquiry.repliedBy && (
-                        <span className="text-gray-500 text-sm">
-                          (by {selectedInquiry.repliedBy})
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    상태
-                  </label>
-                  {/* 문의 상태 선택 */}
-                  <Select
-                    value={newStatus}
-                    onChange={setNewStatus}
-                    options={[
-                      { value: "PENDING", label: "대기중" },
-                      { value: "REPLIED", label: "답변완료" },
-                      { value: "CLOSED", label: "종료" },
-                    ]}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    관리자 답변
-                  </label>
-                  <textarea
-                    value={adminReply}
-                    onChange={(e) => setAdminReply(e.target.value)}
-                    rows={6}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="답변 내용을 입력하세요..."
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleUpdate}
-                  disabled={isSubmitting}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
-                >
-                  {isSubmitting ? "처리 중..." : "저장"}
-                </button>
-                <button
-                  onClick={closeModal}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-                >
-                  취소
-                </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">문의 내용</label>
+              <div className="bg-gray-50 p-4 rounded-lg whitespace-pre-wrap text-gray-900 text-sm">
+                {selectedInquiry.content}
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">접수일</label>
+              <div className="text-gray-900 text-sm">{formatDate(selectedInquiry.createdAt)}</div>
+            </div>
+
+            {selectedInquiry.repliedAt && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">답변일</label>
+                <div className="text-gray-900 text-sm">
+                  {formatDate(selectedInquiry.repliedAt)}{" "}
+                  {selectedInquiry.repliedBy && (
+                    <span className="text-gray-500">(by {selectedInquiry.repliedBy})</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">상태</label>
+              <Select
+                value={newStatus}
+                onChange={setNewStatus}
+                options={[
+                  { value: "PENDING", label: "대기중" },
+                  { value: "REPLIED", label: "답변완료" },
+                  { value: "CLOSED", label: "종료" },
+                ]}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">관리자 답변</label>
+              <textarea
+                value={adminReply}
+                onChange={(e) => setAdminReply(e.target.value)}
+                rows={6}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+                placeholder="답변 내용을 입력하세요..."
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }

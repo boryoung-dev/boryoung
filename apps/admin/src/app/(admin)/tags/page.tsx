@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import Select from "@/components/ui/Select";
+import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 
@@ -164,7 +165,7 @@ export default function AdminTagsPage() {
     };
     return (
       <span
-        className={`inline-flex px-2 py-1 text-xs font-medium ${styles[type]} rounded`}
+        className={`px-2.5 py-1 rounded-full text-xs font-medium ${styles[type]}`}
       >
         {labels[type]}
       </span>
@@ -181,94 +182,77 @@ export default function AdminTagsPage() {
 
   return (
     <div>
+      {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">태그 관리</h1>
         <button
           onClick={handleAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" /> 태그 추가
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
+      {/* 테이블 */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {tags.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            태그가 없습니다. 태그를 추가해주세요.
+          <div className="py-16 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 text-gray-300">
+              <Plus className="w-12 h-12" />
+            </div>
+            <p className="text-sm text-gray-500">태그가 없습니다. 태그를 추가해주세요.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    이름
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    슬러그
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    타입
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    연결 상품
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    정렬순서
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    상태
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    작업
-                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">이름</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">슬러그</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">타입</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">연결 상품</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">정렬순서</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">상태</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">작업</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {tags.map((tag) => (
-                  <tr key={tag.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {tag.name}
-                      </div>
+                  <tr key={tag.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="text-sm font-semibold text-gray-900">{tag.name}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3">
                       <div className="text-sm text-gray-500">{tag.slug}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getTypeBadge(tag.type)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {tag._count.productTags}개
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {tag.sortOrder}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3">{getTypeBadge(tag.type)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{tag._count.productTags}개</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{tag.sortOrder}</td>
+                    <td className="px-4 py-3">
                       <button
                         onClick={() => handleToggleActive(tag.id, !tag.isActive)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          tag.isActive ? "bg-blue-600" : "bg-gray-300"
+                          tag.isActive ? "bg-green-500" : "bg-gray-300"
                         }`}
                         title={tag.isActive ? "비활성화" : "활성화"}
                       >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          tag.isActive ? "translate-x-6" : "translate-x-1"
+                        <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                          tag.isActive ? "translate-x-[22px]" : "translate-x-[2px]"
                         }`} />
                       </button>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleEdit(tag)}
-                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="수정"
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(tag.id, tag.name)}
-                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="삭제"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -284,110 +268,86 @@ export default function AdminTagsPage() {
       </div>
 
       {/* 추가/수정 모달 */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">
-                {editTag ? "태그 수정" : "태그 추가"}
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  이름 *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {formData.slug && (
-                <p className="text-xs text-gray-400">slug: {formData.slug}</p>
-              )}
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  타입 *
-                </label>
-                {/* 태그 타입 선택 */}
-                <Select
-                  value={formData.type}
-                  onChange={(val) =>
-                    setFormData((prev) => ({ ...prev, type: val as Tag["type"] }))
-                  }
-                  options={[
-                    { value: "FEATURE", label: "특징" },
-                    { value: "DURATION", label: "기간" },
-                    { value: "PRICE_RANGE", label: "가격대" },
-                    { value: "ACCOMMODATION", label: "숙박" },
-                  ]}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  정렬순서
-                </label>
-                <input
-                  type="number"
-                  value={formData.sortOrder}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      sortOrder: parseInt(e.target.value) || 0,
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">활성화</span>
-                <button
-                  type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    formData.isActive ? "bg-blue-600" : "bg-gray-300"
-                  }`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    formData.isActive ? "translate-x-6" : "translate-x-1"
-                  }`} />
-                </button>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-semibold text-sm"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm"
-                >
-                  {editTag ? "수정" : "추가"}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editTag ? "태그 수정" : "태그 추가"}
+        size="sm"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setShowModal(false)} />
+            <ModalConfirmButton type="submit" onClick={() => {
+              document.getElementById("tag-form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+            }}>
+              {editTag ? "수정" : "추가"}
+            </ModalConfirmButton>
+          </>
+        }
+      >
+        <form id="tag-form" onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">이름 *</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleNameChange(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              required
+            />
           </div>
-        </div>
-      )}
+
+          {formData.slug && (
+            <p className="text-xs text-gray-400">slug: {formData.slug}</p>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">타입 *</label>
+            <Select
+              value={formData.type}
+              onChange={(val) =>
+                setFormData((prev) => ({ ...prev, type: val as Tag["type"] }))
+              }
+              options={[
+                { value: "FEATURE", label: "특징" },
+                { value: "DURATION", label: "기간" },
+                { value: "PRICE_RANGE", label: "가격대" },
+                { value: "ACCOMMODATION", label: "숙박" },
+              ]}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">정렬순서</label>
+            <input
+              type="number"
+              value={formData.sortOrder}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  sortOrder: parseInt(e.target.value) || 0,
+                }))
+              }
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">활성화</span>
+            <button
+              type="button"
+              onClick={() => setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                formData.isActive ? "bg-green-500" : "bg-gray-300"
+              }`}
+            >
+              <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                formData.isActive ? "translate-x-[22px]" : "translate-x-[2px]"
+              }`} />
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

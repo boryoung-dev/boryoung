@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Pencil, Trash2, X, Image as ImageIcon, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, Image as ImageIcon, Eye, EyeOff } from "lucide-react";
+import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 
@@ -167,34 +168,34 @@ export default function BannersPage() {
 
   if (isLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">로딩 중...</div>
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        로딩 중...
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div>
+      {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">배너 관리</h1>
+        <h1 className="text-2xl font-bold text-gray-900">배너 관리</h1>
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
         >
-          <Plus className="w-5 h-5" />
-          배너 추가
+          <Plus className="w-4 h-4" /> 배너 추가
         </button>
       </div>
 
       {banners.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <p>등록된 배너가 없습니다</p>
+        <div className="py-16 text-center">
+          <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-sm text-gray-500">등록된 배너가 없습니다</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {banners.map((banner) => (
-            <div key={banner.id} className="bg-white rounded-lg shadow overflow-hidden">
+            <div key={banner.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative h-[200px] bg-gray-100">
                 <img
                   src={banner.imageUrl}
@@ -205,22 +206,12 @@ export default function BannersPage() {
                   }}
                 />
                 <div className="absolute top-2 right-2">
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                     banner.isActive
                       ? "bg-green-100 text-green-800"
                       : "bg-gray-100 text-gray-800"
                   }`}>
-                    {banner.isActive ? (
-                      <>
-                        <Eye className="w-3 h-3" />
-                        활성
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="w-3 h-3" />
-                        비활성
-                      </>
-                    )}
+                    {banner.isActive ? "활성" : "비활성"}
                   </span>
                 </div>
               </div>
@@ -232,7 +223,7 @@ export default function BannersPage() {
                       <p className="text-sm text-gray-600 mb-2">{banner.subtitle}</p>
                     )}
                   </div>
-                  <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                  <span className="ml-2 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
                     순서: {banner.sortOrder}
                   </span>
                 </div>
@@ -261,14 +252,14 @@ export default function BannersPage() {
                 <div className="flex gap-2 mt-4">
                   <button
                     onClick={() => openEditModal(banner)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
                   >
                     <Pencil className="w-4 h-4" />
                     수정
                   </button>
                   <button
                     onClick={() => handleDelete(banner.id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
                   >
                     <Trash2 className="w-4 h-4" />
                     삭제
@@ -280,144 +271,119 @@ export default function BannersPage() {
         </div>
       )}
 
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold">
-                {editingBanner ? "배너 수정" : "배너 추가"}
-              </h2>
-              <button
-                onClick={() => setModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    제목 *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    부제목
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.subtitle}
-                    onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    이미지 URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => handleImageUrlChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com/image.jpg"
-                    required
-                  />
-                  {imagePreview && (
-                    <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
-                      <img
-                        src={imagePreview}
-                        alt="미리보기"
-                        className="w-full h-[200px] object-cover"
-                        onError={() => setImagePreview("")}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    링크 URL
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.linkUrl}
-                    onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CTA 텍스트
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.ctaText}
-                    onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="자세히 보기"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    정렬 순서
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.sortOrder}
-                    onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
-                    활성화
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {editingBanner ? "수정" : "추가"}
-                </button>
-              </div>
-            </form>
+      {/* 생성/수정 모달 */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editingBanner ? "배너 수정" : "배너 추가"}
+        size="md"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setModalOpen(false)} />
+            <ModalConfirmButton
+              type="submit"
+              onClick={() => {
+                document.getElementById("banner-form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+              }}
+            >
+              {editingBanner ? "수정" : "추가"}
+            </ModalConfirmButton>
+          </>
+        }
+      >
+        <form id="banner-form" onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">제목 *</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              required
+            />
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">부제목</label>
+            <input
+              type="text"
+              value={formData.subtitle}
+              onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">이미지 URL *</label>
+            <input
+              type="url"
+              value={formData.imageUrl}
+              onChange={(e) => handleImageUrlChange(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              placeholder="https://example.com/image.jpg"
+              required
+            />
+            {imagePreview && (
+              <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+                <img
+                  src={imagePreview}
+                  alt="미리보기"
+                  className="w-full h-[200px] object-cover"
+                  onError={() => setImagePreview("")}
+                />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">링크 URL</label>
+            <input
+              type="url"
+              value={formData.linkUrl}
+              onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              placeholder="https://example.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">CTA 텍스트</label>
+            <input
+              type="text"
+              value={formData.ctaText}
+              onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              placeholder="자세히 보기"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">정렬 순서</label>
+            <input
+              type="number"
+              value={formData.sortOrder}
+              onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              min="0"
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">활성화</span>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                formData.isActive ? "bg-green-500" : "bg-gray-300"
+              }`}
+            >
+              <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                formData.isActive ? "translate-x-[22px]" : "translate-x-[2px]"
+              }`} />
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
