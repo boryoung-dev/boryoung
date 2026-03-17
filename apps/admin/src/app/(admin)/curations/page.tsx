@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, Eye, EyeOff, Package } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 interface Curation {
   id: string;
@@ -42,6 +44,8 @@ interface CurationProduct {
 
 export default function CurationsPage() {
   const { authHeaders, isLoading } = useAdminAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [curations, setCurations] = useState<Curation[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -123,7 +127,7 @@ export default function CurationsPage() {
     e.preventDefault();
 
     if (!formData.title.trim()) {
-      alert("제목은 필수입니다");
+      toast("제목은 필수입니다", "error");
       return;
     }
 
@@ -150,16 +154,16 @@ export default function CurationsPage() {
         setModalOpen(false);
         fetchCurations();
       } else {
-        alert(data.error || "저장에 실패했습니다");
+        toast(data.error || "저장에 실패했습니다", "error");
       }
     } catch (error) {
       console.error("큐레이션 저장 실패:", error);
-      alert("큐레이션 저장 중 오류가 발생했습니다");
+      toast("큐레이션 저장 중 오류가 발생했습니다", "error");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("정말 이 큐레이션을 삭제하시겠습니까?")) return;
+    if (!(await confirm({ message: "정말 이 큐레이션을 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
 
     try {
       const res = await fetch(`/api/curations/${id}`, {
@@ -171,11 +175,11 @@ export default function CurationsPage() {
       if (data.success) {
         fetchCurations();
       } else {
-        alert(data.error || "삭제에 실패했습니다");
+        toast(data.error || "삭제에 실패했습니다", "error");
       }
     } catch (error) {
       console.error("큐레이션 삭제 실패:", error);
-      alert("큐레이션 삭제 중 오류가 발생했습니다");
+      toast("큐레이션 삭제 중 오류가 발생했습니다", "error");
     }
   };
 
@@ -238,13 +242,13 @@ export default function CurationsPage() {
       if (data.success) {
         setProductsModalOpen(false);
         fetchCurations();
-        alert("상품 연결이 업데이트되었습니다");
+        toast("상품 연결이 업데이트되었습니다", "success");
       } else {
-        alert(data.error || "저장에 실패했습니다");
+        toast(data.error || "저장에 실패했습니다", "error");
       }
     } catch (error) {
       console.error("상품 연결 저장 실패:", error);
-      alert("상품 연결 저장 중 오류가 발생했습니다");
+      toast("상품 연결 저장 중 오류가 발생했습니다", "error");
     }
   };
 

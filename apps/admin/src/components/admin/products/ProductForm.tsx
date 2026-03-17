@@ -12,6 +12,7 @@ import { TagsSeoTab } from "./tabs/TagsSeoTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 import { TemplateEditorTab } from "./tabs/TemplateEditorTab";
 import { Save, Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 const tabs = [
   { id: "basic", label: "기본 정보" },
@@ -31,6 +32,7 @@ interface ProductFormProps {
 export function ProductForm({ initialData }: ProductFormProps) {
   const router = useRouter();
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("basic");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -75,7 +77,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
   const handleSave = async () => {
     if (!formData.title || !formData.slug || !formData.categoryId || !formData.destination) {
-      alert("제목, slug, 카테고리, 목적지는 필수입니다");
+      toast("제목, slug, 카테고리, 목적지는 필수입니다", "error");
       setActiveTab("basic");
       return;
     }
@@ -114,13 +116,13 @@ export function ProductForm({ initialData }: ProductFormProps) {
       const data = await res.json();
 
       if (data.success) {
-        alert(initialData ? "상품이 수정되었습니다" : "상품이 등록되었습니다");
+        toast(initialData ? "상품이 수정되었습니다" : "상품이 등록되었습니다", "success");
         router.push("/products");
       } else {
-        alert(data.error || "저장 실패");
+        toast(data.error || "저장 실패", "error");
       }
     } catch (error) {
-      alert("저장 중 오류가 발생했습니다");
+      toast("저장 중 오류가 발생했습니다", "error");
     } finally {
       setIsSaving(false);
     }

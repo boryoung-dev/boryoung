@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Trash2, Save, Loader2 } from "lucide-react";
 import Select from "@/components/ui/Select";
+import { useToast } from "@/components/ui/Toast";
 
 interface PriceItem {
   id?: string;
@@ -23,6 +24,7 @@ interface Props {
 
 export function PricingTab({ productId, priceOptions: initial }: Props) {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
   const [options, setOptions] = useState<PriceItem[]>(
     initial.length > 0
       ? initial.map((o: any) => ({
@@ -104,12 +106,12 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
           }))
         );
         setHasChanges(false);
-        alert("가격 옵션이 저장되었습니다");
+        toast("가격 옵션이 저장되었습니다", "success");
       } else {
-        alert(data.error || "저장 실패");
+        toast(data.error || "저장 실패", "error");
       }
     } catch {
-      alert("가격 옵션 저장 중 오류가 발생했습니다");
+      toast("가격 옵션 저장 중 오류가 발생했습니다", "error");
     } finally {
       setSaving(false);
     }

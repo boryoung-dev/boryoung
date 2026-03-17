@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, Eye, EyeOff, Plane, Flag, Tag, Star, Users, Clock, MapPin, Globe } from "lucide-react";
 import Select from "@/components/ui/Select";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 interface QuickIcon {
   id: string;
@@ -41,6 +43,8 @@ const getIconComponent = (name: string) => {
 
 export default function QuickIconsPage() {
   const { authHeaders, isLoading } = useAdminAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [quickIcons, setQuickIcons] = useState<QuickIcon[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -103,7 +107,7 @@ export default function QuickIconsPage() {
     e.preventDefault();
 
     if (!formData.label.trim() || !formData.iconName.trim() || !formData.linkUrl.trim()) {
-      alert("레이블, 아이콘 이름, 링크 URL은 필수입니다");
+      toast("레이블, 아이콘 이름, 링크 URL은 필수입니다", "error");
       return;
     }
 
@@ -125,11 +129,11 @@ export default function QuickIconsPage() {
         setModalOpen(false);
         fetchQuickIcons();
       } else {
-        alert(data.error || "저장에 실패했습니다");
+        toast(data.error || "저장에 실패했습니다", "error");
       }
     } catch (error) {
       console.error("빠른아이콘 저장 실패:", error);
-      alert("빠른아이콘 저장 중 오류가 발생했습니다");
+      toast("빠른아이콘 저장 중 오류가 발생했습니다", "error");
     }
   };
 
@@ -143,12 +147,12 @@ export default function QuickIconsPage() {
       const data = await res.json();
       if (data.success) fetchQuickIcons();
     } catch {
-      alert("상태 변경 중 오류가 발생했습니다");
+      toast("상태 변경 중 오류가 발생했습니다", "error");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("정말 이 빠른아이콘을 삭제하시겠습니까?")) return;
+    if (!(await confirm({ message: "정말 이 빠른아이콘을 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
 
     try {
       const res = await fetch(`/api/quick-icons/${id}`, {
@@ -160,11 +164,11 @@ export default function QuickIconsPage() {
       if (data.success) {
         fetchQuickIcons();
       } else {
-        alert(data.error || "삭제에 실패했습니다");
+        toast(data.error || "삭제에 실패했습니다", "error");
       }
     } catch (error) {
       console.error("빠른아이콘 삭제 실패:", error);
-      alert("빠른아이콘 삭제 중 오류가 발생했습니다");
+      toast("빠른아이콘 삭제 중 오류가 발생했습니다", "error");
     }
   };
 

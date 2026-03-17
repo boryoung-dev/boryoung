@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Search, Eye, Edit2, Trash2, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import Select from "@/components/ui/Select";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 interface Product {
   id: string;
@@ -34,6 +36,8 @@ interface Pagination {
 export default function AdminProductsPage() {
   const { authHeaders } = useAdminAuth();
   const router = useRouter();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [products, setProducts] = useState<Product[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1, limit: 20, total: 0, totalPages: 0,
@@ -101,12 +105,12 @@ export default function AdminProductsPage() {
         );
       }
     } catch {
-      alert("변경 실패");
+      toast("변경 실패", "error");
     }
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`"${title}" 상품을 삭제하시겠습니까?`)) return;
+    if (!(await confirm({ message: `"${title}" 상품을 삭제하시겠습니까?`, variant: "danger", confirmText: "삭제" }))) return;
     try {
       const res = await fetch(`/api/products/${id}`, {
         method: "DELETE",
@@ -114,7 +118,7 @@ export default function AdminProductsPage() {
       });
       if (res.ok) fetchProducts(pagination.page);
     } catch {
-      alert("삭제 실패");
+      toast("삭제 실패", "error");
     }
   };
 

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import Select from '@/components/ui/Select';
+import { useToast } from '@/components/ui/Toast';
 
 interface BookingDetail {
   id: string;
@@ -32,6 +33,7 @@ interface BookingDetail {
 export default function BookingDetailPage() {
   const { id: bookingId } = useParams() as { id: string };
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [newStatus, setNewStatus] = useState('');
   const [adminMemo, setAdminMemo] = useState('');
@@ -79,14 +81,14 @@ export default function BookingDetailPage() {
       const result = await response.json();
       
       if (result.success) {
-        alert('예약 정보가 업데이트되었습니다');
+        toast('예약 정보가 업데이트되었습니다', 'success');
         fetchBooking();
       } else {
-        alert(result.error || '업데이트에 실패했습니다');
+        toast(result.error || '업데이트에 실패했습니다', 'error');
       }
     } catch (error) {
       console.error('Update error:', error);
-      alert('업데이트 중 오류가 발생했습니다');
+      toast('업데이트 중 오류가 발생했습니다', 'error');
     } finally {
       setIsUpdating(false);
     }

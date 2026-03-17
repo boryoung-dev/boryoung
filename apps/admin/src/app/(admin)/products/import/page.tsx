@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 interface ImportResult {
   title: string;
@@ -31,6 +32,7 @@ type UploadStatus = "idle" | "uploading" | "parsing" | "saving" | "done" | "erro
 
 export default function ProductImportPage() {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [response, setResponse] = useState<ImportResponse | null>(null);
@@ -39,7 +41,7 @@ export default function ProductImportPage() {
 
   const handleFile = useCallback((f: File) => {
     if (!f.name.endsWith(".xlsx") && !f.name.endsWith(".xls")) {
-      alert("엑셀 파일(.xlsx, .xls)만 업로드 가능합니다");
+      toast("엑셀 파일(.xlsx, .xls)만 업로드 가능합니다", "error");
       return;
     }
     setFile(f);

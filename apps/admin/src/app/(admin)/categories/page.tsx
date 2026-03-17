@@ -5,9 +5,13 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { CategoryTree } from "@/components/admin/categories/CategoryTree";
 import { CategoryForm } from "@/components/admin/categories/CategoryForm";
 import { Plus } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 export default function AdminCategoriesPage() {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -47,7 +51,7 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`"${name}" 카테고리를 삭제하시겠습니까?`)) return;
+    if (!(await confirm({ message: `"${name}" 카테고리를 삭제하시겠습니까?`, variant: "danger", confirmText: "삭제" }))) return;
     try {
       const res = await fetch(`/api/categories/${id}`, {
         method: "DELETE",
@@ -57,10 +61,10 @@ export default function AdminCategoriesPage() {
       if (data.success) {
         fetchCategories();
       } else {
-        alert(data.error || "삭제 실패");
+        toast(data.error || "삭제 실패", "error");
       }
     } catch {
-      alert("삭제 중 오류가 발생했습니다");
+      toast("삭제 중 오류가 발생했습니다", "error");
     }
   };
 

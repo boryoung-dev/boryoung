@@ -5,6 +5,8 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, FileText, Eye, EyeOff } from "lucide-react";
 import Select from "@/components/ui/Select";
 import { TiptapEditor } from "@/components/editor/TiptapEditor";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 interface BlogPost {
   id: string;
@@ -37,6 +39,8 @@ interface BlogPostFormData {
 
 export default function BlogPostsPage() {
   const { authHeaders, isLoading } = useAdminAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -118,7 +122,7 @@ export default function BlogPostsPage() {
       }
     } catch (error) {
       console.error("블로그 글 상세 조회 실패:", error);
-      alert("블로그 글을 불러올 수 없습니다");
+      toast("블로그 글을 불러올 수 없습니다", "error");
     }
   };
 
@@ -132,7 +136,7 @@ export default function BlogPostsPage() {
 
     const plainContent = formData.content.replace(/<[^>]*>/g, "").trim();
     if (!formData.title.trim() || !plainContent) {
-      alert("제목과 본문은 필수입니다");
+      toast("제목과 본문은 필수입니다", "error");
       return;
     }
 
@@ -160,16 +164,16 @@ export default function BlogPostsPage() {
         setModalOpen(false);
         fetchPosts();
       } else {
-        alert(data.error || "저장에 실패했습니다");
+        toast(data.error || "저장에 실패했습니다", "error");
       }
     } catch (error) {
       console.error("블로그 글 저장 실패:", error);
-      alert("블로그 글 저장 중 오류가 발생했습니다");
+      toast("블로그 글 저장 중 오류가 발생했습니다", "error");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("정말 이 블로그 글을 삭제하시겠습니까?")) return;
+    if (!(await confirm({ message: "정말 이 블로그 글을 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
 
     try {
       const res = await fetch(`/api/blog-posts/${id}`, {
@@ -181,11 +185,11 @@ export default function BlogPostsPage() {
       if (data.success) {
         fetchPosts();
       } else {
-        alert(data.error || "삭제에 실패했습니다");
+        toast(data.error || "삭제에 실패했습니다", "error");
       }
     } catch (error) {
       console.error("블로그 글 삭제 실패:", error);
-      alert("블로그 글 삭제 중 오류가 발생했습니다");
+      toast("블로그 글 삭제 중 오류가 발생했습니다", "error");
     }
   };
 

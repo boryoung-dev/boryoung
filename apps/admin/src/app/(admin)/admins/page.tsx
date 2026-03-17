@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, Shield, UserCheck, UserX } from "lucide-react";
 import Select from "@/components/ui/Select";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 interface Admin {
   id: string;
@@ -17,6 +19,8 @@ interface Admin {
 
 export default function AdminsPage() {
   const { authHeaders, admin } = useAdminAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -61,7 +65,7 @@ export default function AdminsPage() {
 
   const handleAdd = async () => {
     if (!formData.email || !formData.password || !formData.name) {
-      alert("필수 항목을 모두 입력해주세요");
+      toast("필수 항목을 모두 입력해주세요", "error");
       return;
     }
 
@@ -77,15 +81,15 @@ export default function AdminsPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert("관리자가 추가되었습니다");
+        toast("관리자가 추가되었습니다", "success");
         setShowAddModal(false);
         setFormData({ email: "", password: "", name: "", role: "STAFF" });
         fetchAdmins();
       } else {
-        alert(data.error || "추가 실패");
+        toast(data.error || "추가 실패", "error");
       }
     } catch {
-      alert("추가 중 오류가 발생했습니다");
+      toast("추가 중 오류가 발생했습니다", "error");
     }
   };
 
@@ -104,25 +108,25 @@ export default function AdminsPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert("관리자 정보가 수정되었습니다");
+        toast("관리자 정보가 수정되었습니다", "success");
         setShowEditModal(false);
         setEditTarget(null);
         fetchAdmins();
       } else {
-        alert(data.error || "수정 실패");
+        toast(data.error || "수정 실패", "error");
       }
     } catch {
-      alert("수정 중 오류가 발생했습니다");
+      toast("수정 중 오류가 발생했습니다", "error");
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
     if (admin?.id === id) {
-      alert("자기 자신은 삭제할 수 없습니다");
+      toast("자기 자신은 삭제할 수 없습니다", "error");
       return;
     }
 
-    if (!confirm(`"${name}" 관리자를 삭제하시겠습니까?`)) return;
+    if (!(await confirm({ message: `"${name}" 관리자를 삭제하시겠습니까?`, variant: "danger", confirmText: "삭제" }))) return;
 
     try {
       const res = await fetch(`/api/admins/${id}`, {
@@ -132,19 +136,19 @@ export default function AdminsPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert("관리자가 삭제되었습니다");
+        toast("관리자가 삭제되었습니다", "success");
         fetchAdmins();
       } else {
-        alert(data.error || "삭제 실패");
+        toast(data.error || "삭제 실패", "error");
       }
     } catch {
-      alert("삭제 중 오류가 발생했습니다");
+      toast("삭제 중 오류가 발생했습니다", "error");
     }
   };
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
     if (admin?.id === id) {
-      alert("자기 자신의 상태는 변경할 수 없습니다");
+      toast("자기 자신의 상태는 변경할 수 없습니다", "error");
       return;
     }
     try {
@@ -156,7 +160,7 @@ export default function AdminsPage() {
       const data = await res.json();
       if (data.success) fetchAdmins();
     } catch {
-      alert("상태 변경 중 오류가 발생했습니다");
+      toast("상태 변경 중 오류가 발생했습니다", "error");
     }
   };
 

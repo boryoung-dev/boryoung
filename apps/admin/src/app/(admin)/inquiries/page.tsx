@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { MessageSquare, Reply, Trash2, X, Eye } from "lucide-react";
 import Select from "@/components/ui/Select";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 interface Inquiry {
   id: string;
@@ -20,6 +22,8 @@ interface Inquiry {
 
 export default function InquiriesPage() {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [filteredInquiries, setFilteredInquiries] = useState<Inquiry[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -58,7 +62,7 @@ export default function InquiriesPage() {
       }
     } catch (error) {
       console.error("문의 목록 로드 실패:", error);
-      alert("문의 목록을 불러오는 데 실패했습니다.");
+      toast("문의 목록을 불러오는 데 실패했습니다.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -97,22 +101,22 @@ export default function InquiriesPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert("문의가 업데이트되었습니다.");
+        toast("문의가 업데이트되었습니다.", "success");
         closeModal();
         loadInquiries();
       } else {
-        alert(data.error || "업데이트 실패");
+        toast(data.error || "업데이트 실패", "error");
       }
     } catch (error) {
       console.error("문의 업데이트 실패:", error);
-      alert("업데이트 중 오류가 발생했습니다.");
+      toast("업데이트 중 오류가 발생했습니다.", "error");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("정말 이 문의를 삭제하시겠습니까?")) return;
+    if (!(await confirm({ message: "정말 이 문의를 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
 
     try {
       const res = await fetch(`/api/inquiries/${id}`, {
@@ -122,14 +126,14 @@ export default function InquiriesPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert("문의가 삭제되었습니다.");
+        toast("문의가 삭제되었습니다.", "success");
         loadInquiries();
       } else {
-        alert(data.error || "삭제 실패");
+        toast(data.error || "삭제 실패", "error");
       }
     } catch (error) {
       console.error("문의 삭제 실패:", error);
-      alert("삭제 중 오류가 발생했습니다.");
+      toast("삭제 중 오류가 발생했습니다.", "error");
     }
   }
 

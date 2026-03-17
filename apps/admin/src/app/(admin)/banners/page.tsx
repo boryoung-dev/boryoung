@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, Image as ImageIcon, Eye, EyeOff } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 interface Banner {
   id: string;
@@ -29,6 +31,8 @@ interface BannerFormData {
 
 export default function BannersPage() {
   const { authHeaders, isLoading } = useAdminAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -105,7 +109,7 @@ export default function BannersPage() {
     e.preventDefault();
 
     if (!formData.title.trim() || !formData.imageUrl.trim()) {
-      alert("제목과 이미지 URL은 필수입니다");
+      toast("제목과 이미지 URL은 필수입니다", "error");
       return;
     }
 
@@ -132,16 +136,16 @@ export default function BannersPage() {
         setModalOpen(false);
         fetchBanners();
       } else {
-        alert(data.error || "저장에 실패했습니다");
+        toast(data.error || "저장에 실패했습니다", "error");
       }
     } catch (error) {
       console.error("배너 저장 실패:", error);
-      alert("배너 저장 중 오류가 발생했습니다");
+      toast("배너 저장 중 오류가 발생했습니다", "error");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("정말 이 배너를 삭제하시겠습니까?")) return;
+    if (!(await confirm({ message: "정말 이 배너를 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
 
     try {
       const res = await fetch(`/api/banners/${id}`, {
@@ -153,11 +157,11 @@ export default function BannersPage() {
       if (data.success) {
         fetchBanners();
       } else {
-        alert(data.error || "삭제에 실패했습니다");
+        toast(data.error || "삭제에 실패했습니다", "error");
       }
     } catch (error) {
       console.error("배너 삭제 실패:", error);
-      alert("배너 삭제 중 오류가 발생했습니다");
+      toast("배너 삭제 중 오류가 발생했습니다", "error");
     }
   };
 

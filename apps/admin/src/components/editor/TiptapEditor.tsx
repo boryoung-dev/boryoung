@@ -16,6 +16,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import Placeholder from "@tiptap/extension-placeholder";
 import { useCallback, useRef } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useToast } from "@/components/ui/Toast";
 
 interface TiptapEditorProps {
   content: string;
@@ -39,6 +40,7 @@ export function TiptapEditor({
   compact = false,
 }: TiptapEditorProps) {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -100,10 +102,10 @@ export function TiptapEditor({
         if (data.success && data.url) {
           editor.chain().focus().setImage({ src: data.url }).run();
         } else {
-          alert(data.error || "이미지 업로드 실패");
+          toast(data.error || "이미지 업로드 실패", "error");
         }
       } catch {
-        alert("이미지 업로드 중 오류가 발생했습니다");
+        toast("이미지 업로드 중 오류가 발생했습니다", "error");
       }
     },
     [editor, authHeaders]

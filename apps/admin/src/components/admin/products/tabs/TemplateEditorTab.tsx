@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import { Info, Image as ImageIcon, Check, X, Save, Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 interface Props {
   formData: any;
@@ -13,6 +14,7 @@ interface Props {
 
 export function TemplateEditorTab({ formData, updateField, initialData }: Props) {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
   const [itineraryDescriptions, setItineraryDescriptions] = useState<Record<number, string>>({});
   const [itineraryChanged, setItineraryChanged] = useState(false);
   const [savingItinerary, setSavingItinerary] = useState(false);
@@ -46,12 +48,12 @@ export function TemplateEditorTab({ formData, updateField, initialData }: Props)
       const data = await res.json();
       if (data.success) {
         setItineraryChanged(false);
-        alert("일정 설명이 저장되었습니다");
+        toast("일정 설명이 저장되었습니다", "success");
       } else {
-        alert(data.error || "저장 실패");
+        toast(data.error || "저장 실패", "error");
       }
     } catch {
-      alert("일정 설명 저장 중 오류가 발생했습니다");
+      toast("일정 설명 저장 중 오류가 발생했습니다", "error");
     } finally {
       setSavingItinerary(false);
     }

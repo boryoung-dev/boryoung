@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { X, Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 interface CategoryFormProps {
   category?: any;
@@ -18,6 +19,7 @@ export function CategoryForm({
   onSaved,
 }: CategoryFormProps) {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
   const isEdit = !!category;
   const [isSaving, setIsSaving] = useState(false);
 
@@ -50,7 +52,7 @@ export function CategoryForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.slug) {
-      alert("이름과 slug는 필수입니다");
+      toast("이름과 slug는 필수입니다", "error");
       return;
     }
 
@@ -71,10 +73,10 @@ export function CategoryForm({
       if (data.success) {
         onSaved();
       } else {
-        alert(data.error || "저장 실패");
+        toast(data.error || "저장 실패", "error");
       }
     } catch {
-      alert("저장 중 오류가 발생했습니다");
+      toast("저장 중 오류가 발생했습니다", "error");
     } finally {
       setIsSaving(false);
     }

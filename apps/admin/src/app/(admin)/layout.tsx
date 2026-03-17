@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
+import { ToastProvider } from "@/components/ui/Toast";
+import { ConfirmProvider } from "@/components/ui/ConfirmModal";
 
 export default function AdminLayout({
   children,
@@ -26,23 +28,27 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="h-screen bg-[color:var(--surface)] flex overflow-hidden">
-      <AdminSidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        collapsed={collapsed}
-        onToggleCollapse={() => setCollapsed(!collapsed)}
-      />
+    <ToastProvider>
+      <ConfirmProvider>
+        <div className="h-screen bg-[color:var(--surface)] flex overflow-hidden">
+          <AdminSidebar
+            open={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            collapsed={collapsed}
+            onToggleCollapse={() => setCollapsed(!collapsed)}
+          />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <AdminHeader
-          onMenuClick={() => setSidebarOpen(true)}
-          adminName={admin?.name}
-          onLogout={logout}
-        />
+          <div className="flex-1 flex flex-col min-w-0">
+            <AdminHeader
+              onMenuClick={() => setSidebarOpen(true)}
+              adminName={admin?.name}
+              onLogout={logout}
+            />
 
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+            <main className="flex-1 overflow-y-auto p-6">{children}</main>
+          </div>
+        </div>
+      </ConfirmProvider>
+    </ToastProvider>
   );
 }

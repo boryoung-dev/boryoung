@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import Select from "@/components/ui/Select";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 interface Tag {
   id: string;
@@ -21,6 +23,8 @@ interface Tag {
 
 export default function AdminTagsPage() {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -78,7 +82,7 @@ export default function AdminTagsPage() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`"${name}" 태그를 삭제하시겠습니까?`)) return;
+    if (!(await confirm({ message: `"${name}" 태그를 삭제하시겠습니까?`, variant: "danger", confirmText: "삭제" }))) return;
     try {
       const res = await fetch(`/api/tags/${id}`, {
         method: "DELETE",
@@ -88,10 +92,10 @@ export default function AdminTagsPage() {
       if (data.success) {
         fetchTags();
       } else {
-        alert(data.error || "삭제 실패");
+        toast(data.error || "삭제 실패", "error");
       }
     } catch {
-      alert("삭제 중 오류가 발생했습니다");
+      toast("삭제 중 오류가 발생했습니다", "error");
     }
   };
 
@@ -105,7 +109,7 @@ export default function AdminTagsPage() {
       const data = await res.json();
       if (data.success) fetchTags();
     } catch {
-      alert("상태 변경 중 오류가 발생했습니다");
+      toast("상태 변경 중 오류가 발생했습니다", "error");
     }
   };
 
@@ -127,10 +131,10 @@ export default function AdminTagsPage() {
         setShowModal(false);
         fetchTags();
       } else {
-        alert(data.error || "저장 실패");
+        toast(data.error || "저장 실패", "error");
       }
     } catch {
-      alert("저장 중 오류가 발생했습니다");
+      toast("저장 중 오류가 발생했습니다", "error");
     }
   };
 

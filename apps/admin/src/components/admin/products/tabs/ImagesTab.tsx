@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Upload, X, Loader2, Save } from "lucide-react";
 import Select from "@/components/ui/Select";
+import { useToast } from "@/components/ui/Toast";
 
 const IMAGE_TYPES = [
   { value: "THUMBNAIL", label: "썸네일" },
@@ -20,6 +21,7 @@ interface Props {
 
 export function ImagesTab({ productId, images: initialImages }: Props) {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
   const [images, setImages] = useState(initialImages);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -60,7 +62,7 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
         }
       }
     } catch (error) {
-      alert("이미지 업로드 실패");
+      toast("이미지 업로드 실패", "error");
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -99,12 +101,12 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
       if (data.success) {
         setImages(data.images);
         setHasChanges(false);
-        alert("이미지가 저장되었습니다");
+        toast("이미지가 저장되었습니다", "success");
       } else {
-        alert(data.error || "저장 실패");
+        toast(data.error || "저장 실패", "error");
       }
     } catch {
-      alert("이미지 저장 중 오류가 발생했습니다");
+      toast("이미지 저장 중 오류가 발생했습니다", "error");
     } finally {
       setSaving(false);
     }

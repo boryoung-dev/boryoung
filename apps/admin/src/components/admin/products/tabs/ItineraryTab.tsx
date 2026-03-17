@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Trash2, GripVertical, Save, Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 interface ItineraryItem {
   id?: string;
@@ -34,6 +35,7 @@ const emptyDay = (day: number): ItineraryItem => ({
 
 export function ItineraryTab({ productId, itineraries: initial }: Props) {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
   const [items, setItems] = useState<ItineraryItem[]>(
     initial.length > 0
       ? initial.map((it: any) => ({
@@ -109,12 +111,12 @@ export function ItineraryTab({ productId, itineraries: initial }: Props) {
           }))
         );
         setHasChanges(false);
-        alert("일정이 저장되었습니다");
+        toast("일정이 저장되었습니다", "success");
       } else {
-        alert(data.error || "저장 실패");
+        toast(data.error || "저장 실패", "error");
       }
     } catch {
-      alert("일정 저장 중 오류가 발생했습니다");
+      toast("일정 저장 중 오류가 발생했습니다", "error");
     } finally {
       setSaving(false);
     }

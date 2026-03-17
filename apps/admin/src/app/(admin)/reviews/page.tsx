@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Pencil, Trash2, X, Eye, EyeOff } from "lucide-react";
 import Select from "@/components/ui/Select";
+import { useToast } from "@/components/ui/Toast";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 interface Product {
   id: string;
@@ -38,6 +40,8 @@ interface EditFormData {
 
 export default function ReviewsPage() {
   const { authHeaders } = useAdminAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [filteredReviews, setFilteredReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,7 +85,7 @@ export default function ReviewsPage() {
       }
     } catch (error) {
       console.error("리뷰 조회 실패:", error);
-      alert("리뷰 목록을 불러오는데 실패했습니다.");
+      toast("리뷰 목록을 불러오는데 실패했습니다.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -140,19 +144,19 @@ export default function ReviewsPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert("리뷰가 수정되었습니다.");
+        toast("리뷰가 수정되었습니다.", "success");
         setIsEditModalOpen(false);
         setEditingReview(null);
         fetchReviews();
       }
     } catch (error) {
       console.error("리뷰 수정 실패:", error);
-      alert("리뷰 수정에 실패했습니다.");
+      toast("리뷰 수정에 실패했습니다.", "error");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
+    if (!(await confirm({ message: "정말 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
 
     try {
       const res = await fetch(`/api/reviews/${id}`, {
@@ -166,12 +170,12 @@ export default function ReviewsPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert("리뷰가 삭제되었습니다.");
+        toast("리뷰가 삭제되었습니다.", "success");
         fetchReviews();
       }
     } catch (error) {
       console.error("리뷰 삭제 실패:", error);
-      alert("리뷰 삭제에 실패했습니다.");
+      toast("리뷰 삭제에 실패했습니다.", "error");
     }
   };
 
@@ -198,7 +202,7 @@ export default function ReviewsPage() {
       }
     } catch (error) {
       console.error("공개 상태 변경 실패:", error);
-      alert("공개 상태 변경에 실패했습니다.");
+      toast("공개 상태 변경에 실패했습니다.", "error");
     }
   };
 
