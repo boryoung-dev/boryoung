@@ -41,29 +41,34 @@ export function GlobeSection() {
   }, []);
 
   useEffect(() => {
-    let width = 0;
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+
+    // 초기 사이즈 확보 (offsetWidth가 0이면 fallback)
+    let width = canvas.offsetWidth || 500;
+    widthRef.current = width;
+
     const onResize = () => {
-      if (canvasRef.current) {
-        width = canvasRef.current.offsetWidth;
+      if (canvas) {
+        width = canvas.offsetWidth || 500;
         widthRef.current = width;
       }
     };
     window.addEventListener("resize", onResize);
-    onResize();
 
-    const globe = createGlobe(canvasRef.current!, {
+    const globe = createGlobe(canvas, {
       devicePixelRatio: 2,
       width: width * 2,
       height: width * 2,
       phi: 0,
       theta: 0.3,
       dark: 0,
-      diffuse: 1.2,
-      mapSamples: 36000,
-      mapBrightness: 6,
-      baseColor: [0.62, 0.62, 0.62],
-      markerColor: [0.1, 0.5, 1],
-      glowColor: [1, 1, 1],
+      diffuse: 3,
+      mapSamples: 40000,
+      mapBrightness: 8,
+      baseColor: [0.4, 0.4, 0.4],
+      markerColor: [0.2, 0.6, 1],
+      glowColor: [0.95, 0.95, 0.95],
       markers: DESTINATIONS.map((d) => ({
         location: [d.lat, d.lng] as [number, number],
         size: 0.08,
@@ -158,7 +163,8 @@ export function GlobeSection() {
             <div className="w-full max-w-[500px] aspect-square relative">
               <canvas
                 ref={canvasRef}
-                className="w-full h-full cursor-grab active:cursor-grabbing"
+                style={{ width: "100%", height: "100%", contain: "layout paint size" }}
+                className="cursor-grab active:cursor-grabbing"
                 onPointerDown={(e) => {
                   pointerInteracting.current = e.clientX - pointerInteractionMovement.current;
                   if (canvasRef.current) canvasRef.current.style.cursor = "grabbing";
