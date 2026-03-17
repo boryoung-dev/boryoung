@@ -27,11 +27,11 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
   return (
     <div className="flex flex-col lg:flex-row gap-15">
       {/* 왼쪽: 이미지 섹션 */}
-      <div className="w-full lg:w-[600px] flex-shrink-0">
+      <div className="w-full lg:w-[55%] flex-shrink-0">
         {/* 메인 이미지 */}
         <button
           onClick={() => onImageClick(0)}
-          className="w-full h-[400px] rounded-[32px] overflow-hidden mb-4"
+          className="w-full h-[440px] rounded-2xl overflow-hidden mb-3"
         >
           <img
             src={mainImage}
@@ -48,7 +48,7 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
               <button
                 key={img.id || idx}
                 onClick={() => onImageClick(idx)}
-                className="flex-1 h-[100px] rounded-[20px] overflow-hidden"
+                className="flex-1 h-[90px] rounded-xl overflow-hidden"
               >
                 <img
                   src={img.url}

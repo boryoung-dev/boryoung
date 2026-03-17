@@ -58,22 +58,18 @@ export function HighlightCards({ product }: HighlightCardsProps) {
   if (cards.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((card, idx) => {
         const Icon = card.icon;
         return (
           <div
             key={idx}
-            className="bg-white rounded-[24px] p-6 flex flex-col gap-3"
+            className="bg-white rounded-xl border border-[color:var(--border)] px-5 py-4 flex items-center gap-3"
           >
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center bg-[color:var(--surface)]"
-            >
-              <Icon className="w-6 h-6 text-[color:var(--muted)]" />
-            </div>
-            <div>
-              <div className="text-sm text-[color:var(--muted)] mb-1">{card.label}</div>
-              <div className="text-xl font-semibold text-[color:var(--fg)]">
+            <Icon className="w-5 h-5 text-[color:var(--muted)] shrink-0" />
+            <div className="min-w-0">
+              <div className="text-[12px] text-[color:var(--muted)]">{card.label}</div>
+              <div className="text-[15px] font-semibold text-[color:var(--fg)] truncate">
                 {card.value}
               </div>
             </div>

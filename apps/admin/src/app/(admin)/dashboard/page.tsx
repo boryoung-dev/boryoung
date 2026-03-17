@@ -143,10 +143,10 @@ export default function AdminDashboard() {
   ];
 
   const quickActions = [
-    { label: "상품 추가", href: "/products/new", icon: Plus, color: "bg-blue-50 text-blue-600 hover:bg-blue-100" },
-    { label: "문의 관리", href: "/inquiries", icon: MessageSquare, color: "bg-rose-50 text-rose-600 hover:bg-rose-100" },
-    { label: "상품 관리", href: "/products", icon: Package, color: "bg-violet-50 text-violet-600 hover:bg-violet-100" },
-    { label: "리뷰 관리", href: "/reviews", icon: FileText, color: "bg-emerald-50 text-emerald-600 hover:bg-emerald-100" },
+    { label: "상품 추가", href: "/products/new", icon: Plus, dotColor: "bg-blue-500" },
+    { label: "문의 관리", href: "/inquiries", icon: MessageSquare, dotColor: "bg-rose-500" },
+    { label: "상품 관리", href: "/products", icon: Package, dotColor: "bg-violet-500" },
+    { label: "리뷰 관리", href: "/reviews", icon: FileText, dotColor: "bg-emerald-500" },
   ];
 
   const maxProductCount = Math.max(...productsByCategory.map(p => p.count), 1);
@@ -168,10 +168,11 @@ export default function AdminDashboard() {
             <Link
               key={action.label}
               href={action.href}
-              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border border-[color:var(--border)] transition-colors ${action.color}`}
+              className="flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-[color:var(--border)] hover:bg-[color:var(--surface)] transition-colors"
             >
-              <Icon className="w-5 h-5 shrink-0" />
-              <span className="text-sm font-semibold">{action.label}</span>
+              <span className={`w-2 h-2 rounded-full shrink-0 ${action.dotColor}`} />
+              <Icon className="w-4 h-4 shrink-0 text-[color:var(--muted)]" />
+              <span className="text-sm font-semibold text-[color:var(--fg)]">{action.label}</span>
             </Link>
           );
         })}

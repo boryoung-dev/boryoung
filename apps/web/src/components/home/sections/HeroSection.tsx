@@ -67,7 +67,7 @@ export function HeroSection(props: {
       ];
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "center" },
+    { loop: true, align: "start" },
     [Autoplay({ delay: 5000, stopOnInteraction: false })]
   );
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -88,48 +88,37 @@ export function HeroSection(props: {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <div className="w-full py-2">
+    <div className="w-full">
       <div className="relative group">
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className="min-w-0 flex-[0_0_92%] sm:flex-[0_0_85%] px-2 sm:px-3"
+                className="min-w-0 flex-[0_0_100%]"
               >
-                {/* 시네마틱 비율: 16/7 → 더 넓고 영화적인 느낌 */}
-                <div
-                  className={`relative w-full aspect-[16/7] sm:aspect-[21/8] rounded-2xl overflow-hidden transition-all duration-300 ${
-                    // 비활성 슬라이드: 미세한 스케일 차이 추가
-                    index === selectedIndex
-                      ? "opacity-100 scale-100"
-                      : "opacity-50 scale-[0.97]"
-                  }`}
-                >
+                <div className="relative w-full aspect-[16/7] sm:aspect-[2.5/1] overflow-hidden">
                   <img
                     src={slide.bg}
                     alt={slide.headline}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
                   />
-                  {/* 그라디언트: 왼쪽 하단에서 올라오는 방향으로 변경 */}
+                  {/* 그라디언트: 왼쪽 하단에서 올라오는 방향 */}
                   <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
 
                   {/* 텍스트: 왼쪽 하단 고정 */}
                   <div className="absolute bottom-0 left-0 p-6 md:p-10 text-white">
                     <div className="max-w-lg">
-                      {/* 헤드라인: 더 작지만 tight tracking으로 세련되게 */}
                       <h2 className="text-2xl md:text-4xl font-semibold tracking-tight leading-tight mb-2 md:mb-3">
                         {slide.headline}
                       </h2>
                       {slide.subhead && (
-                        // 서브헤드: 대비를 줄여서 절제된 느낌
                         <p className="text-sm md:text-base text-white/70 font-normal mb-5 line-clamp-2">
                           {slide.subhead}
                         </p>
                       )}
                       <Link href={slide.link}>
-                        {/* CTA 버튼: 흰 배경 + 검정 텍스트, 미니멀하게 */}
                         <button className="rounded-full px-5 h-9 bg-white text-black text-sm font-medium hover:bg-white/90 border-none shadow-sm transition-colors duration-200">
                           {slide.cta}
                         </button>
@@ -142,12 +131,12 @@ export function HeroSection(props: {
           </div>
         </div>
 
-        {/* 슬라이드 카운터: 미니멀 유지 */}
+        {/* 슬라이드 카운터 */}
         <div className="absolute bottom-6 md:bottom-10 right-6 md:right-10 z-20 bg-black/30 backdrop-blur-md rounded-full px-3 py-1 text-[11px] font-medium text-white/80 border border-white/10">
           {selectedIndex + 1} / {slides.length}
         </div>
 
-        {/* 이전 버튼: 크기 w-10 → w-9 */}
+        {/* 이전 버튼 */}
         <button
           onClick={scrollPrev}
           className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/20 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/40 hidden md:flex"
@@ -158,7 +147,7 @@ export function HeroSection(props: {
           </svg>
         </button>
 
-        {/* 다음 버튼: 크기 w-10 → w-9 */}
+        {/* 다음 버튼 */}
         <button
           onClick={scrollNext}
           className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/20 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/40 hidden md:flex"

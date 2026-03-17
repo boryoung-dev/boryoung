@@ -32,8 +32,8 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
       {/* 히어로 래퍼: 이미지+정보 + 하이라이트 카드 */}
-      <div className="bg-[#FAFAFA] pt-10 pb-15 px-15">
-        <div className="mx-auto max-w-[1440px]">
+      <div className="bg-[#FAFAFA] pt-10 pb-12 px-6 md:px-10 lg:px-15">
+        <div className="mx-auto max-w-[1200px]">
           <HeroSection
             product={product}
             onBooking={() => window.location.href = "tel:1588-0320"}
@@ -41,15 +41,15 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
           />
 
           {/* 하이라이트 카드 */}
-          <div className="mt-10">
+          <div className="mt-8">
             <HighlightCards product={product} />
           </div>
         </div>
       </div>
 
-      {/* 탭 네비게이션 (pill 스타일) */}
-      <div className="bg-[#FAFAFA] sticky top-16 z-30">
-        <div className="mx-auto max-w-[1440px] px-15">
+      {/* 탭 네비게이션 (밑줄 스타일) */}
+      <div className="bg-[#FAFAFA] sticky top-16 z-30 border-b border-[color:var(--border)]">
+        <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-15">
           <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
       </div>
