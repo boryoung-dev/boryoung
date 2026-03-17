@@ -25,8 +25,13 @@ export async function HomePage() {
   );
 
   const now = new Date();
-  const [rankingItems, banners] = await Promise.all([
+  const [rankingItems, allProducts, banners] = await Promise.all([
     getRankingProducts(),
+    prisma.tourProduct.findMany({
+      where: { isActive: true },
+      include: { images: { where: { isThumbnail: true }, take: 1 }, category: true },
+      orderBy: { sortOrder: "asc" },
+    }),
     prisma.banner.findMany({
       where: {
         isActive: true,
@@ -39,6 +44,26 @@ export async function HomePage() {
 
   // 상위 5개 추천 상품
   const featured = rankingItems.slice(0, 5);
+
+  // 국가별 상품 그룹핑 (지구본용)
+  const DEST_MAP: Record<string, string> = {
+    "일본 후쿠오카": "japan", "일본 오키나와": "japan",
+    "베트남 다낭": "vietnam", "태국 치앙마이": "thailand",
+    "대만 타이베이": "taiwan", "제주도": "domestic-jeju",
+  };
+  const productsByCountry: Record<string, Array<{ slug: string; title: string; imageUrl: string; price: string; destination: string }>> = {};
+  for (const p of allProducts) {
+    const key = Object.entries(DEST_MAP).find(([dest]) => p.destination?.includes(dest.split(" ")[0]))?.[1]
+      || p.destination?.toLowerCase().replace(/\s/g, "-") || "other";
+    if (!productsByCountry[key]) productsByCountry[key] = [];
+    productsByCountry[key].push({
+      slug: p.slug,
+      title: p.title,
+      imageUrl: p.images?.[0]?.url || "",
+      price: p.basePrice ? `${p.basePrice.toLocaleString()}원` : "가격 문의",
+      destination: p.destination || "",
+    });
+  }
 
   return (
     <div className="min-h-screen bg-white font-sans text-[color:var(--fg)] antialiased">
@@ -126,7 +151,7 @@ export async function HomePage() {
         )}
 
         {/* 3. 3D 지구본 — 국가별 투어 탐색 */}
-        <GlobeSection />
+        <GlobeSection productsByCountry={productsByCountry} />
 
         {/* 4. 국가별 여행 — 2x2 대형 그리드 */}
         <section className="py-16 md:py-20 bg-[color:var(--surface)]">
