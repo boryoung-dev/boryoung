@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
-import { PackageOpen, ChevronDown } from "lucide-react";
+import { PackageOpen, ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { RangeSlider } from "@/components/common/RangeSlider";
 import { Checkbox } from "@/components/common/Checkbox";
 import { ProductCard } from "./ProductCard";
@@ -48,6 +48,7 @@ export function ToursPageClient({
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("recommended");
   const [sortOpen, setSortOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
 
   // 상품 데이터에서 가격 범위 동적 추출
@@ -149,9 +150,75 @@ export function ToursPageClient({
   const currentSortLabel =
     SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? "추천순";
 
+  // 필터 내용 공통 렌더링
+  const filterContent = (
+    <>
+      {/* 가격대 필터 */}
+      <div className="bg-white rounded-[24px] p-6 space-y-4">
+        <h3 className="text-sm font-semibold text-[color:var(--fg)]">1인 가격</h3>
+        <RangeSlider
+          min={priceRange.min}
+          max={priceRange.max}
+          step={PRICE_STEP}
+          minValue={minPrice}
+          maxValue={maxPrice}
+          onChange={(newMin, newMax) => { setMinPrice(newMin); setMaxPrice(newMax); }}
+          formatLabel={formatPrice}
+        />
+      </div>
+
+      {/* 여행지 필터 */}
+      <div className="bg-white rounded-[24px] p-6 space-y-4">
+        <h3 className="text-sm font-semibold text-[color:var(--fg)]">여행지</h3>
+        <div className="space-y-3">
+          {destinations.map((dest) => (
+            <Checkbox
+              key={dest}
+              checked={selectedDestinations.includes(dest)}
+              onChange={() => toggleDestination(dest)}
+              label={dest}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* 카테고리 필터 */}
+      {categories.length > 0 && (
+        <div className="bg-white rounded-[24px] p-6 space-y-3">
+          <h3 className="text-sm font-semibold text-[color:var(--fg)] mb-4">카테고리</h3>
+          <button
+            type="button"
+            onClick={() => handleCategoryClick(undefined)}
+            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+              !selectedCategory
+                ? "bg-[color:var(--fg)] text-white font-medium"
+                : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
+            }`}
+          >
+            전체
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => handleCategoryClick(cat.slug)}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                selectedCategory === cat.slug
+                  ? "bg-[color:var(--fg)] text-white font-medium"
+                  : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="flex gap-[40px]">
-      {/* 왼쪽: 필터 사이드바 */}
+      {/* 왼쪽: 필터 사이드바 (데스크톱) */}
       <aside className="w-[309px] flex-shrink-0 space-y-6 hidden lg:block">
         {/* 필터 헤더 */}
         <div className="flex items-center justify-between">
@@ -164,76 +231,46 @@ export function ToursPageClient({
             초기화
           </button>
         </div>
-
-        {/* 가격대 필터 */}
-        <div className="bg-white rounded-[24px] p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-[color:var(--fg)]">1인 가격</h3>
-          <RangeSlider
-            min={priceRange.min}
-            max={priceRange.max}
-            step={PRICE_STEP}
-            minValue={minPrice}
-            maxValue={maxPrice}
-            onChange={(newMin, newMax) => { setMinPrice(newMin); setMaxPrice(newMax); }}
-            formatLabel={formatPrice}
-          />
-        </div>
-
-        {/* 여행지 필터 */}
-        <div className="bg-white rounded-[24px] p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-[color:var(--fg)]">여행지</h3>
-          <div className="space-y-3">
-            {destinations.map((dest) => (
-              <Checkbox
-                key={dest}
-                checked={selectedDestinations.includes(dest)}
-                onChange={() => toggleDestination(dest)}
-                label={dest}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* 카테고리 필터 */}
-        {categories.length > 0 && (
-          <div className="bg-white rounded-[24px] p-6 space-y-3">
-            <h3 className="text-sm font-semibold text-[color:var(--fg)] mb-4">카테고리</h3>
-            <button
-              type="button"
-              onClick={() => handleCategoryClick(undefined)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                !selectedCategory
-                  ? "bg-[color:var(--fg)] text-white font-medium"
-                  : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
-              }`}
-            >
-              전체
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => handleCategoryClick(cat.slug)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                  selectedCategory === cat.slug
-                    ? "bg-[color:var(--fg)] text-white font-medium"
-                    : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        )}
+        {filterContent}
       </aside>
+
+      {/* 모바일 필터 오버레이 */}
+      {filterOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setFilterOpen(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-y-auto p-6 pt-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">필터</h3>
+              <button onClick={() => setFilterOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[color:var(--surface)]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              {filterContent}
+            </div>
+            <button onClick={() => setFilterOpen(false)} className="w-full mt-6 h-12 bg-[color:var(--fg)] text-white rounded-xl font-medium">
+              적용하기
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 오른쪽: 콘텐츠 영역 */}
       <div className="flex-1 space-y-6">
-        {/* 정렬 바 */}
+        {/* 정렬 바 + 모바일 필터 버튼 */}
         <div className="flex items-center justify-between">
-          <p className="text-[15px] text-[color:var(--muted)]">
-            총 <span className="font-semibold text-[color:var(--fg)]">{filteredProducts.length}</span>개의 여행 상품
-          </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setFilterOpen(true)}
+              className="flex lg:hidden items-center gap-2 px-4 py-2 bg-[color:var(--surface)] rounded-lg text-sm font-medium"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              필터
+            </button>
+            <p className="text-[15px] text-[color:var(--muted)]">
+              총 <span className="font-semibold text-[color:var(--fg)]">{filteredProducts.length}</span>개의 여행 상품
+            </p>
+          </div>
           <div ref={sortRef} className="relative">
             <button
               type="button"
@@ -277,7 +314,7 @@ export function ToursPageClient({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

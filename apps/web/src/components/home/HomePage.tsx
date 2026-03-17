@@ -48,12 +48,12 @@ export async function HomePage() {
           <div className="relative">
             <HeroSection {...heroSection} banners={banners} />
             {/* 국가 바로가기 (히어로 하단) */}
-            <div className="flex justify-center gap-6 md:gap-8 py-5 border-b border-[color:var(--border)]">
+            <div className="flex justify-center flex-wrap gap-4 md:gap-8 py-5 border-b border-[color:var(--border)]">
               {["일본", "태국", "베트남", "대만", "괌·사이판", "국내·제주"].map((country) => (
                 <Link
                   key={country}
                   href={`/tours?country=${country}`}
-                  className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors font-medium"
+                  className="text-[12px] md:text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors font-medium"
                 >
                   {country}
                 </Link>
@@ -93,7 +93,7 @@ export async function HomePage() {
                   </Link>
                 ))}
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {featured.slice(2, 5).map((item) => (
                   <Link key={item.id} href={item.slug ? `/tours/${item.slug}` : "/tours"} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)]">
                     <img src={item.imageUrl} alt={item.title} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
@@ -131,7 +131,7 @@ export async function HomePage() {
         {/* 4. 신뢰 + CTA */}
         <section className="py-20 md:py-28">
           <div className="max-w-3xl mx-auto px-6 text-center">
-            <h2 className="text-3xl md:text-[42px] font-semibold tracking-tight leading-[1.15] mb-6">
+            <h2 className="text-2xl md:text-[42px] font-semibold tracking-tight leading-[1.15] mb-6">
               22년간,<br />10,000명의 골퍼가 선택했습니다
             </h2>
             <p className="text-base text-[color:var(--muted)] mb-10 max-w-lg mx-auto leading-relaxed">

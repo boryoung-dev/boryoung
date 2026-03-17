@@ -29,13 +29,13 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
       : null;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-15">
+    <div className="flex flex-col lg:flex-row gap-8 lg:gap-15">
       {/* 왼쪽: 이미지 섹션 */}
       <div className="w-full lg:w-[55%] flex-shrink-0">
         {/* 메인 이미지 — 클릭 시 라이트박스 */}
         <button
           onClick={() => onImageClick(selectedIdx)}
-          className="w-full h-[440px] rounded-2xl overflow-hidden mb-3 cursor-zoom-in"
+          className="w-full h-[280px] sm:h-[360px] lg:h-[440px] rounded-2xl overflow-hidden mb-3 cursor-zoom-in"
         >
           <img
             src={selectedImage}
@@ -87,7 +87,7 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
         </div>
 
         {/* 타이틀 */}
-        <h1 className="text-[36px] font-bold text-[color:var(--fg)] leading-[1.2] tracking-tight mb-2">
+        <h1 className="text-2xl lg:text-[36px] font-bold text-[color:var(--fg)] leading-[1.2] tracking-tight mb-2">
           {product.title}
         </h1>
 
@@ -119,12 +119,12 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
         )}
 
         {/* 가격 섹션 */}
-        <div className="bg-white rounded-xl p-6 border border-[color:var(--surface)] mb-6">
+        <div className="bg-white rounded-xl p-4 lg:p-6 border border-[color:var(--surface)] mb-6">
           <div className="text-sm text-[color:var(--muted)] mb-2">1인 기준</div>
           <div className="flex items-end gap-2">
             {product.basePrice ? (
               <>
-                <span className="text-[32px] font-bold text-[color:var(--fg)]">
+                <span className="text-2xl lg:text-[32px] font-bold text-[color:var(--fg)]">
                   {product.basePrice.toLocaleString()}원
                 </span>
                 {product.originalPrice && product.originalPrice > product.basePrice && (

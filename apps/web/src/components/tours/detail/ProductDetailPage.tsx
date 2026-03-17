@@ -55,7 +55,7 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
       </div>
 
       {/* 콘텐츠 섹션: Main + Sidebar */}
-      <div className="bg-[#FAFAFA] px-6 md:px-10 lg:px-15 pt-8 pb-15">
+      <div className="bg-[#FAFAFA] px-6 md:px-10 lg:px-15 pt-8 pb-24 lg:pb-15">
         <div className="mx-auto max-w-[1200px]">
           <div className="flex gap-8 lg:gap-12">
             {/* 메인 콘텐츠 */}

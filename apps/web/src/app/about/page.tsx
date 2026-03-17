@@ -24,10 +24,10 @@ export default function AboutPage() {
       <SiteHeader />
       <main>
         {/* 히어로 - 텍스트 중심, 그라디언트 없음 */}
-        <section className="pt-20 pb-16 md:pt-28 md:pb-20">
+        <section className="pt-14 pb-12 md:pt-28 md:pb-20">
           <div className="mx-auto max-w-3xl px-6 text-center">
             <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-4">About us</p>
-            <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-[color:var(--fg)] mb-6 leading-[1.1]">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-[color:var(--fg)] mb-6 leading-[1.1]">
               2004년부터,<br />골프여행만 해왔습니다
             </h1>
             <p className="text-lg text-[color:var(--muted)] leading-relaxed max-w-xl mx-auto">
@@ -110,7 +110,7 @@ export default function AboutPage() {
                 ["대표전화", "1588-0320"],
               ].map(([label, value]) => (
                 <div key={label} className="flex py-4 text-sm">
-                  <dt className="w-36 text-[color:var(--muted)] flex-shrink-0">{label}</dt>
+                  <dt className="w-28 md:w-36 text-[color:var(--muted)] flex-shrink-0">{label}</dt>
                   <dd className="text-[color:var(--fg)]">{value}</dd>
                 </div>
               ))}

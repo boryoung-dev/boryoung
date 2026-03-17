@@ -109,7 +109,7 @@ export default function ContactPage() {
       <SiteHeader />
 
       {/* 히어로 */}
-      <section className="pt-20 pb-12 md:pt-28 md:pb-16">
+      <section className="pt-14 pb-10 md:pt-20 md:pb-16">
         <div className="mx-auto max-w-5xl px-6">
           <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">Contact</p>
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[color:var(--fg)] mb-3">
