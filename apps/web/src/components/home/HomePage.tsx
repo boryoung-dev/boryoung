@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
 import { HeroSection } from "./sections/HeroSection";
+import { GlobeSection } from "./GlobeSection";
 import { SiteHeader } from "../common/SiteHeader";
 import { KakaoFloating } from "../common/KakaoFloating";
 import { SiteFooter } from "../common/SiteFooter";
@@ -124,7 +125,10 @@ export async function HomePage() {
           </section>
         )}
 
-        {/* 3. 국가별 여행 — 2x2 대형 그리드 */}
+        {/* 3. 3D 지구본 — 국가별 투어 탐색 */}
+        <GlobeSection />
+
+        {/* 4. 국가별 여행 — 2x2 대형 그리드 */}
         <section className="py-16 md:py-20 bg-[color:var(--surface)]">
           <div className="max-w-[1200px] mx-auto px-4 md:px-6">
             <AnimateOnScroll animation="fadeUp">

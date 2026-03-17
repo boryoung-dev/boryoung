@@ -14,6 +14,7 @@
     "@repo/database": "workspace:*",
     "@repo/ui": "workspace:*",
     "@supabase/supabase-js": "^2.94.0",
+    "cobe": "^0.6.5",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.563.0",
