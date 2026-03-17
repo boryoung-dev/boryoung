@@ -65,7 +65,7 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
       {/* 오른쪽: 정보 섹션 */}
       <div className="flex-1">
         {/* 배지 컨테이너 */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-2 mb-4">
           {product.isFeatured && (
             <span className="bg-[color:var(--fg)] text-white text-[11px] font-medium px-3 py-1 rounded-full">
               베스트셀러
@@ -111,7 +111,7 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
         )}
 
         {/* 가격 섹션 */}
-        <div className="bg-white rounded-[24px] p-6 border border-[color:var(--surface)] mb-6">
+        <div className="bg-white rounded-xl p-6 border border-[color:var(--surface)] mb-6">
           <div className="text-sm text-[color:var(--muted)] mb-2">1인 기준</div>
           <div className="flex items-end gap-2">
             {product.basePrice ? (
@@ -132,10 +132,10 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
         </div>
 
         {/* CTA 버튼 */}
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3">
           <a
             href="tel:1588-0320"
-            className="flex-1 h-14 bg-[color:var(--fg)] text-white rounded-xl font-semibold text-base hover:opacity-90 transition flex items-center justify-center gap-2"
+            className="flex items-center justify-center gap-2 w-full h-12 bg-[color:var(--fg)] text-white rounded-xl font-medium hover:opacity-90 transition"
           >
             <Phone className="w-5 h-5" />
             전화 상담하기
@@ -144,12 +144,12 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
             href="https://pf.kakao.com/_xgxoBxj"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-14 h-14 bg-[#FAE100] rounded-xl flex items-center justify-center hover:opacity-90 transition"
-            title="카카오톡 상담"
+            className="flex items-center justify-center gap-2 w-full h-12 bg-[#FEE500] text-[#371D1E] rounded-xl font-medium hover:opacity-90 transition"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#3C1E1E">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 3C6.48 3 2 6.58 2 10.9c0 2.78 1.86 5.22 4.65 6.6l-.95 3.53c-.08.3.26.54.52.37l4.17-2.74c.53.06 1.06.09 1.61.09 5.52 0 10-3.58 10-7.95C22 6.58 17.52 3 12 3z"/>
             </svg>
+            카카오톡 상담
           </a>
         </div>
       </div>

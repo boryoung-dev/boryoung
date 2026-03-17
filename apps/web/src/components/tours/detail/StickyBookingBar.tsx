@@ -53,7 +53,7 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
   };
 
   return (
-    <div className="sticky top-24 space-y-5">
+    <div className="sticky top-24 space-y-4">
       {/* 가격 + 전화 상담 카드 */}
       <div className="bg-white rounded-2xl p-8 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
         <div className="mb-6">
@@ -105,7 +105,7 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
             onChange={handleInquiryChange}
             placeholder="이름"
             required
-            className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full px-4 py-2.5 bg-[color:var(--surface)] border-none rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
           />
           <input
             name="phone"
@@ -114,14 +114,14 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
             onChange={handleInquiryChange}
             placeholder="연락처"
             required
-            className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full px-4 py-2.5 bg-[color:var(--surface)] border-none rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
           />
           <input
             name="departureDate"
             type="date"
             value={inquiryForm.departureDate}
             onChange={handleInquiryChange}
-            className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full px-4 py-2.5 bg-[color:var(--surface)] border-none rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
           />
           <textarea
             name="message"
@@ -129,12 +129,12 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
             onChange={handleInquiryChange}
             placeholder="문의 내용 (선택)"
             rows={2}
-            className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-2.5 bg-[color:var(--surface)] border-none rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 resize-none"
           />
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-12 bg-[color:var(--fg)] text-white rounded-xl font-semibold text-sm hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 border border-[color:var(--fg)] text-[color:var(--fg)] bg-transparent rounded-lg font-semibold text-sm hover:bg-[color:var(--fg)] hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "전송 중..." : "문의 남기기"}
           </button>

@@ -153,11 +153,11 @@ export function ToursPageClient({
       <aside className="w-[309px] flex-shrink-0 space-y-6 hidden lg:block">
         {/* 필터 헤더 */}
         <div className="flex items-center justify-between">
-          <h2 className="text-[20px] font-semibold text-[color:var(--fg)]">필터</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[color:var(--muted)]">필터</h2>
           <button
             type="button"
             onClick={handleResetFilters}
-            className="text-[14px] font-medium text-[color:var(--brand)] hover:opacity-80 transition-colors"
+            className="text-[13px] font-medium text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
           >
             초기화
           </button>
@@ -166,7 +166,7 @@ export function ToursPageClient({
         {/* 가격대 필터 */}
         <div className="bg-white rounded-[24px] p-6 space-y-4">
           <div className="flex items-baseline justify-between">
-            <h3 className="text-[16px] font-semibold text-[color:var(--fg)]">1인 가격</h3>
+            <h3 className="text-sm font-semibold text-[color:var(--fg)]">1인 가격</h3>
             <span className="text-[13px] text-[color:var(--muted)]">
               {formatPrice(minPrice)} ~ {formatPrice(maxPrice)}
             </span>
@@ -222,7 +222,7 @@ export function ToursPageClient({
 
         {/* 여행지 필터 */}
         <div className="bg-white rounded-[24px] p-6 space-y-4">
-          <h3 className="text-[16px] font-semibold text-[color:var(--fg)]">여행지</h3>
+          <h3 className="text-sm font-semibold text-[color:var(--fg)]">여행지</h3>
           <div className="space-y-3">
             {destinations.map((dest) => (
               <label
@@ -241,7 +241,7 @@ export function ToursPageClient({
                     <Check className="w-3.5 h-3.5 text-white" />
                   )}
                 </div>
-                <span className="text-[14px] text-[color:var(--fg)]">{dest}</span>
+                <span className="text-sm text-[color:var(--muted)]">{dest}</span>
               </label>
             ))}
           </div>
@@ -250,13 +250,13 @@ export function ToursPageClient({
         {/* 카테고리 필터 */}
         {categories.length > 0 && (
           <div className="bg-white rounded-[24px] p-6 space-y-3">
-            <h3 className="text-[16px] font-semibold text-[color:var(--fg)] mb-4">카테고리</h3>
+            <h3 className="text-sm font-semibold text-[color:var(--fg)] mb-4">카테고리</h3>
             <button
               type="button"
               onClick={() => handleCategoryClick(undefined)}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                 !selectedCategory
-                  ? "bg-[color:var(--brand)]/10 text-[color:var(--brand)] font-medium"
+                  ? "bg-[color:var(--fg)] text-white font-medium"
                   : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
               }`}
             >
@@ -269,7 +269,7 @@ export function ToursPageClient({
                 onClick={() => handleCategoryClick(cat.slug)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                   selectedCategory === cat.slug
-                    ? "bg-[color:var(--brand)]/10 text-[color:var(--brand)] font-medium"
+                    ? "bg-[color:var(--fg)] text-white font-medium"
                     : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
                 }`}
               >
@@ -308,7 +308,7 @@ export function ToursPageClient({
                     }}
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
                       sortKey === opt.key
-                        ? "bg-[color:var(--brand)]/10 text-[color:var(--brand)] font-medium"
+                        ? "bg-[color:var(--surface)] text-[color:var(--fg)] font-medium"
                         : "text-[color:var(--fg)] hover:bg-[color:var(--surface)]"
                     }`}
                   >

@@ -9,8 +9,8 @@ interface OverviewSectionProps {
 
 export function OverviewSection({ product }: OverviewSectionProps) {
   return (
-    <div className="bg-white rounded-[32px] p-8">
-      <h2 className="text-2xl font-bold text-[color:var(--fg)] mb-6">상품 소개</h2>
+    <div className="bg-white rounded-2xl p-8">
+      <h2 className="text-lg font-semibold text-[color:var(--fg)] mb-6">상품 소개</h2>
 
       {product.excerpt && (
         <p className="text-base text-[color:var(--muted)] leading-[1.6] mb-6">
@@ -39,7 +39,7 @@ export function OverviewSection({ product }: OverviewSectionProps) {
           {product.tagList.map((tag: Tag) => (
             <span
               key={tag.id}
-              className="bg-[color:var(--surface)] text-[color:var(--muted)] text-sm px-4 py-2 rounded-full"
+              className="bg-[color:var(--surface)] text-[color:var(--muted)] text-[13px] px-3 py-1.5 rounded-lg"
             >
               #{tag.name}
             </span>

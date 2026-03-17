@@ -31,7 +31,7 @@ function HeroSearchForm() {
           type="text"
           name="search"
           placeholder="어디로 여행하고 싶으신가요?"
-          className="w-full pl-12 pr-4 h-12 bg-[color:var(--surface)] rounded-full text-sm border-none focus:ring-2 focus:ring-[color:var(--border)] outline-none"
+          className="w-full pl-12 pr-4 h-12 bg-white border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--border)] outline-none"
         />
       </div>
     </form>
@@ -59,15 +59,11 @@ export default async function ToursPage({
       <SiteHeader />
 
       {/* 히어로 배너 */}
-      <section className="pt-20 pb-10 md:pt-28 md:pb-14 bg-white">
+      <section className="pt-16 pb-8 md:pt-20 md:pb-10 bg-white">
         <div className="max-w-[1200px] mx-auto px-4 md:px-6 text-center">
-          <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">Tours</p>
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[color:var(--fg)] mb-4">
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-[color:var(--fg)] mb-6">
             골프투어 상품
           </h1>
-          <p className="text-base text-[color:var(--muted)] mb-8">
-            전 세계 프리미엄 골프 &amp; 리조트 패키지
-          </p>
           <HeroSearchForm />
         </div>
       </section>

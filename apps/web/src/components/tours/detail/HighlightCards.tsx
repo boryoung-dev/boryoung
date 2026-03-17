@@ -64,7 +64,7 @@ export function HighlightCards({ product }: HighlightCardsProps) {
         return (
           <div
             key={idx}
-            className="bg-white rounded-xl border border-[color:var(--border)] px-5 py-4 flex items-center gap-3"
+            className="bg-[color:var(--surface)] rounded-xl px-5 py-4 flex items-center gap-3"
           >
             <Icon className="w-5 h-5 text-[color:var(--muted)] shrink-0" />
             <div className="min-w-0">
