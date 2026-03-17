@@ -8,7 +8,6 @@ import { X, Menu, Phone } from "lucide-react";
 const NAV_ITEMS = [
   { label: "여행상품", href: "/tours" },
   { label: "매거진", href: "/magazine" },
-  { label: "회사소개", href: "/about" },
   { label: "문의하기", href: "/contact" },
 ];
 

@@ -67,7 +67,7 @@ export function HeroSection(props: {
       ];
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "start" },
+    { loop: true, align: "center" },
     [Autoplay({ delay: 5000, stopOnInteraction: false })]
   );
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -88,16 +88,18 @@ export function HeroSection(props: {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <div className="w-full">
+    <div className="w-full py-4">
       <div className="relative group">
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className="min-w-0 flex-[0_0_100%]"
+                className="min-w-0 flex-[0_0_88%] sm:flex-[0_0_80%] px-2"
               >
-                <div className="relative w-full aspect-[16/7] sm:aspect-[2.5/1] overflow-hidden">
+                <div className={`relative w-full aspect-[16/8] sm:aspect-[2.2/1] rounded-2xl overflow-hidden transition-all duration-300 ${
+                  index === selectedIndex ? "opacity-100 scale-100" : "opacity-50 scale-[0.97]"
+                }`}>
                   <img
                     src={slide.bg}
                     alt={slide.headline}
