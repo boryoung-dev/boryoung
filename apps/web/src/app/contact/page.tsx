@@ -12,13 +12,17 @@ export default function ContactPage() {
     phone: "",
     email: "",
     content: "",
+    // 여행 관련 추가 필드 (선택)
+    destination: "",
+    departureDate: "",
+    people: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -40,7 +44,7 @@ export default function ContactPage() {
 
       if (data.success) {
         setIsSubmitted(true);
-        setFormData({ name: "", phone: "", email: "", content: "" });
+        setFormData({ name: "", phone: "", email: "", content: "", destination: "", departureDate: "", people: "" });
         setTimeout(() => setIsSubmitted(false), 5000);
       } else {
         setError(data.error || "문의 접수에 실패했습니다.");
@@ -86,18 +90,18 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans text-[color:var(--fg)] antialiased">
+    <div className="min-h-screen bg-white font-sans text-[color:var(--fg)] antialiased">
       <SiteHeader />
 
       {/* 히어로 */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[color:var(--brand)] to-[#0058b0] py-16">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_70%)]" />
-        <div className="relative mx-auto max-w-[1440px] px-6 text-center">
-          <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">
+      <section className="pt-20 pb-12 md:pt-28 md:pb-16">
+        <div className="mx-auto max-w-5xl px-6">
+          <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">Contact</p>
+          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[color:var(--fg)] mb-3">
             문의하기
           </h1>
-          <p className="text-lg text-white/80">
-            궁금하신 사항이 있으시면 언제든지 연락주세요
+          <p className="text-base text-[color:var(--muted)]">
+            궁금한 사항이 있으시면 편하게 연락주세요.
           </p>
         </div>
       </section>
@@ -106,12 +110,12 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* 연락처 정보 */}
           <div className="lg:col-span-2 space-y-5">
-            <div className="bg-white rounded-2xl shadow-sm border border-[color:var(--border)] p-6">
+            <div className="bg-[color:var(--surface)] rounded-2xl p-6">
               <h2 className="text-lg font-bold text-[color:var(--fg)] mb-5">연락처 안내</h2>
               <div className="space-y-5">
                 {contactInfo.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-[color:var(--brand)]/5 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 bg-[color:var(--surface)] rounded-xl flex items-center justify-center flex-shrink-0">
                       <item.icon className="w-5 h-5 text-[color:var(--brand)]" />
                     </div>
                     <div>
@@ -131,7 +135,7 @@ export default function ContactPage() {
             </div>
 
             {/* 카카오톡 상담 */}
-            <div className="bg-[#FEE500] rounded-2xl p-6 shadow-sm">
+            <div className="bg-[#FEE500] rounded-xl p-6">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-[#371D1E]/10 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-[#371D1E]" fill="currentColor" viewBox="0 0 24 24">
@@ -156,7 +160,7 @@ export default function ContactPage() {
 
           {/* 문의 폼 */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-2xl shadow-sm border border-[color:var(--border)] p-8">
+            <div className="bg-[color:var(--surface)] rounded-2xl p-8">
               <h2 className="text-lg font-bold text-[color:var(--fg)] mb-6">문의 남기기</h2>
 
               {isSubmitted && (
@@ -221,6 +225,57 @@ export default function ContactPage() {
                   />
                 </div>
 
+                {/* 여행 관련 추가 정보 (선택) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  <div>
+                    <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
+                      희망 여행지
+                    </label>
+                    <select
+                      name="destination"
+                      value={formData.destination}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow bg-white"
+                    >
+                      <option value="">선택해주세요</option>
+                      <option value="일본">일본</option>
+                      <option value="태국">태국</option>
+                      <option value="베트남">베트남</option>
+                      <option value="대만">대만</option>
+                      <option value="괌/사이판">괌/사이판</option>
+                      <option value="몽골">몽골</option>
+                      <option value="국내/제주">국내/제주</option>
+                      <option value="기타">기타</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
+                      출발 희망일
+                    </label>
+                    <input
+                      type="date"
+                      name="departureDate"
+                      value={formData.departureDate}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
+                      여행 인원
+                    </label>
+                    <input
+                      type="number"
+                      name="people"
+                      value={formData.people}
+                      onChange={handleChange}
+                      min={1}
+                      placeholder="2"
+                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
                     문의 내용 <span className="text-red-500">*</span>
@@ -239,7 +294,7 @@ export default function ContactPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 bg-[color:var(--brand)] text-white py-3 rounded-xl font-semibold hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="w-full flex items-center justify-center gap-2 bg-[color:var(--fg)] text-white py-3 rounded-xl font-semibold hover:opacity-80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   {isSubmitting ? (
                     "제출 중..."

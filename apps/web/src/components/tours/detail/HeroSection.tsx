@@ -67,19 +67,19 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
         {/* 배지 컨테이너 */}
         <div className="flex items-center gap-3 mb-4">
           {product.isFeatured && (
-            <span className="bg-[color:var(--brand)] text-white text-sm font-medium px-4 py-1.5 rounded-full">
+            <span className="bg-[color:var(--fg)] text-white text-[11px] font-medium px-3 py-1 rounded-full">
               베스트셀러
             </span>
           )}
           {product.originalPrice && product.basePrice && product.originalPrice > product.basePrice && (
-            <span className="bg-[#F472B6] text-white text-sm font-medium px-4 py-1.5 rounded-full">
+            <span className="bg-white text-[color:var(--fg)] border border-[color:var(--border)] text-[11px] font-medium px-3 py-1 rounded-full">
               얼리버드 -{Math.round((1 - product.basePrice / product.originalPrice) * 100)}%
             </span>
           )}
         </div>
 
         {/* 타이틀 */}
-        <h1 className="text-[36px] font-bold text-[color:var(--fg)] leading-[1.2] mb-2">
+        <h1 className="text-[36px] font-bold text-[color:var(--fg)] leading-[1.2] tracking-tight mb-2">
           {product.title}
         </h1>
 
@@ -135,7 +135,7 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
         <div className="flex gap-3">
           <a
             href="tel:1588-0320"
-            className="flex-1 h-14 bg-[color:var(--brand)] text-white rounded-[28px] font-semibold text-base hover:opacity-90 transition flex items-center justify-center gap-2"
+            className="flex-1 h-14 bg-[color:var(--fg)] text-white rounded-xl font-semibold text-base hover:opacity-90 transition flex items-center justify-center gap-2"
           >
             <Phone className="w-5 h-5" />
             전화 상담하기
@@ -144,7 +144,7 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
             href="https://pf.kakao.com/_xgxoBxj"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-14 h-14 bg-[#FAE100] rounded-[28px] flex items-center justify-center hover:opacity-90 transition"
+            className="w-14 h-14 bg-[#FAE100] rounded-xl flex items-center justify-center hover:opacity-90 transition"
             title="카카오톡 상담"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="#3C1E1E">

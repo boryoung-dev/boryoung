@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
-import { Button } from "@repo/ui";
 
 const EXTRA_SLIDES = [
   {
@@ -98,36 +97,42 @@ export function HeroSection(props: {
                 key={index}
                 className="min-w-0 flex-[0_0_92%] sm:flex-[0_0_85%] px-2 sm:px-3"
               >
+                {/* 시네마틱 비율: 16/7 → 더 넓고 영화적인 느낌 */}
                 <div
-                  className={`relative w-full aspect-[2/1] sm:aspect-[7/2] rounded-2xl overflow-hidden transition-opacity duration-300 ${
-                    index === selectedIndex ? "opacity-100" : "opacity-40"
+                  className={`relative w-full aspect-[16/7] sm:aspect-[21/8] rounded-2xl overflow-hidden transition-all duration-300 ${
+                    // 비활성 슬라이드: 미세한 스케일 차이 추가
+                    index === selectedIndex
+                      ? "opacity-100 scale-100"
+                      : "opacity-50 scale-[0.97]"
                   }`}
                 >
-                <img
-                  src={slide.bg}
-                  alt={slide.headline}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70" />
+                  <img
+                    src={slide.bg}
+                    alt={slide.headline}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                  {/* 그라디언트: 왼쪽 하단에서 올라오는 방향으로 변경 */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
 
-                  <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
-                    <div className="max-w-xl">
-                      <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-2 md:mb-4 drop-shadow-sm">
+                  {/* 텍스트: 왼쪽 하단 고정 */}
+                  <div className="absolute bottom-0 left-0 p-6 md:p-10 text-white">
+                    <div className="max-w-lg">
+                      {/* 헤드라인: 더 작지만 tight tracking으로 세련되게 */}
+                      <h2 className="text-2xl md:text-4xl font-semibold tracking-tight leading-tight mb-2 md:mb-3">
                         {slide.headline}
                       </h2>
                       {slide.subhead && (
-                        <p className="text-white/90 text-lg md:text-xl font-medium mb-6 drop-shadow-sm line-clamp-2">
+                        // 서브헤드: 대비를 줄여서 절제된 느낌
+                        <p className="text-sm md:text-base text-white/70 font-normal mb-5 line-clamp-2">
                           {slide.subhead}
                         </p>
                       )}
                       <Link href={slide.link}>
-                        <Button
-                          variant="brand"
-                          className="rounded-full px-6 h-10 md:h-12 bg-white text-black hover:bg-white/90 border-none font-bold"
-                        >
+                        {/* CTA 버튼: 흰 배경 + 검정 텍스트, 미니멀하게 */}
+                        <button className="rounded-full px-5 h-9 bg-white text-black text-sm font-medium hover:bg-white/90 border-none shadow-sm transition-colors duration-200">
                           {slide.cta}
-                        </Button>
+                        </button>
                       </Link>
                     </div>
                   </div>
@@ -137,29 +142,30 @@ export function HeroSection(props: {
           </div>
         </div>
 
-        {/* 슬라이드 카운터 */}
-        <div className="absolute bottom-6 md:bottom-10 right-6 md:right-10 z-20 bg-black/40 backdrop-blur-md rounded-full px-3 py-1 text-xs font-medium text-white/90 border border-white/10">
+        {/* 슬라이드 카운터: 미니멀 유지 */}
+        <div className="absolute bottom-6 md:bottom-10 right-6 md:right-10 z-20 bg-black/30 backdrop-blur-md rounded-full px-3 py-1 text-[11px] font-medium text-white/80 border border-white/10">
           {selectedIndex + 1} / {slides.length}
         </div>
 
-        {/* 이전/다음 버튼 */}
+        {/* 이전 버튼: 크기 w-10 → w-9 */}
         <button
           onClick={scrollPrev}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/40 hidden md:flex"
-          aria-label="Previous slide"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/20 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/40 hidden md:flex"
+          aria-label="이전 슬라이드"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
 
+        {/* 다음 버튼: 크기 w-10 → w-9 */}
         <button
           onClick={scrollNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/40 hidden md:flex"
-          aria-label="Next slide"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/20 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/40 hidden md:flex"
+          aria-label="다음 슬라이드"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5l7 7-7 7" />
           </svg>
         </button>
       </div>

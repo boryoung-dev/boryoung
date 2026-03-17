@@ -41,11 +41,14 @@ export default async function MagazinePage() {
     <div className="min-h-screen bg-[color:var(--bg)] font-sans text-[color:var(--fg)] antialiased">
       <SiteHeader />
 
-      <main className="max-w-[1200px] mx-auto px-4 md:px-6 py-12">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">매거진</h1>
-        <p className="text-[color:var(--muted)] mb-8">골프 여행에 유용한 팁과 가이드</p>
-
-        <MagazinePageClient posts={serialized} />
+      <main>
+        <div className="pt-20 pb-8 md:pt-28 md:pb-10 mx-auto max-w-[1200px] px-6">
+          <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">Magazine</p>
+          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">골프여행 매거진</h1>
+        </div>
+        <div className="mx-auto max-w-[1200px] px-6 pb-16">
+          <MagazinePageClient posts={serialized} />
+        </div>
       </main>
 
       <SiteFooter />

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { homeSections } from "@/content/homeSections";
 import { getHomeProductsByTab, getRankingProducts, getCollectionItems } from "@/lib/home/seed";
 import type { HomeSection, HomeTabKey } from "@/lib/home/types";
@@ -28,7 +29,7 @@ export async function HomePage() {
 
   // DB에서 데이터 가져오기
   const now = new Date();
-  const [productsByTab, rankingItems, collectionItems, banners, dbQuickIcons] = await Promise.all([
+  const [productsByTab, rankingItems, collectionItems, banners, dbQuickIcons, recentMagazines] = await Promise.all([
     getHomeProductsByTab(categoryTabs?.itemsPerTab ?? 8),
     getRankingProducts(),
     getCollectionItems(),
@@ -48,6 +49,21 @@ export async function HomePage() {
     prisma.quickIcon.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: "asc" },
+    }),
+    // 최근 발행된 매거진 3개 조회
+    prisma.blogPost.findMany({
+      where: { isPublished: true },
+      orderBy: { publishedAt: "desc" },
+      take: 3,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        excerpt: true,
+        thumbnail: true,
+        category: true,
+        publishedAt: true,
+      },
     }),
   ]);
 
@@ -109,6 +125,74 @@ export async function HomePage() {
             tabs={categoryTabsSection.tabs}
             productsByTab={productsByTab}
           />
+        )}
+
+        {/* 7. 이용 프로세스 */}
+        <section className="py-12 md:py-16 bg-white">
+          <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+            <div className="text-center mb-10">
+              <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-2">How it works</p>
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">간편한 예약 프로세스</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+              {[
+                { num: "1", title: "상품 탐색", desc: "다양한 골프투어 상품을 비교하세요" },
+                { num: "2", title: "상담 문의", desc: "전화 또는 온라인으로 문의하세요" },
+                { num: "3", title: "예약 확정", desc: "일정과 인원을 확인 후 확정합니다" },
+                { num: "4", title: "출발", desc: "준비된 일정대로 출발합니다" },
+              ].map((item, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-[40px] md:text-[48px] font-extralight text-[color:var(--border)] mb-3 leading-none">
+                    {item.num}
+                  </div>
+                  <h3 className="text-[15px] font-semibold text-[color:var(--fg)] mb-1.5">{item.title}</h3>
+                  <p className="text-[13px] text-[color:var(--muted)] leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 8. 매거진 프리뷰 */}
+        {recentMagazines.length > 0 && (
+          <section className="py-8 md:py-10 bg-white">
+            <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+              <div className="flex items-end justify-between mb-6">
+                <div>
+                  <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-2">Magazine</p>
+                  <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">골프여행 매거진</h2>
+                </div>
+                <Link href="/magazine" className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors">
+                  더보기
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {recentMagazines.map((post) => (
+                  <Link key={post.id} href={`/magazine/${post.slug}`} className="group">
+                    <div className="aspect-[3/2] rounded-xl overflow-hidden bg-[color:var(--surface)] mb-3">
+                      {post.thumbnail ? (
+                        <img
+                          src={post.thumbnail}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[color:var(--muted)]">
+                          <span>매거진</span>
+                        </div>
+                      )}
+                    </div>
+                    {post.category && (
+                      <span className="text-[11px] font-medium text-[color:var(--muted)] uppercase tracking-wider mb-1 block">{post.category}</span>
+                    )}
+                    <h3 className="text-[15px] font-medium text-[color:var(--fg)] line-clamp-2 leading-snug group-hover:text-[color:var(--brand)] transition-colors">
+                      {post.title}
+                    </h3>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
         )}
       </main>
 

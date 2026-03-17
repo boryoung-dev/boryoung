@@ -23,7 +23,7 @@ export function CountrySection({ title, subtitle, tabKey, products, bgColor = "b
   if (products.length === 0) return null;
 
   return (
-    <section className={`py-10 md:py-14 ${bgColor}`}>
+    <section className={`py-8 md:py-10 ${bgColor}`}>
       <div className="max-w-[1200px] mx-auto px-4 md:px-6">
         <div className="flex items-end justify-between mb-6">
           <div>

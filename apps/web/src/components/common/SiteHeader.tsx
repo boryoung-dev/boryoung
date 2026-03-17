@@ -39,50 +39,43 @@ export function SiteHeader() {
     <>
       <header
         className={`sticky top-0 z-50 w-full bg-white transition-shadow duration-200 ${
-          scrolled ? "shadow-md" : "shadow-[0_1px_0_rgba(0,0,0,0.06)]"
+          // 스크롤 시 미세한 라인만, 평상시엔 더 가벼운 그림자
+          scrolled
+            ? "shadow-[0_1px_0_rgba(0,0,0,0.04)]"
+            : "shadow-[0_1px_0_rgba(0,0,0,0.04)]"
         }`}
       >
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 md:px-6">
-          {/* 로고 */}
+        {/* 헤더 높이: h-16 → h-[72px] (더 여유 있게) */}
+        <div className="mx-auto flex h-[72px] max-w-[1200px] items-center justify-between px-4 md:px-6">
+          {/* 로고: SVG를 미니멀한 곡선 하나로 단순화 */}
           <Link
             href="/"
             className="flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <svg
-                width="28"
-                height="28"
-                viewBox="0 0 28 28"
+                width="26"
+                height="26"
+                viewBox="0 0 26 26"
                 fill="none"
                 className="text-[color:var(--brand)]"
               >
+                {/* 깔끔한 곡선 하나만 유지 — 비행 궤적 */}
                 <path
-                  d="M14 2L16.5 8.5L23 7L19 13L25 17L18 17.5L17 25L14 19L11 25L10 17.5L3 17L9 13L5 7L11.5 8.5L14 2Z"
-                  fill="currentColor"
-                  opacity="0.15"
-                />
-                <path
-                  d="M6 20C6 20 8 14 14 10C20 6 24 8 24 8"
+                  d="M4 18C4 18 8 12 14 9C20 6 23 7 23 7"
                   stroke="currentColor"
-                  strokeWidth="2.2"
+                  strokeWidth="2"
                   strokeLinecap="round"
-                />
-                <path
-                  d="M4 16C4 16 7 12 14 9C21 6 26 7 26 7"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                  opacity="0.4"
                 />
               </svg>
-              <span className="text-lg font-bold tracking-tight text-[color:var(--fg)]">
+              <span className="text-[17px] font-bold tracking-tight text-[color:var(--fg)]">
                 (주)보령항공여행사
               </span>
             </div>
           </Link>
 
-          {/* 데스크탑 네비게이션 */}
-          <nav className="hidden items-center gap-1 md:flex">
+          {/* 데스크탑 네비게이션: rounded-lg 배경 제거 → 밑줄 인디케이터 */}
+          <nav className="hidden items-center gap-0.5 md:flex">
             {NAV_ITEMS.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -91,10 +84,12 @@ export function SiteHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative px-4 py-2 text-[15px] font-medium rounded-lg transition-colors ${
+                  className={`relative px-4 py-2 text-[14px] font-medium tracking-tight transition-colors ${
                     isActive
-                      ? "text-[color:var(--brand)] bg-[color:var(--surface)]"
-                      : "text-[color:var(--muted)] hover:text-[color:var(--fg)] hover:bg-[color:var(--surface)]"
+                      ? // 활성: 텍스트 + 밑줄 인디케이터
+                        "text-[color:var(--fg)] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-5 after:h-[2px] after:bg-[color:var(--fg)] after:rounded-full"
+                      : // 비활성: 뮤트 색상, hover 시 전경색으로
+                        "text-[color:var(--muted)] hover:text-[color:var(--fg)]"
                   }`}
                 >
                   {item.label}
@@ -105,47 +100,46 @@ export function SiteHeader() {
 
           {/* 우측 액션: 카톡 + 블로그 + 전화 */}
           <div className="flex items-center gap-1.5">
-            {/* 카카오톡 */}
+            {/* 카카오톡: opacity 낮추고 hover 시 선명하게 */}
             <a
               href="https://pf.kakao.com/_xgxoBxj"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--muted)] hover:bg-yellow-50 hover:text-yellow-600 transition-colors"
+              className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--muted)] opacity-60 hover:opacity-100 hover:text-yellow-600 transition-all duration-200"
               aria-label="카카오톡 상담"
               title="카카오톡 상담"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 3C6.48 3 2 6.58 2 10.9c0 2.78 1.86 5.22 4.65 6.6l-.95 3.53c-.08.3.26.54.52.37l4.17-2.74c.53.06 1.06.09 1.61.09 5.52 0 10-3.58 10-7.95C22 6.58 17.52 3 12 3z"/>
               </svg>
             </a>
-            {/* 블로그 */}
+            {/* 블로그: opacity 낮추고 hover 시 선명하게 */}
             <a
               href="https://blog.naver.com/boryoung2"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg text-[color:var(--muted)] hover:bg-green-50 hover:text-green-600 transition-colors"
+              className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--muted)] opacity-60 hover:opacity-100 hover:text-green-600 transition-all duration-200"
               aria-label="네이버 블로그"
               title="네이버 블로그"
             >
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M2 0h16a2 2 0 012 2v16a2 2 0 01-2 2H2a2 2 0 01-2-2V2a2 2 0 012-2zm4.5 14.5V8.25L11 14.5h2.5V5.5h-2v6.25L7 5.5H4.5v9z"/>
               </svg>
             </a>
-            {/* 전화 */}
+            {/* 전화: 아이콘 제거, 텍스트만, 전경색 사용 */}
             <a
               href="tel:1588-0320"
-              className="hidden md:flex items-center gap-1.5 h-9 px-3 rounded-lg text-[color:var(--brand)] hover:bg-[color:var(--surface)] transition-colors text-sm font-semibold"
+              className="hidden md:flex items-center h-9 px-3 rounded-lg text-[color:var(--fg)] hover:bg-[color:var(--surface)] transition-colors text-[13px] font-semibold tracking-tight"
               aria-label="전화 상담"
               title="전화 상담"
             >
-              <Phone className="w-4 h-4" />
               <span>1588-0320</span>
             </a>
 
             {/* 모바일 전화 */}
             <a
               href="tel:1588-0320"
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--brand)] hover:bg-[color:var(--surface)] transition-colors md:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-[color:var(--fg)] hover:bg-[color:var(--surface)] transition-colors md:hidden"
               aria-label="전화 상담"
             >
               <Phone className="w-5 h-5" />
@@ -175,9 +169,9 @@ export function SiteHeader() {
         />
       )}
 
-      {/* 모바일 슬라이드 메뉴 */}
+      {/* 모바일 슬라이드 메뉴: top을 72px에 맞게 조정 */}
       <div
-        className={`fixed top-16 right-0 z-40 h-[calc(100dvh-64px)] w-[280px] bg-white shadow-xl transition-transform duration-300 ease-out md:hidden ${
+        className={`fixed top-[72px] right-0 z-40 h-[calc(100dvh-72px)] w-[280px] bg-white shadow-xl transition-transform duration-300 ease-out md:hidden ${
           mobileOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -209,7 +203,7 @@ export function SiteHeader() {
           <div className="mt-auto p-4 border-t border-[color:var(--border)] space-y-2">
             <a
               href="tel:1588-0320"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[color:var(--surface)] text-[color:var(--brand)] font-medium text-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[color:var(--surface)] text-[color:var(--fg)] font-medium text-sm"
             >
               <Phone className="w-4 h-4" />
               <span>전화 상담 1588-0320</span>

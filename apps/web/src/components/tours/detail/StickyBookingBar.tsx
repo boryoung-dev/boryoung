@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Phone } from "lucide-react";
 import type { TourProductDetail } from "@/lib/types";
 
@@ -9,10 +10,52 @@ interface StickyBookingBarProps {
 }
 
 export function StickyBookingBar({ product }: StickyBookingBarProps) {
+  // 간편 문의 폼 상태
+  const [inquiryForm, setInquiryForm] = useState({
+    name: "",
+    phone: "",
+    departureDate: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleInquiryChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setInquiryForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleInquiry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: inquiryForm.name,
+          phone: inquiryForm.phone,
+          departureDate: inquiryForm.departureDate,
+          content: `[${product.title}] ${inquiryForm.message}`,
+        }),
+      });
+      setIsSubmitted(true);
+      setInquiryForm({ name: "", phone: "", departureDate: "", message: "" });
+      // 5초 후 접수 완료 메시지 숨기기
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (err) {
+      console.error("간편 문의 오류:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="sticky top-24 space-y-5">
       {/* 가격 + 전화 상담 카드 */}
-      <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+      <div className="bg-white rounded-2xl p-8 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
         <div className="mb-6">
           <div className="text-sm text-[color:var(--muted)] mb-2">1인 기준 가격</div>
           {product.basePrice ? (
@@ -33,7 +76,7 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
 
         <a
           href="tel:1588-0320"
-          className="flex items-center justify-center gap-2 w-full h-14 bg-[color:var(--brand)] text-white rounded-[28px] font-semibold text-base hover:opacity-90 transition"
+          className="flex items-center justify-center gap-2 w-full h-14 bg-[color:var(--fg)] text-white rounded-xl font-semibold text-base hover:opacity-90 transition"
         >
           <Phone className="w-5 h-5" />
           전화 상담하기
@@ -43,7 +86,7 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
           href="https://pf.kakao.com/_xgxoBxj"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full h-12 mt-3 bg-[#FAE100] text-[#3C1E1E] rounded-[28px] font-semibold text-sm hover:opacity-90 transition"
+          className="flex items-center justify-center gap-2 w-full h-12 mt-3 bg-[#FAE100] text-[#3C1E1E] rounded-xl font-semibold text-sm hover:opacity-90 transition"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 3C6.48 3 2 6.58 2 10.9c0 2.78 1.86 5.22 4.65 6.6l-.95 3.53c-.08.3.26.54.52.37l4.17-2.74c.53.06 1.06.09 1.61.09 5.52 0 10-3.58 10-7.95C22 6.58 17.52 3 12 3z"/>
@@ -52,8 +95,60 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
         </a>
       </div>
 
+      {/* 간편 문의 카드 */}
+      <div className="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+        <h3 className="text-base font-semibold text-[color:var(--fg)] mb-4">간편 문의</h3>
+        <form onSubmit={handleInquiry} className="space-y-3">
+          <input
+            name="name"
+            value={inquiryForm.name}
+            onChange={handleInquiryChange}
+            placeholder="이름"
+            required
+            className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          />
+          <input
+            name="phone"
+            type="tel"
+            value={inquiryForm.phone}
+            onChange={handleInquiryChange}
+            placeholder="연락처"
+            required
+            className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          />
+          <input
+            name="departureDate"
+            type="date"
+            value={inquiryForm.departureDate}
+            onChange={handleInquiryChange}
+            className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          />
+          <textarea
+            name="message"
+            value={inquiryForm.message}
+            onChange={handleInquiryChange}
+            placeholder="문의 내용 (선택)"
+            rows={2}
+            className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+          />
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full h-12 bg-[color:var(--fg)] text-white rounded-xl font-semibold text-sm hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "전송 중..." : "문의 남기기"}
+          </button>
+        </form>
+        {/* 접수 완료 메시지 */}
+        {isSubmitted && (
+          <div className="mt-3 text-center text-sm text-emerald-600 font-medium">
+            문의가 접수되었습니다!
+          </div>
+        )}
+      </div>
+
       {/* 전화번호 안내 카드 */}
-      <div className="bg-[color:var(--brand)]/10 rounded-[24px] p-6">
+      <div className="bg-[color:var(--brand)]/10 rounded-2xl p-6">
         <h3 className="text-base font-semibold text-[color:var(--brand)] mb-4">
           전화 문의
         </h3>
@@ -98,7 +193,7 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
       </div>
 
       {/* 투어 정보 카드 */}
-      <div className="bg-[color:var(--surface)] rounded-[24px] p-6">
+      <div className="bg-[color:var(--surface)] rounded-2xl p-6">
         <h3 className="text-base font-semibold text-[color:var(--fg)] mb-4">
           투어 정보
         </h3>

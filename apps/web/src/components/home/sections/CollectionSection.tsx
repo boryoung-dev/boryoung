@@ -18,7 +18,7 @@ function CollectionCarousel({ title, items }: { title: string; items: Collection
   });
 
   return (
-    <section className="py-10 md:py-14 bg-[color:var(--surface)]">
+    <section className="py-8 md:py-10 bg-[color:var(--surface)]">
       <div className="max-w-[1200px] mx-auto px-4 md:px-6">
         <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-6">{title}</h2>
 
@@ -36,7 +36,7 @@ function CollectionCarousel({ title, items }: { title: string; items: Collection
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/75" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
 
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                   {item.badges && item.badges.length > 0 && (
@@ -48,10 +48,10 @@ function CollectionCarousel({ title, items }: { title: string; items: Collection
                       ))}
                     </div>
                   )}
-                  <h3 className="text-lg font-bold leading-tight mb-0.5">
+                  <h3 className="text-base font-semibold leading-tight mb-0.5">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-white/70 line-clamp-1">
+                  <p className="text-[13px] text-white/60 line-clamp-1">
                     {item.subTitle}
                   </p>
                 </div>

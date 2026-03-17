@@ -19,7 +19,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "상품을 찾을 수 없습니다" };
   }
 
-  const title = product.metaTitle || `${product.title} | ${SITE_NAME}`;
+  // layout.tsx의 title template "%s | (주)보령항공여행사"가 자동 적용되므로
+  // 여기서 SITE_NAME을 붙이면 중복됨 → 상품명만 반환
+  const title = product.metaTitle || product.title;
   const description = product.metaDescription || product.excerpt || product.subtitle || "";
   const url = `${SITE_URL}/tours/${slug}`;
   const imageUrl = product.images?.[0]?.url;

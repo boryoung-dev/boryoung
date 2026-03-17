@@ -13,8 +13,8 @@ export function HighlightCards({ product }: HighlightCardsProps) {
   if (product.durationText) {
     cards.push({
       icon: Calendar,
-      iconColor: "var(--brand)",
-      iconBg: "color-mix(in srgb, var(--brand) 12.5%, transparent)",
+      iconColor: "var(--muted)",
+      iconBg: "var(--surface)",
       label: "여행 기간",
       value: product.durationText,
     });
@@ -23,8 +23,8 @@ export function HighlightCards({ product }: HighlightCardsProps) {
   if (product.destination) {
     cards.push({
       icon: MapPin,
-      iconColor: "#14B8A6",
-      iconBg: "rgba(20, 184, 166, 0.125)",
+      iconColor: "var(--muted)",
+      iconBg: "var(--surface)",
       label: "여행지",
       value: product.destination,
     });
@@ -38,8 +38,8 @@ export function HighlightCards({ product }: HighlightCardsProps) {
       : `최대 ${product.maxPeople}명`;
     cards.push({
       icon: Users,
-      iconColor: "#F472B6",
-      iconBg: "rgba(244, 114, 182, 0.125)",
+      iconColor: "var(--muted)",
+      iconBg: "var(--surface)",
       label: "최소 인원",
       value: people,
     });
@@ -48,8 +48,8 @@ export function HighlightCards({ product }: HighlightCardsProps) {
   if (product.airline) {
     cards.push({
       icon: Plane,
-      iconColor: "#F59E0B",
-      iconBg: "rgba(253, 176, 34, 0.125)",
+      iconColor: "var(--muted)",
+      iconBg: "var(--surface)",
       label: "항공편",
       value: product.airline,
     });
@@ -67,10 +67,9 @@ export function HighlightCards({ product }: HighlightCardsProps) {
             className="bg-white rounded-[24px] p-6 flex flex-col gap-3"
           >
             <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: card.iconBg }}
+              className="w-12 h-12 rounded-xl flex items-center justify-center bg-[color:var(--surface)]"
             >
-              <Icon className="w-6 h-6" style={{ color: card.iconColor }} />
+              <Icon className="w-6 h-6 text-[color:var(--muted)]" />
             </div>
             <div>
               <div className="text-sm text-[color:var(--muted)] mb-1">{card.label}</div>

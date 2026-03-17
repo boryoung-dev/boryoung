@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('admin@boryoung.com');
-  const [password, setPassword] = useState('admin1234');
+  // 프로덕션 보안: 기본값 빈 문자열로 초기화
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -45,6 +46,15 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
+          {/* 보령항공여행사 로고 */}
+          <div className="flex justify-center mb-4">
+            <div className="flex items-center gap-2">
+              <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 text-blue-600" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+              </svg>
+              <span className="text-xl font-bold text-gray-900 tracking-tight">보령항공여행사</span>
+            </div>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             관리자 로그인
           </h1>
@@ -97,20 +107,6 @@ export default function AdminLoginPage() {
           </button>
         </form>
         
-        <div className="mt-6 border-t pt-4">
-          <p className="text-xs font-semibold text-gray-500 mb-2 text-center">테스트 계정</p>
-          <div className="space-y-1 text-xs text-gray-500">
-            <button type="button" onClick={() => { setEmail('admin@boryoung.com'); setPassword('admin1234'); }} className="w-full text-left px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">
-              <span className="font-medium text-blue-600">SUPER_ADMIN</span> admin@boryoung.com / admin1234
-            </button>
-            <button type="button" onClick={() => { setEmail('manager@boryoung.com'); setPassword('manager1234'); }} className="w-full text-left px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">
-              <span className="font-medium text-green-600">MANAGER</span> manager@boryoung.com / manager1234
-            </button>
-            <button type="button" onClick={() => { setEmail('staff@boryoung.com'); setPassword('staff1234'); }} className="w-full text-left px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">
-              <span className="font-medium text-orange-600">STAFF</span> staff@boryoung.com / staff1234
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -24,21 +24,15 @@ export const metadata: Metadata = {
 
 function HeroSearchForm() {
   return (
-    <form action="/tours" method="get" className="w-full max-w-[600px] mx-auto">
-      <div className="relative flex items-center bg-white rounded-full shadow-lg h-[60px] px-6">
-        <Search className="h-5 w-5 text-[color:var(--muted)] flex-shrink-0" />
+    <form action="/tours" method="get" className="max-w-xl mx-auto">
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[color:var(--muted)]" />
         <input
           type="text"
           name="search"
           placeholder="어디로 여행하고 싶으신가요?"
-          className="flex-1 px-4 py-3 bg-transparent border-none focus:outline-none text-[color:var(--fg)] placeholder:text-[color:var(--muted)]"
+          className="w-full pl-12 pr-4 h-12 bg-[color:var(--surface)] rounded-full text-sm border-none focus:ring-2 focus:ring-[color:var(--border)] outline-none"
         />
-        <button
-          type="submit"
-          className="flex-shrink-0 bg-[color:var(--brand)] text-[color:var(--brand-foreground)] px-8 py-2.5 rounded-[22px] font-medium hover:opacity-90 transition-opacity h-[44px] w-[120px] flex items-center justify-center"
-        >
-          검색
-        </button>
       </div>
     </form>
   );
@@ -65,14 +59,14 @@ export default async function ToursPage({
       <SiteHeader />
 
       {/* 히어로 배너 */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#667eea] to-[#764ba2] py-[60px]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_70%)]" />
-        <div className="relative mx-auto max-w-[1440px] px-[60px] text-center">
-          <h1 className="text-[42px] font-bold text-[color:var(--fg)] mb-3 tracking-tight">
-            특별한 여행을 찾아보세요
+      <section className="pt-20 pb-10 md:pt-28 md:pb-14 bg-white">
+        <div className="max-w-[1200px] mx-auto px-4 md:px-6 text-center">
+          <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">Tours</p>
+          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[color:var(--fg)] mb-4">
+            골프투어 상품
           </h1>
-          <p className="text-[18px] font-normal text-[color:var(--fg)]/80 mb-8">
-            전 세계 프리미엄 골프 & 리조트 패키지
+          <p className="text-base text-[color:var(--muted)] mb-8">
+            전 세계 프리미엄 골프 &amp; 리조트 패키지
           </p>
           <HeroSearchForm />
         </div>
