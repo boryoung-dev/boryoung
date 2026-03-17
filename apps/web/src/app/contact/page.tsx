@@ -4,6 +4,7 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/common/SiteHeader";
 import { SiteFooter } from "@/components/common/SiteFooter";
 import { KakaoFloating } from "@/components/common/KakaoFloating";
+import { AnimateOnScroll } from "@/components/common/AnimateOnScroll";
 import { DatePicker } from "@/components/common/DatePicker";
 import { Select } from "@/components/common/Select";
 import { NumberInput } from "@/components/common/NumberInput";
@@ -111,13 +112,15 @@ export default function ContactPage() {
       {/* 히어로 */}
       <section className="pt-14 pb-10 md:pt-20 md:pb-16">
         <div className="mx-auto max-w-5xl px-6">
-          <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">Contact</p>
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[color:var(--fg)] mb-3">
-            문의하기
-          </h1>
-          <p className="text-base text-[color:var(--muted)]">
-            궁금한 사항이 있으시면 편하게 연락주세요.
-          </p>
+          <AnimateOnScroll animation="fadeUp">
+            <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">Contact</p>
+            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[color:var(--fg)] mb-3">
+              문의하기
+            </h1>
+            <p className="text-base text-[color:var(--muted)]">
+              궁금한 사항이 있으시면 편하게 연락주세요.
+            </p>
+          </AnimateOnScroll>
         </div>
       </section>
 
@@ -125,189 +128,195 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* 연락처 정보 */}
           <div className="lg:col-span-2 space-y-5">
-            <div className="bg-[color:var(--surface)] rounded-2xl p-6">
-              <h2 className="text-lg font-bold text-[color:var(--fg)] mb-5">연락처 안내</h2>
-              <div className="space-y-5">
-                {contactInfo.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-[color:var(--surface)] rounded-xl flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-[color:var(--brand)]" />
+            <AnimateOnScroll animation="fadeUp">
+              <div className="bg-[color:var(--surface)] rounded-2xl p-6">
+                <h2 className="text-lg font-bold text-[color:var(--fg)] mb-5">연락처 안내</h2>
+                <div className="space-y-5">
+                  {contactInfo.map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-[color:var(--surface)] rounded-xl flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-5 h-5 text-[color:var(--brand)]" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-medium text-[color:var(--muted)] uppercase tracking-wider">{item.label}</div>
+                        {item.href ? (
+                          <a href={item.href} className="text-sm font-semibold text-[color:var(--fg)] hover:text-[color:var(--brand)] transition-colors">
+                            {item.value}
+                          </a>
+                        ) : (
+                          <div className="text-sm font-medium text-[color:var(--fg)]">{item.value}</div>
+                        )}
+                        {item.sub && <div className="text-xs text-[color:var(--muted)] mt-0.5">{item.sub}</div>}
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-xs font-medium text-[color:var(--muted)] uppercase tracking-wider">{item.label}</div>
-                      {item.href ? (
-                        <a href={item.href} className="text-sm font-semibold text-[color:var(--fg)] hover:text-[color:var(--brand)] transition-colors">
-                          {item.value}
-                        </a>
-                      ) : (
-                        <div className="text-sm font-medium text-[color:var(--fg)]">{item.value}</div>
-                      )}
-                      {item.sub && <div className="text-xs text-[color:var(--muted)] mt-0.5">{item.sub}</div>}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            </AnimateOnScroll>
 
             {/* 카카오톡 상담 */}
-            <div className="bg-[#FEE500] rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-[#371D1E]/10 rounded-xl flex items-center justify-center">
-                  <svg className="w-5 h-5 text-[#371D1E]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.94-.122.49.178.483.376.351.155-.103 2.48-1.708 3.48-2.392.52.076 1.054.117 1.654.117 4.97 0 9-3.185 9-7.115C21 6.185 16.97 3 12 3z" />
-                  </svg>
+            <AnimateOnScroll animation="fadeUp" delay={150}>
+              <div className="bg-[#FEE500] rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-[#371D1E]/10 rounded-xl flex items-center justify-center">
+                    <svg className="w-5 h-5 text-[#371D1E]" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.94-.122.49.178.483.376.351.155-.103 2.48-1.708 3.48-2.392.52.076 1.054.117 1.654.117 4.97 0 9-3.185 9-7.115C21 6.185 16.97 3 12 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-[#371D1E]">카카오톡 상담</h3>
+                    <p className="text-xs text-[#371D1E]/70">빠른 상담을 원하시면 카카오톡으로!</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-[#371D1E]">카카오톡 상담</h3>
-                  <p className="text-xs text-[#371D1E]/70">빠른 상담을 원하시면 카카오톡으로!</p>
-                </div>
+                <a
+                  href="https://pf.kakao.com/_xgxoBxj"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center bg-[#371D1E] text-[#FEE500] font-semibold py-3 rounded-xl hover:bg-[#271310] transition-colors text-sm"
+                >
+                  카카오톡 채널 추가
+                </a>
               </div>
-              <a
-                href="https://pf.kakao.com/_xgxoBxj"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full text-center bg-[#371D1E] text-[#FEE500] font-semibold py-3 rounded-xl hover:bg-[#271310] transition-colors text-sm"
-              >
-                카카오톡 채널 추가
-              </a>
-            </div>
+            </AnimateOnScroll>
           </div>
 
           {/* 문의 폼 */}
           <div className="lg:col-span-3">
-            <div className="bg-[color:var(--surface)] rounded-2xl p-8">
-              <h2 className="text-lg font-bold text-[color:var(--fg)] mb-6">문의 남기기</h2>
+            <AnimateOnScroll animation="fadeUp" delay={100}>
+              <div className="bg-[color:var(--surface)] rounded-2xl p-8">
+                <h2 className="text-lg font-bold text-[color:var(--fg)] mb-6">문의 남기기</h2>
 
-              {isSubmitted && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-green-800 font-medium text-sm">문의가 성공적으로 접수되었습니다!</p>
-                    <p className="text-green-600 text-xs mt-1">빠른 시일 내에 연락드리겠습니다.</p>
+                {isSubmitted && (
+                  <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-green-800 font-medium text-sm">문의가 성공적으로 접수되었습니다!</p>
+                      <p className="text-green-600 text-xs mt-1">빠른 시일 내에 연락드리겠습니다.</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl">
-                  <p className="text-red-800 text-sm">{error}</p>
-                </div>
-              )}
+                {error && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl">
+                    <p className="text-red-800 text-sm">{error}</p>
+                  </div>
+                )}
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
+                        이름 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                        placeholder="홍길동"
+                        className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
+                        연락처 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        placeholder="010-1234-5678"
+                        className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
-                      이름 <span className="text-red-500">*</span>
+                      이메일
                     </label>
                     <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
+                      type="email"
+                      name="email"
+                      value={formData.email}
                       onChange={handleChange}
-                      required
-                      placeholder="홍길동"
+                      placeholder="example@email.com"
                       className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
                     />
                   </div>
+
+                  {/* 여행 관련 추가 정보 (선택) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
+                        희망 여행지
+                      </label>
+                      <Select
+                        value={formData.destination}
+                        onChange={(val) => setFormData(prev => ({ ...prev, destination: val }))}
+                        options={destinationOptions}
+                        placeholder="선택해주세요"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
+                        출발 희망일
+                      </label>
+                      <DatePicker
+                        value={formData.departureDate}
+                        onChange={(val) => setFormData(prev => ({ ...prev, departureDate: val }))}
+                        placeholder="출발 희망일"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
+                        여행 인원
+                      </label>
+                      <NumberInput
+                        value={formData.people}
+                        onChange={(val) => setFormData(prev => ({ ...prev, people: val }))}
+                        min={1}
+                        max={30}
+                        placeholder="2"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
-                      연락처 <span className="text-red-500">*</span>
+                      문의 내용 <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
+                    <textarea
+                      name="content"
+                      value={formData.content}
                       onChange={handleChange}
                       required
-                      placeholder="010-1234-5678"
-                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
+                      rows={5}
+                      placeholder="여행 일정, 인원, 원하시는 여행지 등을 자유롭게 작성해주세요"
+                      className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow resize-none"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
-                    이메일
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="example@email.com"
-                    className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow"
-                  />
-                </div>
-
-                {/* 여행 관련 추가 정보 (선택) */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                  <div>
-                    <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
-                      희망 여행지
-                    </label>
-                    <Select
-                      value={formData.destination}
-                      onChange={(val) => setFormData(prev => ({ ...prev, destination: val }))}
-                      options={destinationOptions}
-                      placeholder="선택해주세요"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
-                      출발 희망일
-                    </label>
-                    <DatePicker
-                      value={formData.departureDate}
-                      onChange={(val) => setFormData(prev => ({ ...prev, departureDate: val }))}
-                      placeholder="출발 희망일"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
-                      여행 인원
-                    </label>
-                    <NumberInput
-                      value={formData.people}
-                      onChange={(val) => setFormData(prev => ({ ...prev, people: val }))}
-                      min={1}
-                      max={30}
-                      placeholder="2"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[color:var(--fg)] mb-1.5">
-                    문의 내용 <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    name="content"
-                    value={formData.content}
-                    onChange={handleChange}
-                    required
-                    rows={5}
-                    placeholder="여행 일정, 인원, 원하시는 여행지 등을 자유롭게 작성해주세요"
-                    className="w-full px-4 py-2.5 border border-[color:var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--ring)] focus:border-transparent transition-shadow resize-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 bg-[color:var(--fg)] text-white py-3 rounded-xl font-semibold hover:opacity-80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                >
-                  {isSubmitting ? (
-                    "제출 중..."
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      문의하기
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full flex items-center justify-center gap-2 bg-[color:var(--fg)] text-white py-3 rounded-xl font-semibold hover:opacity-80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    {isSubmitting ? (
+                      "제출 중..."
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        문의하기
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </AnimateOnScroll>
           </div>
         </div>
       </main>

@@ -8,6 +8,7 @@ import { HeroSection } from "./sections/HeroSection";
 import { SiteHeader } from "../common/SiteHeader";
 import { KakaoFloating } from "../common/KakaoFloating";
 import { SiteFooter } from "../common/SiteFooter";
+import { AnimateOnScroll } from "../common/AnimateOnScroll";
 
 // 국가 목적지 데이터
 const DESTINATIONS = [
@@ -66,43 +67,49 @@ export async function HomePage() {
         {featured.length > 0 && (
           <section className="py-16 md:py-20">
             <div className="max-w-[1200px] mx-auto px-4 md:px-6">
-              <div className="flex items-end justify-between mb-8">
-                <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">추천 골프투어</h2>
-                <Link href="/tours" className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors">
-                  전체 보기 →
-                </Link>
-              </div>
+              <AnimateOnScroll animation="fadeUp">
+                <div className="flex items-end justify-between mb-8">
+                  <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">추천 골프투어</h2>
+                  <Link href="/tours" className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors">
+                    전체 보기 →
+                  </Link>
+                </div>
+              </AnimateOnScroll>
 
               {/* 비대칭 그리드: 큰 카드 2개 + 작은 카드 3개 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {featured.slice(0, 2).map((item) => (
-                  <Link key={item.id} href={item.slug ? `/tours/${item.slug}` : "/tours"} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)]">
-                    <img src={item.imageUrl} alt={item.title} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                      {item.badges && item.badges.length > 0 && (
-                        <div className="flex gap-2 mb-3">
-                          {item.badges.map((b) => (
-                            <span key={b} className="text-[10px] font-medium px-2.5 py-1 bg-white/15 backdrop-blur-sm rounded-full text-white">{b}</span>
-                          ))}
-                        </div>
-                      )}
-                      <h3 className="text-xl md:text-2xl font-semibold text-white tracking-tight mb-1">{item.title}</h3>
-                      <p className="text-white/60 text-sm">{item.price}</p>
-                    </div>
-                  </Link>
+                {featured.slice(0, 2).map((item, i) => (
+                  <AnimateOnScroll key={item.id} animation="scaleIn" delay={i * 150}>
+                    <Link href={item.slug ? `/tours/${item.slug}` : "/tours"} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)] block">
+                      <img src={item.imageUrl} alt={item.title} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                        {item.badges && item.badges.length > 0 && (
+                          <div className="flex gap-2 mb-3">
+                            {item.badges.map((b) => (
+                              <span key={b} className="text-[10px] font-medium px-2.5 py-1 bg-white/15 backdrop-blur-sm rounded-full text-white">{b}</span>
+                            ))}
+                          </div>
+                        )}
+                        <h3 className="text-xl md:text-2xl font-semibold text-white tracking-tight mb-1">{item.title}</h3>
+                        <p className="text-white/60 text-sm">{item.price}</p>
+                      </div>
+                    </Link>
+                  </AnimateOnScroll>
                 ))}
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {featured.slice(2, 5).map((item) => (
-                  <Link key={item.id} href={item.slug ? `/tours/${item.slug}` : "/tours"} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)]">
-                    <img src={item.imageUrl} alt={item.title} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <h3 className="text-base font-semibold text-white tracking-tight mb-0.5 line-clamp-1">{item.title}</h3>
-                      <p className="text-white/60 text-[13px]">{item.price}</p>
-                    </div>
-                  </Link>
+                {featured.slice(2, 5).map((item, i) => (
+                  <AnimateOnScroll key={item.id} animation="fadeUp" delay={i * 100}>
+                    <Link href={item.slug ? `/tours/${item.slug}` : "/tours"} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)] block">
+                      <img src={item.imageUrl} alt={item.title} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-5">
+                        <h3 className="text-base font-semibold text-white tracking-tight mb-0.5 line-clamp-1">{item.title}</h3>
+                        <p className="text-white/60 text-[13px]">{item.price}</p>
+                      </div>
+                    </Link>
+                  </AnimateOnScroll>
                 ))}
               </div>
             </div>
@@ -112,17 +119,21 @@ export async function HomePage() {
         {/* 3. 국가별 여행 — 2x2 대형 그리드 */}
         <section className="py-16 md:py-20 bg-[color:var(--surface)]">
           <div className="max-w-[1200px] mx-auto px-4 md:px-6">
-            <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-8">여행지</h2>
+            <AnimateOnScroll animation="fadeUp">
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-8">여행지</h2>
+            </AnimateOnScroll>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {DESTINATIONS.map((dest) => (
-                <Link key={dest.name} href={dest.href} className="group relative aspect-[16/9] rounded-2xl overflow-hidden">
-                  <img src={dest.image} alt={dest.name} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors" />
-                  <div className="absolute bottom-0 left-0 p-6 md:p-8">
-                    <h3 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-1">{dest.name}</h3>
-                    <p className="text-white/70 text-sm">{dest.desc}</p>
-                  </div>
-                </Link>
+              {DESTINATIONS.map((dest, i) => (
+                <AnimateOnScroll key={dest.name} animation="fadeUp" delay={i * 100}>
+                  <Link href={dest.href} className="group relative aspect-[16/9] rounded-2xl overflow-hidden block">
+                    <img src={dest.image} alt={dest.name} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors" />
+                    <div className="absolute bottom-0 left-0 p-6 md:p-8">
+                      <h3 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-1">{dest.name}</h3>
+                      <p className="text-white/70 text-sm">{dest.desc}</p>
+                    </div>
+                  </Link>
+                </AnimateOnScroll>
               ))}
             </div>
           </div>
@@ -131,21 +142,23 @@ export async function HomePage() {
         {/* 4. 신뢰 + CTA */}
         <section className="py-20 md:py-28">
           <div className="max-w-3xl mx-auto px-6 text-center">
-            <h2 className="text-2xl md:text-[42px] font-semibold tracking-tight leading-[1.15] mb-6">
-              22년간,<br />10,000명의 골퍼가 선택했습니다
-            </h2>
-            <p className="text-base text-[color:var(--muted)] mb-10 max-w-lg mx-auto leading-relaxed">
-              2004년부터 오직 골프여행만 해온 전문 여행사.<br />
-              명문 코스 직접 제휴, 맞춤 일정 설계, 현지 전문가 동행.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/contact" className="inline-flex items-center justify-center h-12 px-8 bg-[color:var(--fg)] text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
-                상담 문의하기
-              </Link>
-              <a href="tel:1588-0320" className="inline-flex items-center justify-center h-12 px-8 border border-[color:var(--border)] rounded-full text-sm font-medium text-[color:var(--fg)] hover:bg-[color:var(--surface)] transition-colors">
-                1588-0320
-              </a>
-            </div>
+            <AnimateOnScroll animation="fadeUp">
+              <h2 className="text-2xl md:text-[42px] font-semibold tracking-tight leading-[1.15] mb-6">
+                22년간,<br />10,000명의 골퍼가 선택했습니다
+              </h2>
+              <p className="text-base text-[color:var(--muted)] mb-10 max-w-lg mx-auto leading-relaxed">
+                2004년부터 오직 골프여행만 해온 전문 여행사.<br />
+                명문 코스 직접 제휴, 맞춤 일정 설계, 현지 전문가 동행.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link href="/contact" className="inline-flex items-center justify-center h-12 px-8 bg-[color:var(--fg)] text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
+                  상담 문의하기
+                </Link>
+                <a href="tel:1588-0320" className="inline-flex items-center justify-center h-12 px-8 border border-[color:var(--border)] rounded-full text-sm font-medium text-[color:var(--fg)] hover:bg-[color:var(--surface)] transition-colors">
+                  1588-0320
+                </a>
+              </div>
+            </AnimateOnScroll>
           </div>
         </section>
       </main>

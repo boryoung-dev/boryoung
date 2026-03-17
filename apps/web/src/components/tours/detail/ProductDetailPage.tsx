@@ -11,6 +11,7 @@ import { ImageLightbox } from "./ImageLightbox";
 import { ReviewSection } from "./ReviewSection";
 import { ScheduleDates } from "./ScheduleDates";
 import { StickyBookingBar } from "./StickyBookingBar";
+import { AnimateOnScroll } from "@/components/common/AnimateOnScroll";
 import type { TourProductDetail, ScheduleDate } from "@/lib/types";
 
 interface ProductDetailPageProps {
@@ -41,9 +42,11 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
           />
 
           {/* 하이라이트 카드 */}
-          <div className="mt-8">
-            <HighlightCards product={product} />
-          </div>
+          <AnimateOnScroll animation="fadeUp" delay={200}>
+            <div className="mt-8">
+              <HighlightCards product={product} />
+            </div>
+          </AnimateOnScroll>
         </div>
       </div>
 
