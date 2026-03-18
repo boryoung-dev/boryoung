@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@repo/database";
 import { verifyAdminToken } from "@/lib/auth";
 
-// AI 블로그 글 생성 API
+// AI 블로그 글 생성 API (다중 제공자 지원)
 export async function POST(request: NextRequest) {
   const admin = verifyAdminToken(request);
   if (!admin) {
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { topic, keywords, tone, category } = body;
+    const { topic, keywords, tone, category, providerId } = body;
 
     if (!topic || !keywords) {
       return NextResponse.json(
@@ -19,22 +20,83 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      // API 키 미설정 시 데모 모드로 동작
-      const demoResult = generateDemoContent(topic, keywords, tone, category);
-      return NextResponse.json({ success: true, ...demoResult });
+    // AI 제공자 결정
+    let provider = null;
+    if (providerId) {
+      provider = await prisma.aIProvider.findUnique({
+        where: { id: providerId },
+      });
+    } else {
+      // 기본 제공자 찾기
+      provider = await prisma.aIProvider.findFirst({
+        where: { isDefault: true, isActive: true },
+      });
     }
 
-    // 톤 설명 매핑
-    const toneMap: Record<string, string> = {
-      professional: "전문적이고 신뢰감 있는 톤",
-      friendly: "친근하고 따뜻한 톤",
-      casual: "캐주얼하고 가벼운 톤",
-    };
-    const toneDesc = toneMap[tone] || toneMap.professional;
+    // 제공자가 없으면 환경변수 OPENAI_API_KEY 폴백
+    if (!provider) {
+      const envApiKey = process.env.OPENAI_API_KEY;
+      if (!envApiKey) {
+        // 데모 모드
+        const demoResult = generateDemoContent(topic, keywords, tone, category);
+        return NextResponse.json({ success: true, ...demoResult });
+      }
+      // 환경변수 기반 OpenAI 호출
+      return await callOpenAI(envApiKey, "gpt-4o-mini", topic, keywords, tone, category);
+    }
 
-    const systemPrompt = `당신은 골프 여행 전문 블로그 작가입니다. SEO에 최적화된 고품질 한국어 블로그 글을 작성합니다.
+    // 제공자별 API 호출
+    const apiKey = provider.apiKey;
+    const model = provider.model;
+
+    if (provider.provider === "openai") {
+      if (!apiKey) {
+        return NextResponse.json(
+          { error: "OpenAI API 키가 설정되지 않았습니다" },
+          { status: 400 }
+        );
+      }
+      return await callOpenAI(apiKey, model || "gpt-4o-mini", topic, keywords, tone, category);
+    }
+
+    if (provider.provider === "anthropic") {
+      if (!apiKey) {
+        return NextResponse.json(
+          { error: "Anthropic API 키가 설정되지 않았습니다" },
+          { status: 400 }
+        );
+      }
+      return await callAnthropic(apiKey, model || "claude-sonnet-4-20250514", topic, keywords, tone, category);
+    }
+
+    if (provider.provider === "google") {
+      return await callGoogle(provider, model || "gemini-2.0-flash", topic, keywords, tone, category);
+    }
+
+    return NextResponse.json(
+      { error: `지원하지 않는 AI 제공자입니다: ${provider.provider}` },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error("AI 글 생성 실패:", error);
+    return NextResponse.json(
+      { error: "AI 글 생성 중 오류가 발생했습니다" },
+      { status: 500 }
+    );
+  }
+}
+
+// === 공통 프롬프트 ===
+
+function buildPrompts(topic: string, keywords: string, tone: string, category?: string) {
+  const toneMap: Record<string, string> = {
+    professional: "전문적이고 신뢰감 있는 톤",
+    friendly: "친근하고 따뜻한 톤",
+    casual: "캐주얼하고 가벼운 톤",
+  };
+  const toneDesc = toneMap[tone] || toneMap.professional;
+
+  const systemPrompt = `당신은 골프 여행 전문 블로그 작가입니다. SEO에 최적화된 고품질 한국어 블로그 글을 작성합니다.
 
 반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요.
 {
@@ -59,89 +121,209 @@ export async function POST(request: NextRequest) {
 - 내부 링크 삽입 가능 위치에 <!-- internal-link --> 주석 표시
 - suggestedImages는 2~3개 추천 (본문 중간에 삽입할 이미지 키워드)`;
 
-    const userPrompt = `주제: ${topic}
+  const userPrompt = `주제: ${topic}
 키워드: ${keywords}
 톤: ${toneDesc}
 ${category ? `카테고리: ${category}` : "카테고리: 자동 추천"}
 
 위 정보를 바탕으로 SEO 최적화된 골프 여행 블로그 글을 작성해주세요.`;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 4000,
-      }),
-    });
+  return { systemPrompt, userPrompt };
+}
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("OpenAI API 오류:", errorData);
-      return NextResponse.json(
-        { error: "AI 글 생성에 실패했습니다. 잠시 후 다시 시도해주세요." },
-        { status: 500 }
-      );
-    }
+// JSON 파싱 헬퍼
+function parseAIResponse(content: string) {
+  const jsonStr = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+  return JSON.parse(jsonStr);
+}
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+// === OpenAI 호출 ===
 
-    if (!content) {
-      return NextResponse.json(
-        { error: "AI 응답이 비어있습니다" },
-        { status: 500 }
-      );
-    }
+async function callOpenAI(
+  apiKey: string,
+  model: string,
+  topic: string,
+  keywords: string,
+  tone: string,
+  category?: string
+) {
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
 
-    // JSON 파싱 (마크다운 코드블록 제거)
-    const jsonStr = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
-    let result;
-    try {
-      result = JSON.parse(jsonStr);
-    } catch {
-      console.error("AI 응답 JSON 파싱 실패:", content);
-      return NextResponse.json(
-        { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
-        { status: 500 }
-      );
-    }
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 4000,
+    }),
+  });
 
-    return NextResponse.json({
-      success: true,
-      ...result,
-    });
-  } catch (error) {
-    console.error("AI 글 생성 실패:", error);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("OpenAI API 오류:", errorData);
     return NextResponse.json(
-      { error: "AI 글 생성 중 오류가 발생했습니다" },
+      { error: "AI 글 생성에 실패했습니다. 잠시 후 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+
+  if (!content) {
+    return NextResponse.json({ error: "AI 응답이 비어있습니다" }, { status: 500 });
+  }
+
+  try {
+    const result = parseAIResponse(content);
+    return NextResponse.json({ success: true, ...result });
+  } catch {
+    console.error("OpenAI 응답 JSON 파싱 실패:", content);
+    return NextResponse.json(
+      { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
       { status: 500 }
     );
   }
 }
 
-// API 키 미설정 시 데모 콘텐츠 생성
+// === Anthropic (Claude) 호출 ===
+
+async function callAnthropic(
+  apiKey: string,
+  model: string,
+  topic: string,
+  keywords: string,
+  tone: string,
+  category?: string
+) {
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("Anthropic API 오류:", errorData);
+    return NextResponse.json(
+      { error: "AI 글 생성에 실패했습니다. 잠시 후 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+
+  const data = await response.json();
+  const content = data.content?.[0]?.text;
+
+  if (!content) {
+    return NextResponse.json({ error: "AI 응답이 비어있습니다" }, { status: 500 });
+  }
+
+  try {
+    const result = parseAIResponse(content);
+    return NextResponse.json({ success: true, ...result });
+  } catch {
+    console.error("Anthropic 응답 JSON 파싱 실패:", content);
+    return NextResponse.json(
+      { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+}
+
+// === Google (Gemini) 호출 ===
+
+async function callGoogle(
+  provider: { apiKey: string | null; authType: string; oauthData: any },
+  model: string,
+  topic: string,
+  keywords: string,
+  tone: string,
+  category?: string
+) {
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
+  const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
+
+  let url: string;
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+
+  if (provider.authType === "oauth" && provider.oauthData) {
+    // OAuth 토큰 사용
+    const oauthData = provider.oauthData as { access_token: string };
+    url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+    headers["Authorization"] = `Bearer ${oauthData.access_token}`;
+  } else if (provider.apiKey) {
+    // API 키 사용
+    url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${provider.apiKey}`;
+  } else {
+    return NextResponse.json(
+      { error: "Google API 키 또는 OAuth 인증이 필요합니다" },
+      { status: 400 }
+    );
+  }
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: fullPrompt }] }],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("Google API 오류:", errorData);
+    return NextResponse.json(
+      { error: "AI 글 생성에 실패했습니다. 잠시 후 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+
+  const data = await response.json();
+  const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!content) {
+    return NextResponse.json({ error: "AI 응답이 비어있습니다" }, { status: 500 });
+  }
+
+  try {
+    const result = parseAIResponse(content);
+    return NextResponse.json({ success: true, ...result });
+  } catch {
+    console.error("Google 응답 JSON 파싱 실패:", content);
+    return NextResponse.json(
+      { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+}
+
+// === 데모 모드 ===
+
 function generateDemoContent(topic: string, keywords: string, tone: string, category?: string) {
   const keywordList = keywords.split(",").map((k: string) => k.trim());
   const mainKeyword = keywordList[0] || topic;
 
   const toneStyle = tone === "casual" ? "편하게" : tone === "friendly" ? "친근하게" : "전문적으로";
 
-  const categoryMap: Record<string, string> = {
-    준비물: "준비물",
-    코스공략: "코스공략",
-    여행팁: "여행팁",
-    장비리뷰: "장비리뷰",
-    기타: "기타",
-  };
   const suggestedCategory = category || "여행팁";
 
   return {
@@ -189,7 +371,7 @@ function generateDemoContent(topic: string, keywords: string, tone: string, cate
 
 <h2>마무리</h2>
 <p>${mainKeyword}, 이 가이드를 참고하시면 완벽한 여행을 즐기실 수 있습니다. 보령항공여행에서는 최적의 골프 패키지를 준비하고 있으니, 지금 바로 상담을 신청해 보세요!</p>`,
-    category: categoryMap[suggestedCategory] || "여행팁",
+    category: suggestedCategory,
     tags: keywordList.slice(0, 5),
     suggestedImages: [
       { keyword: `${mainKeyword} 풍경`, alt: `${mainKeyword} 전경` },

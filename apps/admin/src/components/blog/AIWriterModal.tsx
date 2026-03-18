@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   X,
   Sparkles,
@@ -176,6 +176,15 @@ function calculateSEOChecks(
 
 // === 컴포넌트 ===
 
+// === AI 제공자 타입 ===
+interface AIProviderOption {
+  id: string;
+  name: string;
+  provider: string;
+  model: string | null;
+  isDefault: boolean;
+}
+
 export default function AIWriterModal({
   isOpen,
   onClose,
@@ -193,6 +202,11 @@ export default function AIWriterModal({
   const [tone, setTone] = useState("professional");
   const [category, setCategory] = useState("");
 
+  // AI 제공자 상태
+  const [aiProviders, setAiProviders] = useState<AIProviderOption[]>([]);
+  const [selectedProviderId, setSelectedProviderId] = useState<string>("");
+  const [providersLoaded, setProvidersLoaded] = useState(false);
+
   // 생성 결과 상태
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<GeneratedContent | null>(null);
@@ -202,6 +216,37 @@ export default function AIWriterModal({
   // 이미지 검색 상태
   const [imageSearching, setImageSearching] = useState<string | null>(null);
   const [searchedImages, setSearchedImages] = useState<Record<string, ImageResult[]>>({});
+
+  // AI 제공자 목록 로드
+  useEffect(() => {
+    if (isOpen && !providersLoaded && Object.keys(authHeaders).length > 0) {
+      fetch("/api/ai-providers", {
+        headers: authHeaders as any,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.providers) {
+            const active = data.providers
+              .filter((p: any) => p.isActive)
+              .map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                provider: p.provider,
+                model: p.model,
+                isDefault: p.isDefault,
+              }));
+            setAiProviders(active);
+            // 기본 제공자 자동 선택
+            const defaultProvider = active.find((p: AIProviderOption) => p.isDefault);
+            if (defaultProvider) {
+              setSelectedProviderId(defaultProvider.id);
+            }
+            setProvidersLoaded(true);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen, providersLoaded, authHeaders]);
 
   // === 핸들러 ===
 
@@ -220,7 +265,7 @@ export default function AIWriterModal({
           "Content-Type": "application/json",
           ...authHeaders,
         } as any,
-        body: JSON.stringify({ topic, keywords, tone, category }),
+        body: JSON.stringify({ topic, keywords, tone, category, providerId: selectedProviderId || undefined }),
       });
 
       const data = await res.json();
@@ -351,6 +396,7 @@ export default function AIWriterModal({
     setEditableContent("");
     setSearchedImages({});
     setGenerating(false);
+    setProvidersLoaded(false);
     onClose();
   };
 
@@ -458,6 +504,28 @@ export default function AIWriterModal({
                   {CATEGORY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* AI 제공자 선택 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  AI 제공자 <span className="text-gray-400 font-normal">(선택)</span>
+                </label>
+                <select
+                  value={selectedProviderId}
+                  onChange={(e) => setSelectedProviderId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                >
+                  <option value="">
+                    {aiProviders.length === 0 ? "데모 모드 (제공자 없음)" : "기본 제공자 사용"}
+                  </option>
+                  {aiProviders.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.provider}{p.model ? ` - ${p.model}` : ""})
+                      {p.isDefault ? " [기본]" : ""}
                     </option>
                   ))}
                 </select>

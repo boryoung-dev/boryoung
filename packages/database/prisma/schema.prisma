@@ -356,6 +356,28 @@ model Inquiry {
 }
 
 // ============================================
+// AI 제공자 설정
+// ============================================
+
+model AIProvider {
+  id        String   @id @default(cuid())
+  name      String   // 표시명 (예: "내 OpenAI", "회사 Claude")
+  provider  String   // openai, anthropic, google
+  apiKey    String?  // 암호화된 API 키
+  model     String?  // 기본 모델 (gpt-4o-mini, claude-sonnet-4-20250514, gemini-2.0-flash 등)
+  isDefault Boolean  @default(false) // 기본 제공자
+  isActive  Boolean  @default(true)
+  authType  String   @default("apikey") // apikey 또는 oauth
+  oauthData Json?    // OAuth 토큰 데이터
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isDefault])
+  @@index([isActive])
+  @@map("ai_providers")
+}
+
+// ============================================
 // 관리자
 // ============================================
 
