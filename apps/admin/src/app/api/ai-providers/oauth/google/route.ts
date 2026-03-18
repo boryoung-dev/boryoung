@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     client_id: clientId,
     redirect_uri: callbackUrl,
     response_type: "code",
-    scope: "https://www.googleapis.com/auth/generative-language",
+    scope: "https://www.googleapis.com/auth/cloud-platform",
     access_type: "offline",
     prompt: "consent",
     state: providerId,
