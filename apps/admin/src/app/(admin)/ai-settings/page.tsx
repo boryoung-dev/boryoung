@@ -182,7 +182,7 @@ export default function AISettingsPage() {
       provider,
       model: models?.[0]?.value || "",
       // Google, ZHIPU만 OAuth 지원
-      authType: formData.authType === "oauth" && provider !== "google" && provider !== "zhipu" ? "apikey" : formData.authType,
+      authType: formData.authType === "oauth" && provider !== "google" ? "apikey" : formData.authType,
     });
   };
 
@@ -589,7 +589,7 @@ export default function AISettingsPage() {
                     )}
                   </button>
                   {/* OAuth 재연결 */}
-                  {(p.provider === "google" || p.provider === "zhipu") && p.authType === "oauth" && (
+                  {p.provider === "google" && p.authType === "oauth" && (
                     <button
                       onClick={() =>
                         p.provider === "google"
@@ -715,7 +715,7 @@ function ProviderForm({
   isEdit?: boolean;
 }) {
   const models = MODEL_OPTIONS[formData.provider] || [];
-  const supportsOAuth = formData.provider === "google" || formData.provider === "zhipu";
+  const supportsOAuth = formData.provider === "google";
 
   return (
     <div className="space-y-4">
