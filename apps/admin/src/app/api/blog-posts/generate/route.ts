@@ -110,37 +110,58 @@ function buildPrompts(topic: string, keywords: string, tone: string, category?: 
   };
   const toneDesc = toneMap[tone] || toneMap.professional;
 
-  const systemPrompt = `당신은 골프 여행 전문 블로그 작가입니다. SEO에 최적화된 고품질 한국어 블로그 글을 작성합니다.
+  const systemPrompt = `당신은 보령항공여행사의 골프 여행 블로그 전문 작가입니다.
+네이버 블로그 스타일로 SEO 최적화된 한국어 블로그 글을 작성합니다.
 
-반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요.
+[중복 방지]
+- 매번 다른 관점, 다른 도입부, 다른 비유를 사용하세요
+- 같은 주제라도 시즌, 날씨, 여행 스타일 등 다른 각도에서 접근하세요
+- 이전에 작성된 글과 겹치지 않도록 독창적인 표현을 사용하세요
+
+[글쓰기 스타일]
+- 짧은 문장으로 끊어 쓰기 (한 문장이 30자를 넘지 않게)
+- 2~3문장마다 빈 줄(<br>) 삽입
+- 대화하듯 친근하고 신뢰감 있는 톤
+- "~인데요,", "~합니다.", "~하시나요?", "~보세요." 등 자연스러운 어미
+- 구체적 숫자와 정보 활용 (거리, 시간, 가격, 기온 등)
+
+[HTML 구조]
+- 소제목: <blockquote><strong>섹션 제목</strong><br>부제목</blockquote>
+- 본문: <p style="text-align:center;line-height:2.1;">짧은 문장</p>
+- 이미지 위치: 각 섹션 텍스트 사이에 <!-- IMAGE: 검색키워드 --> 마커 삽입 (2~3개)
+- 강조: <span style="color:#ff0010;font-size:19px;"><b>강조 텍스트</b></span>
+- 구분선: <hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+[SEO 규칙]
+- 제목 60자 이내, 주요 키워드 포함
+- 발췌문 150자 이내
+- 본문 2000~3000자
+- 메인 키워드를 자연스럽게 5~8회 반복
+- H2 대신 blockquote로 섹션 구분 (네이버 블로그 스타일)
+
+[본문 구성]
+1. 도입부: 인사 + 주제 소개 + 보령항공여행사 언급
+2. 본문 섹션 4~6개 (각 섹션: 소제목 → 설명 → 이미지 마커)
+3. 마무리: CTA (문의/예약 유도)
+
+반드시 아래 JSON 형식으로만 응답하세요:
 {
-  "title": "SEO 최적화된 제목 (60자 이내, 주요 키워드 포함)",
-  "excerpt": "메타 디스크립션용 발췌문 (150자 이내, 핵심 내용 요약)",
-  "content": "HTML 형식의 본문",
+  "title": "SEO 최적화 제목",
+  "excerpt": "메타 디스크립션 150자 이내",
+  "content": "HTML 본문 (<!-- IMAGE: 키워드 --> 마커 포함)",
   "category": "추천 카테고리",
-  "tags": ["관련", "태그", "목록"],
+  "tags": ["태그1", "태그2"],
   "suggestedImages": [
-    { "keyword": "이미지 검색 키워드", "alt": "이미지 설명" }
+    { "keyword": "검색 키워드", "alt": "이미지 설명", "position": "섹션명" }
   ]
-}
-
-본문(content) HTML 작성 규칙:
-- h2, h3, p, ul, li, strong, em 태그만 사용
-- 본문 1500~2500자
-- H2 서브헤딩 3~5개 활용
-- H3 하위 헤딩 적절히 활용
-- 도입부에서 핵심 키워드 자연스럽게 언급
-- 키워드 밀도 1~2% 유지
-- 결론에 CTA(Call to Action) 포함
-- 내부 링크 삽입 가능 위치에 <!-- internal-link --> 주석 표시
-- suggestedImages는 2~3개 추천 (본문 중간에 삽입할 이미지 키워드)`;
+}`;
 
   const userPrompt = `주제: ${topic}
 키워드: ${keywords}
 톤: ${toneDesc}
 ${category ? `카테고리: ${category}` : "카테고리: 자동 추천"}
 
-위 정보를 바탕으로 SEO 최적화된 골프 여행 블로그 글을 작성해주세요.`;
+위 정보를 바탕으로 네이버 블로그 스타일의 SEO 최적화된 골프 여행 블로그 글을 작성해주세요.`;
 
   return { systemPrompt, userPrompt };
 }
@@ -149,6 +170,24 @@ ${category ? `카테고리: ${category}` : "카테고리: 자동 추천"}
 function parseAIResponse(content: string) {
   const jsonStr = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
   return JSON.parse(jsonStr);
+}
+
+// 이미지 마커를 실제 picsum 이미지 태그로 교체
+function replaceImageMarkers(html: string): string {
+  let imageIndex = 0;
+  return html.replace(/<!-- IMAGE:\s*(.+?)\s*-->/g, (_match, keyword: string) => {
+    imageIndex++;
+    const alt = keyword.trim();
+    return `<div style="text-align:center;margin:24px 0;"><img src="https://picsum.photos/800/500?random=${imageIndex}" alt="${alt}" style="width:100%;max-width:720px;border-radius:12px;" /></div>`;
+  });
+}
+
+// AI 응답 결과에 이미지 마커 처리를 적용
+function processAIResult(result: Record<string, unknown>): Record<string, unknown> {
+  if (typeof result.content === "string") {
+    result.content = replaceImageMarkers(result.content);
+  }
+  return result;
 }
 
 // === OpenAI 호출 ===
@@ -197,7 +236,7 @@ async function callOpenAI(
   }
 
   try {
-    const result = parseAIResponse(content);
+    const result = processAIResult(parseAIResponse(content));
     return NextResponse.json({ success: true, ...result });
   } catch {
     console.error("OpenAI 응답 JSON 파싱 실패:", content);
@@ -252,7 +291,7 @@ async function callAnthropic(
   }
 
   try {
-    const result = parseAIResponse(content);
+    const result = processAIResult(parseAIResponse(content));
     return NextResponse.json({ success: true, ...result });
   } catch {
     console.error("Anthropic 응답 JSON 파싱 실패:", content);
@@ -319,7 +358,7 @@ async function callGoogle(
   }
 
   try {
-    const result = parseAIResponse(content);
+    const result = processAIResult(parseAIResponse(content));
     return NextResponse.json({ success: true, ...result });
   } catch {
     console.error("Google 응답 JSON 파싱 실패:", content);
@@ -376,7 +415,7 @@ async function callXAI(
   }
 
   try {
-    const result = parseAIResponse(content);
+    const result = processAIResult(parseAIResponse(content));
     return NextResponse.json({ success: true, ...result });
   } catch {
     console.error("x.ai 응답 JSON 파싱 실패:", content);
@@ -447,7 +486,7 @@ async function callZhipu(
   }
 
   try {
-    const result = parseAIResponse(content);
+    const result = processAIResult(parseAIResponse(content));
     return NextResponse.json({ success: true, ...result });
   } catch {
     console.error("ZHIPU 응답 JSON 파싱 실패:", content);
@@ -460,65 +499,87 @@ async function callZhipu(
 
 // === 데모 모드 ===
 
-function generateDemoContent(topic: string, keywords: string, tone: string, category?: string) {
+function generateDemoContent(topic: string, keywords: string, _tone: string, category?: string) {
   const keywordList = keywords.split(",").map((k: string) => k.trim());
   const mainKeyword = keywordList[0] || topic;
-
-  const toneStyle = tone === "casual" ? "편하게" : tone === "friendly" ? "친근하게" : "전문적으로";
 
   const suggestedCategory = category || "여행팁";
 
   return {
     title: `${topic} | 2026 최신 가이드`,
-    excerpt: `${mainKeyword}에 대한 모든 것을 ${toneStyle} 알려드립니다. 초보자부터 경험자까지 꼭 알아야 할 핵심 정보를 총정리했습니다.`,
-    content: `<h2>${topic} 완벽 가이드</h2>
-<p>${mainKeyword}을(를) 계획하고 계신가요? 이 글에서는 ${keywordList.join(", ")} 등 핵심 정보를 상세하게 다룹니다. 처음 가시는 분들도 이 가이드만 읽으면 충분합니다.</p>
+    excerpt: `${mainKeyword}에 대한 핵심 정보를 총정리했습니다. 보령항공여행사와 함께하는 완벽한 골프 여행을 만나보세요.`,
+    content: `<p style="text-align:center;line-height:2.1;">안녕하세요, 보령항공여행사입니다.</p>
+<p style="text-align:center;line-height:2.1;">오늘은 많은 분들이 찾으시는<br><span style="color:#ff0010;font-size:19px;"><b>${mainKeyword}</b></span>에 대해<br>자세히 안내드리려고 합니다.</p>
+<p style="text-align:center;line-height:2.1;">${mainKeyword}, 어디서부터 준비해야 할지<br>막막하셨다면 이 글 하나로 충분합니다.</p>
 
-<h2>1. 출발 전 꼭 확인해야 할 것들</h2>
-<p>여행을 떠나기 전에 반드시 체크해야 할 항목들이 있습니다. 특히 ${mainKeyword} 관련해서는 사전 준비가 매우 중요합니다.</p>
-<ul>
-<li><strong>여권 및 비자</strong>: 유효기간 6개월 이상 확인 필수</li>
-<li><strong>항공권 예약</strong>: 2~3개월 전 예약 시 최저가 확보 가능</li>
-<li><strong>숙소 선정</strong>: 골프장과의 거리, 조식 포함 여부 확인</li>
-<li><strong>보험 가입</strong>: 골프 라운딩 중 사고 대비 여행자 보험 필수</li>
-</ul>
+<div style="text-align:center;margin:24px 0;"><img src="https://picsum.photos/800/500?random=1" alt="${mainKeyword} 전경" style="width:100%;max-width:720px;border-radius:12px;" /></div>
 
-<h2>2. 현지에서 알아두면 좋은 팁</h2>
-<p>현지에 도착하면 몇 가지 팁을 알고 있으면 훨씬 편하게 여행을 즐길 수 있습니다. ${mainKeyword}의 매력을 200% 즐기는 방법을 알려드리겠습니다.</p>
-<ul>
-<li><strong>환전</strong>: 공항보다 시내 환전소가 유리합니다</li>
-<li><strong>교통</strong>: 그랩(Grab) 앱을 미리 설치하세요</li>
-<li><strong>날씨</strong>: 우기(6~10월) 피해서 건기 시즌 추천</li>
-<li><strong>복장</strong>: 골프장 드레스 코드 사전 확인 필수</li>
-</ul>
+<hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
 
-<h2>3. 추천 코스 & 일정</h2>
-<p>현지에서 가장 인기 있는 코스와 효율적인 일정을 추천드립니다. ${keywordList.slice(0, 2).join("과 ")}을(를) 모두 만족시키는 완벽한 플랜입니다.</p>
-<ul>
-<li><strong>Day 1</strong>: 도착 및 호텔 체크인, 드라이빙 레인지 연습</li>
-<li><strong>Day 2</strong>: 명문 골프장 18홀 라운딩 + 전통 마사지</li>
-<li><strong>Day 3</strong>: 프리미엄 코스 36홀 라운딩</li>
-<li><strong>Day 4</strong>: 시내 관광 및 쇼핑, 귀국</li>
-</ul>
+<blockquote><strong>출발 전 체크리스트</strong><br>${mainKeyword} 준비 필수 사항</blockquote>
 
-<h2>4. 예산 & 비용 총정리</h2>
-<p>합리적인 예산 계획을 위해 항목별 예상 비용을 정리했습니다.</p>
-<ul>
-<li><strong>항공권</strong>: 30~50만원 (직항 기준)</li>
-<li><strong>숙소</strong>: 1박 8~15만원 (4성급 기준)</li>
-<li><strong>그린피</strong>: 1라운드 5~10만원</li>
-<li><strong>캐디피+카트</strong>: 1라운드 3~5만원</li>
-<li><strong>식비+기타</strong>: 1일 3~5만원</li>
-</ul>
+<p style="text-align:center;line-height:2.1;">여행 전 꼭 확인해야 할 것들이 있는데요,</p>
+<p style="text-align:center;line-height:2.1;">여권 유효기간은 6개월 이상 남아있어야 합니다.<br>항공권은 2~3개월 전 예약이 가장 저렴합니다.</p>
+<p style="text-align:center;line-height:2.1;">골프 보험도 꼭 가입하세요.<br>라운딩 중 사고에 대비할 수 있습니다.</p>
 
-<h2>마무리</h2>
-<p>${mainKeyword}, 이 가이드를 참고하시면 완벽한 여행을 즐기실 수 있습니다. 보령항공여행에서는 최적의 골프 패키지를 준비하고 있으니, 지금 바로 상담을 신청해 보세요!</p>`,
+<div style="text-align:center;margin:24px 0;"><img src="https://picsum.photos/800/500?random=2" alt="골프 여행 준비" style="width:100%;max-width:720px;border-radius:12px;" /></div>
+
+<hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+<blockquote><strong>추천 골프 코스</strong><br>현지 인기 코스 TOP 3</blockquote>
+
+<p style="text-align:center;line-height:2.1;">${mainKeyword}에서 꼭 가봐야 할 코스를 소개합니다.</p>
+<p style="text-align:center;line-height:2.1;">첫째, 초보자도 즐길 수 있는 평탄한 코스.<br>그린피는 약 5~8만원 수준입니다.</p>
+<p style="text-align:center;line-height:2.1;">둘째, 현지인들이 사랑하는 명문 코스.<br>18홀 기준 약 8~12만원입니다.</p>
+<p style="text-align:center;line-height:2.1;">셋째, 오션뷰를 자랑하는 프리미엄 코스.<br>잊지 못할 라운딩이 될 거예요.</p>
+
+<div style="text-align:center;margin:24px 0;"><img src="https://picsum.photos/800/500?random=3" alt="골프 코스 전경" style="width:100%;max-width:720px;border-radius:12px;" /></div>
+<div style="text-align:center;margin:24px 0;"><img src="https://picsum.photos/800/500?random=4" alt="골프장 풍경" style="width:100%;max-width:720px;border-radius:12px;" /></div>
+
+<hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+<blockquote><strong>숙소 & 부대시설</strong><br>편안한 휴식을 위한 추천 숙소</blockquote>
+
+<p style="text-align:center;line-height:2.1;">골프장에서 차로 10분 거리에<br>4성급 리조트가 있습니다.</p>
+<p style="text-align:center;line-height:2.1;">1박 기준 약 8~15만원이며,<br>조식 뷔페가 포함되어 있습니다.</p>
+<p style="text-align:center;line-height:2.1;">온천과 스파 시설도 갖추고 있어<br>라운딩 후 피로를 풀기 딱 좋습니다.</p>
+
+<div style="text-align:center;margin:24px 0;"><img src="https://picsum.photos/800/500?random=5" alt="리조트 전경" style="width:100%;max-width:720px;border-radius:12px;" /></div>
+
+<hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+<blockquote><strong>추천 일정</strong><br>3박 4일 알찬 여행 플랜</blockquote>
+
+<p style="text-align:center;line-height:2.1;"><span style="color:#ff0010;font-size:19px;"><b>Day 1</b></span> 도착 + 호텔 체크인<br>드라이빙 레인지에서 가볍게 몸을 풀어보세요.</p>
+<p style="text-align:center;line-height:2.1;"><span style="color:#ff0010;font-size:19px;"><b>Day 2</b></span> 명문 코스 18홀 라운딩<br>라운딩 후 전통 마사지로 힐링합니다.</p>
+<p style="text-align:center;line-height:2.1;"><span style="color:#ff0010;font-size:19px;"><b>Day 3</b></span> 프리미엄 코스 라운딩<br>36홀 풀 라운딩도 가능합니다.</p>
+<p style="text-align:center;line-height:2.1;"><span style="color:#ff0010;font-size:19px;"><b>Day 4</b></span> 시내 관광 + 쇼핑<br>현지 맛집 탐방 후 귀국합니다.</p>
+
+<div style="text-align:center;margin:24px 0;"><img src="https://picsum.photos/800/500?random=6" alt="여행 일정" style="width:100%;max-width:720px;border-radius:12px;" /></div>
+
+<hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+<blockquote><strong>예산 총정리</strong><br>항목별 예상 비용</blockquote>
+
+<p style="text-align:center;line-height:2.1;">항공권: 30~50만원 (직항 기준)<br>숙소: 1박 8~15만원 (4성급)</p>
+<p style="text-align:center;line-height:2.1;">그린피: 1라운드 5~10만원<br>캐디피+카트: 1라운드 3~5만원</p>
+<p style="text-align:center;line-height:2.1;">식비+기타: 1일 3~5만원<br><span style="color:#ff0010;font-size:19px;"><b>총 예산: 약 80~150만원</b></span></p>
+
+<hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+<blockquote><strong>보령항공여행사와 함께하세요</strong><br>맞춤 골프 패키지 상담</blockquote>
+
+<p style="text-align:center;line-height:2.1;">${mainKeyword}, 혼자 준비하면 복잡하시죠?</p>
+<p style="text-align:center;line-height:2.1;">보령항공여행사에서는<br>항공+숙소+골프를 한 번에 해결하는<br>맞춤 패키지를 운영하고 있습니다.</p>
+<p style="text-align:center;line-height:2.1;"><span style="color:#ff0010;font-size:19px;"><b>지금 바로 상담 신청하세요!</b></span><br>전문 상담사가 1:1로 안내드립니다.</p>
+
+<div style="text-align:center;margin:24px 0;"><img src="https://picsum.photos/800/500?random=7" alt="보령항공여행사" style="width:100%;max-width:720px;border-radius:12px;" /></div>`,
     category: suggestedCategory,
     tags: keywordList.slice(0, 5),
     suggestedImages: [
-      { keyword: `${mainKeyword} 풍경`, alt: `${mainKeyword} 전경` },
-      { keyword: "골프장 코스", alt: "아름다운 골프 코스 전경" },
-      { keyword: "골프 여행 준비물", alt: "골프 여행 필수 준비물 체크리스트" },
+      { keyword: `${mainKeyword} 풍경`, alt: `${mainKeyword} 전경`, position: "도입부" },
+      { keyword: "골프장 코스", alt: "아름다운 골프 코스 전경", position: "추천 코스" },
+      { keyword: "골프 여행 준비물", alt: "골프 여행 필수 준비물", position: "체크리스트" },
     ],
   };
 }
