@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@repo/database";
 import { verifyAdminToken } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 // AI 블로그 글 생성 API (다중 제공자 지원)
 export async function POST(request: NextRequest) {
@@ -293,12 +294,12 @@ async function processAIResult(result: Record<string, unknown>): Promise<Record<
 async function fetchThumbnail(keyword: string, providerType?: string): Promise<string> {
   const imagePrompt = `A beautiful, professional travel blog thumbnail photo for: "${keyword}". Style: bright, vibrant, high-quality travel photography with warm lighting. No text or watermarks.`;
 
-  // 1. OpenRouter 시도 (OpenRouter provider 선택 시 — 크레딧 한 곳에서 관리)
+  // 1. OpenRouter Nano Banana 2 시도 (OpenRouter provider 선택 시 — 크레딧 한 곳에서 관리)
   if (providerType === "openrouter") {
     const openrouterKey = await getProviderKey("openrouter");
     if (openrouterKey) {
       try {
-        const res = await fetch("https://openrouter.ai/api/v1/images/generations", {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -306,23 +307,30 @@ async function fetchThumbnail(keyword: string, providerType?: string): Promise<s
             "HTTP-Referer": "https://boryoung.co.kr",
           },
           body: JSON.stringify({
-            model: "openai/dall-e-3",
-            prompt: imagePrompt,
-            n: 1,
-            size: "1792x1024",
-            quality: "standard",
+            model: "google/gemini-3.1-flash-image-preview",
+            max_tokens: 4096,
+            messages: [
+              { role: "user", content: imagePrompt },
+            ],
           }),
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.data?.[0]?.url) {
-            return data.data[0].url;
+          // Nano Banana 응답: choices[0].message.images[0].image_url.url
+          const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+          if (imageUrl) {
+            // base64면 Supabase에 업로드해서 URL로 변환
+            if (imageUrl.startsWith("data:image")) {
+              const uploadedUrl = await uploadBase64ToSupabase(imageUrl);
+              if (uploadedUrl) return uploadedUrl;
+            }
+            return imageUrl;
           }
         } else {
-          console.error("OpenRouter 이미지 생성 오류:", await res.text().catch(() => ""));
+          console.error("OpenRouter Nano Banana 오류:", await res.text().catch(() => ""));
         }
-      } catch {
-        // OpenRouter 실패 시 다음 폴백
+      } catch (e) {
+        console.error("OpenRouter 이미지 생성 실패:", e);
       }
     }
   }
@@ -405,6 +413,38 @@ async function fetchThumbnail(keyword: string, providerType?: string): Promise<s
   // 5. picsum 폴백
   const seed = `${keyword}-${Date.now()}`;
   return `https://picsum.photos/seed/${encodeURIComponent(seed)}/1200/630`;
+}
+
+// base64 이미지를 Supabase Storage에 업로드하고 공개 URL 반환
+async function uploadBase64ToSupabase(base64DataUrl: string): Promise<string | null> {
+  if (!supabaseAdmin) return null;
+  try {
+    // data:image/jpeg;base64,xxxx 형식 파싱
+    const match = base64DataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
+    if (!match) return null;
+    const ext = match[1] === "jpeg" ? "jpg" : match[1];
+    const base64Data = match[2];
+    const buffer = Buffer.from(base64Data, "base64");
+    const fileName = `blog-thumbnails/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { data, error } = await supabaseAdmin.storage
+      .from("images")
+      .upload(fileName, buffer, {
+        contentType: `image/${match[1]}`,
+        upsert: false,
+      });
+
+    if (error) {
+      console.error("Supabase 썸네일 업로드 실패:", error);
+      return null;
+    }
+
+    const { data: { publicUrl } } = supabaseAdmin.storage.from("images").getPublicUrl(data.path);
+    return publicUrl;
+  } catch (e) {
+    console.error("썸네일 업로드 오류:", e);
+    return null;
+  }
 }
 
 // 제공자별 API 키 가져오기
