@@ -73,6 +73,10 @@ export async function POST(request: NextRequest) {
       return await callGoogle(provider, model || "gemini-2.0-flash", topic, keywords, tone, category);
     }
 
+    if (provider.provider === "zhipu") {
+      return await callZhipu(provider, model || "glm-4-flash", topic, keywords, tone, category);
+    }
+
     if (provider.provider === "xai") {
       if (!apiKey) {
         return NextResponse.json(
@@ -376,6 +380,77 @@ async function callXAI(
     return NextResponse.json({ success: true, ...result });
   } catch {
     console.error("x.ai 응답 JSON 파싱 실패:", content);
+    return NextResponse.json(
+      { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+}
+
+// === ZHIPU AI (GLM) 호출 ===
+
+async function callZhipu(
+  provider: { apiKey: string | null; authType: string; oauthData: any },
+  model: string,
+  topic: string,
+  keywords: string,
+  tone: string,
+  category?: string
+) {
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
+
+  // API 키 또는 OAuth 토큰 결정
+  let apiKey: string;
+  if (provider.authType === "oauth" && provider.oauthData) {
+    const oauthData = provider.oauthData as { access_token: string };
+    apiKey = oauthData.access_token;
+  } else if (provider.apiKey) {
+    apiKey = provider.apiKey;
+  } else {
+    return NextResponse.json(
+      { error: "ZHIPU API 키 또는 OAuth 인증이 필요합니다" },
+      { status: 400 }
+    );
+  }
+
+  const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 4000,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("ZHIPU API 오류:", errorData);
+    return NextResponse.json(
+      { error: "AI 글 생성에 실패했습니다. 잠시 후 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+
+  if (!content) {
+    return NextResponse.json({ error: "AI 응답이 비어있습니다" }, { status: 500 });
+  }
+
+  try {
+    const result = parseAIResponse(content);
+    return NextResponse.json({ success: true, ...result });
+  } catch {
+    console.error("ZHIPU 응답 JSON 파싱 실패:", content);
     return NextResponse.json(
       { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
       { status: 500 }

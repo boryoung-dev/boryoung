@@ -528,6 +528,7 @@ export default function AIWriterModal({
                       anthropic: "Anthropic",
                       google: "Google",
                       xai: "x.ai",
+                      zhipu: "GLM (智谱AI)",
                     };
                     return (
                       <option key={p.id} value={p.id}>

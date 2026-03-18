@@ -41,6 +41,8 @@ export async function POST(request: NextRequest) {
         return await testGoogle(provider);
       case "xai":
         return await testXAI(provider.apiKey);
+      case "zhipu":
+        return await testZhipu(provider);
       default:
         return NextResponse.json(
           { error: `지원하지 않는 제공자입니다: ${provider.provider}` },
@@ -171,4 +173,39 @@ async function testXAI(apiKey: string | null) {
   }
 
   return NextResponse.json({ success: true, message: "x.ai 연결 성공" });
+}
+
+// ZHIPU AI 연결 테스트 (모델 목록 조회)
+async function testZhipu(provider: {
+  apiKey: string | null;
+  authType: string;
+  oauthData: any;
+}) {
+  let apiKey: string;
+
+  if (provider.authType === "oauth" && provider.oauthData) {
+    const oauthData = provider.oauthData as { access_token: string };
+    apiKey = oauthData.access_token;
+  } else if (provider.apiKey) {
+    apiKey = provider.apiKey;
+  } else {
+    return NextResponse.json(
+      { success: false, error: "API 키 또는 OAuth 인증이 필요합니다" },
+      { status: 400 }
+    );
+  }
+
+  const response = await fetch("https://open.bigmodel.cn/api/paas/v4/models", {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    return NextResponse.json({
+      success: false,
+      error: errorData?.error?.message || `HTTP ${response.status}`,
+    });
+  }
+
+  return NextResponse.json({ success: true, message: "ZHIPU AI 연결 성공" });
 }
