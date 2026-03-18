@@ -293,31 +293,62 @@ async function processAIResult(result: Record<string, unknown>): Promise<Record<
 async function fetchThumbnail(keyword: string, providerType?: string): Promise<string> {
   const imagePrompt = `A beautiful, professional travel blog thumbnail photo for: "${keyword}". Style: bright, vibrant, high-quality travel photography with warm lighting. No text or watermarks.`;
 
-  // 1. Google Imagen 시도 (Google provider 선택 시 우선)
-  if (providerType === "google" || !providerType) {
-    const googleKey = await getGoogleKey();
+  // 1. OpenRouter 시도 (OpenRouter provider 선택 시 — 크레딧 한 곳에서 관리)
+  if (providerType === "openrouter") {
+    const openrouterKey = await getProviderKey("openrouter");
+    if (openrouterKey) {
+      try {
+        const res = await fetch("https://openrouter.ai/api/v1/images/generations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${openrouterKey}`,
+            "HTTP-Referer": "https://boryoung.co.kr",
+          },
+          body: JSON.stringify({
+            model: "openai/dall-e-3",
+            prompt: imagePrompt,
+            n: 1,
+            size: "1792x1024",
+            quality: "standard",
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.data?.[0]?.url) {
+            return data.data[0].url;
+          }
+        } else {
+          console.error("OpenRouter 이미지 생성 오류:", await res.text().catch(() => ""));
+        }
+      } catch {
+        // OpenRouter 실패 시 다음 폴백
+      }
+    }
+  }
+
+  // 2. Google Imagen 시도 (Google provider 선택 시)
+  if (providerType === "google") {
+    const googleKey = await getProviderKey("google");
     if (googleKey) {
       try {
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:generateImages?key=${googleKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict?key=${googleKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              prompt: imagePrompt,
-              config: { numberOfImages: 1 },
+              instances: [{ prompt: imagePrompt }],
+              parameters: { sampleCount: 1 },
             }),
           }
         );
         if (res.ok) {
           const data = await res.json();
-          // Imagen은 base64 이미지를 반환 → data URL로 변환
-          const imageData = data.generatedImages?.[0]?.image?.imageBytes;
+          const imageData = data.predictions?.[0]?.bytesBase64Encoded;
           if (imageData) {
             return `data:image/png;base64,${imageData}`;
           }
-        } else {
-          console.error("Google Imagen 오류:", await res.text().catch(() => ""));
         }
       } catch {
         // Imagen 실패 시 다음 폴백
@@ -325,8 +356,8 @@ async function fetchThumbnail(keyword: string, providerType?: string): Promise<s
     }
   }
 
-  // 2. DALL-E 시도 (OpenAI provider 선택 시 우선, 또는 Google 실패 시 폴백)
-  const openaiKey = await getOpenAIKey();
+  // 3. DALL-E 직접 호출 (OpenAI provider 또는 환경변수)
+  const openaiKey = await getProviderKey("openai");
   if (openaiKey) {
     try {
       const res = await fetch("https://api.openai.com/v1/images/generations", {
@@ -354,7 +385,7 @@ async function fetchThumbnail(keyword: string, providerType?: string): Promise<s
     }
   }
 
-  // 3. Unsplash 검색 폴백
+  // 4. Unsplash 검색 폴백
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (accessKey) {
     try {
@@ -368,38 +399,25 @@ async function fetchThumbnail(keyword: string, providerType?: string): Promise<s
           return data.results[0].urls.regular;
         }
       }
-    } catch {
-      // Unsplash 실패 시 폴백
-    }
+    } catch {}
   }
 
-  // 4. picsum 폴백
+  // 5. picsum 폴백
   const seed = `${keyword}-${Date.now()}`;
   return `https://picsum.photos/seed/${encodeURIComponent(seed)}/1200/630`;
 }
 
-// Google API 키 가져오기
-async function getGoogleKey(): Promise<string | null> {
-  try {
-    const googleProvider = await prisma.aIProvider.findFirst({
-      where: { provider: "google", isActive: true, authType: "apikey" },
-      select: { apiKey: true },
-    });
-    return googleProvider?.apiKey || null;
-  } catch {
-    return null;
+// 제공자별 API 키 가져오기
+async function getProviderKey(providerName: string): Promise<string | null> {
+  if (providerName === "openai" && process.env.OPENAI_API_KEY) {
+    return process.env.OPENAI_API_KEY;
   }
-}
-
-// OpenAI API 키 가져오기
-async function getOpenAIKey(): Promise<string | null> {
-  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
   try {
-    const openaiProvider = await prisma.aIProvider.findFirst({
-      where: { provider: "openai", isActive: true },
+    const provider = await prisma.aIProvider.findFirst({
+      where: { provider: providerName, isActive: true },
       select: { apiKey: true },
     });
-    return openaiProvider?.apiKey || null;
+    return provider?.apiKey || null;
   } catch {
     return null;
   }
