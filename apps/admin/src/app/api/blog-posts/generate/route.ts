@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (provider.provider === "zhipu") {
-      return await callZhipu(provider, model || "glm-4-flash", topic, keywords, tone, category);
+      return await callZhipu(provider, model || "glm-5", topic, keywords, tone, category);
     }
 
     if (provider.provider === "xai") {

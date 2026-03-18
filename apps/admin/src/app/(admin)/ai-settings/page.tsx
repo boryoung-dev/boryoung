@@ -68,6 +68,7 @@ const MODEL_OPTIONS: Record<string, { value: string; label: string }[]> = {
     { value: "grok-3-mini", label: "Grok 3 Mini" },
   ],
   zhipu: [
+    { value: "glm-5", label: "GLM-5" },
     { value: "glm-4-flash", label: "GLM-4-Flash" },
     { value: "glm-4", label: "GLM-4" },
     { value: "glm-4-plus", label: "GLM-4-Plus" },
