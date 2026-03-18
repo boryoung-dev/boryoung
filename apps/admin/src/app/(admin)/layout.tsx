@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import RecentTabs from "@/components/admin/RecentTabs";
 import { ToastProvider } from "@/components/ui/Toast";
 import { ConfirmProvider } from "@/components/ui/ConfirmModal";
 
@@ -15,7 +14,7 @@ export default function AdminLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const { admin, isLoading, logout } = useAdminAuth();
+  const { isLoading } = useAdminAuth();
 
   if (isLoading) {
     return (
@@ -42,10 +41,7 @@ export default function AdminLayout({
           <div className="flex-1 flex flex-col min-w-0">
             <AdminHeader
               onMenuClick={() => setSidebarOpen(true)}
-              adminName={admin?.name}
-              onLogout={logout}
             />
-            <RecentTabs />
 
             <main className="flex-1 overflow-y-auto p-6">{children}</main>
           </div>

@@ -100,10 +100,10 @@ export async function POST(request: NextRequest) {
       { error: `지원하지 않는 AI 제공자입니다: ${provider.provider}` },
       { status: 400 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI 글 생성 실패:", error);
     return NextResponse.json(
-      { error: "AI 글 생성 중 오류가 발생했습니다" },
+      { error: `AI 글 생성 중 오류: ${error?.message || "알 수 없는 오류"}` },
       { status: 500 }
     );
   }
@@ -356,9 +356,10 @@ async function callGoogle(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    console.error("Google API 오류:", errorData);
+    console.error("Google API 오류:", JSON.stringify(errorData, null, 2));
+    const errorMessage = errorData?.error?.message || errorData?.error?.status || JSON.stringify(errorData);
     return NextResponse.json(
-      { error: "AI 글 생성에 실패했습니다. 잠시 후 다시 시도해주세요." },
+      { error: `Google API 오류: ${errorMessage}` },
       { status: 500 }
     );
   }

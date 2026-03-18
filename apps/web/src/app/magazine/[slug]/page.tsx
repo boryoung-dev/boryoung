@@ -8,6 +8,9 @@ import { KakaoFloating } from "@/components/common/KakaoFloating";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { SITE_URL, SITE_NAME } from "@/lib/seo";
 
+// 새 글 발행 시 바로 반영되도록 캐시 비활성화
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ slug: string }>;
 }

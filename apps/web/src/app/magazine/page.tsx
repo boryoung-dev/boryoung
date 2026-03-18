@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   },
 };
 
+// 새 글 발행 시 바로 반영되도록 캐시 비활성화
+export const dynamic = "force-dynamic";
+
 export default async function MagazinePage() {
   const posts = await prisma.blogPost.findMany({
     where: { isPublished: true },

@@ -147,7 +147,7 @@ export default function RecentTabs() {
   const currentPath = normalizePath(pathname);
 
   return (
-    <div className="flex items-center gap-0.5 px-4 h-9 bg-gray-100 border-b border-gray-200 overflow-x-auto scrollbar-hide">
+    <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
       {tabs.map((tab) => {
         const isActive = tab.path === currentPath;
         const Icon = PAGE_ICON_MAP[tab.path];
