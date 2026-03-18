@@ -11,16 +11,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { topic, keywords, tone, category, providerId } = body;
+    let { topic, keywords, tone, category, providerId, autoTopic } = body;
 
-    if (!topic || !keywords) {
-      return NextResponse.json(
-        { error: "주제와 키워드는 필수입니다" },
-        { status: 400 }
-      );
-    }
-
-    // 기존 발행된 글 조회 (중복 방지용)
+    // 기존 발행된 글 조회 (중복 방지용 + autoTopic용)
     const existingPosts = await prisma.blogPost.findMany({
       where: { isPublished: true },
       select: { title: true, category: true, tags: true },
@@ -28,6 +21,51 @@ export async function POST(request: NextRequest) {
       take: 50,
     });
     const existingTitles = existingPosts.map((p) => p.title).join("\n- ");
+
+    // autoTopic 모드: 주제/키워드 자동 선정
+    if (autoTopic || (!topic && !keywords)) {
+      const autoTopics = [
+        { topic: "베트남 다낭 골프 여행", keywords: "다낭골프,베트남골프,다낭골프장" },
+        { topic: "태국 파타야 골프 여행", keywords: "파타야골프,태국골프,파타야골프장" },
+        { topic: "필리핀 클락 골프 여행", keywords: "필리핀골프,클락골프,클락골프장" },
+        { topic: "일본 오키나와 골프 여행", keywords: "오키나와골프,일본골프,오키나와골프장" },
+        { topic: "제주도 골프 여행 가이드", keywords: "제주골프,제주도골프,제주골프장" },
+        { topic: "호주 골드코스트 골프 여행", keywords: "호주골프,골드코스트골프" },
+        { topic: "미국 하와이 골프 여행", keywords: "하와이골프,미국골프,하와이골프장" },
+        { topic: "말레이시아 쿠알라룸푸르 골프", keywords: "말레이시아골프,쿠알라룸푸르골프" },
+        { topic: "인도네시아 발리 골프 여행", keywords: "발리골프,인도네시아골프" },
+        { topic: "캄보디아 씨엠립 골프 여행", keywords: "캄보디아골프,씨엠립골프" },
+        { topic: "골프 여행 준비물 완벽 가이드", keywords: "골프여행준비물,골프여행짐" },
+        { topic: "해외 골프장 그린피 비교", keywords: "해외그린피,골프장비용비교" },
+        { topic: "골프 여행 보험 선택 가이드", keywords: "골프보험,골프여행보험" },
+        { topic: "초보자를 위한 골프 여행 팁", keywords: "골프초보여행,골프여행팁" },
+        { topic: "시니어 골프 여행 추천지", keywords: "시니어골프,시니어골프여행" },
+      ];
+
+      // 기존 글 제목에 없는 주제 필터링
+      const existingTitleSet = existingPosts.map((p) => p.title.toLowerCase());
+      const available = autoTopics.filter(
+        (t) => !existingTitleSet.some((et) => et.includes(t.topic.substring(0, 6).toLowerCase()))
+      );
+
+      if (available.length === 0) {
+        // 모든 주제가 소진되면 랜덤 선택
+        const random = autoTopics[Math.floor(Math.random() * autoTopics.length)];
+        topic = random.topic;
+        keywords = random.keywords;
+      } else {
+        const picked = available[Math.floor(Math.random() * available.length)];
+        topic = picked.topic;
+        keywords = picked.keywords;
+      }
+    }
+
+    if (!topic || !keywords) {
+      return NextResponse.json(
+        { error: "주제와 키워드는 필수입니다" },
+        { status: 400 }
+      );
+    }
 
     // AI 제공자 결정
     let provider = null;

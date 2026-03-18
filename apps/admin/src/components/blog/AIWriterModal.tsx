@@ -296,22 +296,26 @@ export default function AIWriterModal({
 
   // === 핸들러 ===
 
-  // AI 글 생성
+  // AI 글 생성 (주제/키워드 비어있으면 자동 생성)
   const handleGenerate = async () => {
-    if (!topic.trim() || !keywords.trim()) {
-      toast("주제와 키워드를 입력해주세요", "error");
-      return;
-    }
-
     setGenerating(true);
     try {
+      // 주제/키워드가 비어있으면 autoTopic 모드로 요청
+      const autoMode = !topic.trim() && !keywords.trim();
       const res = await fetch("/api/blog-posts/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...authHeaders,
         } as any,
-        body: JSON.stringify({ topic, keywords, tone, category, providerId: selectedProviderId || undefined }),
+        body: JSON.stringify({
+          topic: topic.trim() || undefined,
+          keywords: keywords.trim() || undefined,
+          tone,
+          category,
+          providerId: selectedProviderId || undefined,
+          autoTopic: autoMode,
+        }),
       });
 
       const data = await res.json();
@@ -634,7 +638,7 @@ export default function AIWriterModal({
               {/* 생성 버튼 */}
               <button
                 onClick={handleGenerate}
-                disabled={generating || !topic.trim() || !keywords.trim()}
+                disabled={generating}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {generating ? (
@@ -645,10 +649,15 @@ export default function AIWriterModal({
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5" />
-                    AI로 글 생성
+                    {topic.trim() || keywords.trim() ? "AI로 글 생성" : "AI가 주제 선정 + 글 생성"}
                   </>
                 )}
               </button>
+              {!topic.trim() && !keywords.trim() && (
+                <p className="text-xs text-center text-gray-400 -mt-2">
+                  주제/키워드를 비워두면 AI가 자동으로 골프 여행 주제를 선정합니다
+                </p>
+              )}
             </div>
           )}
 
