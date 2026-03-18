@@ -589,6 +589,7 @@ export default function AIWriterModal({
                       google: "Google",
                       xai: "x.ai",
                       zhipu: "z.ai (GLM)",
+                      openrouter: "OpenRouter",
                     };
                     return (
                       <option key={p.id} value={p.id}>

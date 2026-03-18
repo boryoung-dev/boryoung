@@ -126,6 +126,14 @@ export async function POST(request: NextRequest) {
           );
         }
         aiResponse = await callXAI(apiKey, model || "grok-3-mini", topic, keywords, tone, category, existingTitles);
+      } else if (provider.provider === "openrouter") {
+        if (!apiKey) {
+          return NextResponse.json(
+            { error: "OpenRouter API 키가 설정되지 않았습니다" },
+            { status: 400 }
+          );
+        }
+        aiResponse = await callOpenRouter(apiKey, model || "google/gemini-2.5-flash", topic, keywords, tone, category, existingTitles);
       } else {
         return NextResponse.json(
           { error: `지원하지 않는 AI 제공자입니다: ${provider.provider}` },
@@ -138,7 +146,7 @@ export async function POST(request: NextRequest) {
     const responseData = await aiResponse.json();
     if (responseData.success && !responseData.thumbnail) {
       const mainKeyword = keywords.split(",")[0]?.trim() || topic;
-      const thumbnail = await fetchThumbnail(mainKeyword + " golf travel");
+      const thumbnail = await fetchThumbnail(mainKeyword + " golf travel", provider?.provider);
       responseData.thumbnail = thumbnail;
     }
     return NextResponse.json(responseData);
@@ -281,10 +289,44 @@ async function processAIResult(result: Record<string, unknown>): Promise<Record<
   return result;
 }
 
-// 썸네일 자동 생성 (DALL-E → Unsplash → picsum 폴백)
-async function fetchThumbnail(keyword: string, providerId?: string): Promise<string> {
-  // 1. DALL-E로 이미지 생성 시도 (OpenAI API 키가 있는 경우)
-  const openaiKey = await getOpenAIKey(providerId);
+// 썸네일 자동 생성 (선택된 제공자 우선 → 폴백)
+async function fetchThumbnail(keyword: string, providerType?: string): Promise<string> {
+  const imagePrompt = `A beautiful, professional travel blog thumbnail photo for: "${keyword}". Style: bright, vibrant, high-quality travel photography with warm lighting. No text or watermarks.`;
+
+  // 1. Google Imagen 시도 (Google provider 선택 시 우선)
+  if (providerType === "google" || !providerType) {
+    const googleKey = await getGoogleKey();
+    if (googleKey) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:generateImages?key=${googleKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              prompt: imagePrompt,
+              config: { numberOfImages: 1 },
+            }),
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          // Imagen은 base64 이미지를 반환 → data URL로 변환
+          const imageData = data.generatedImages?.[0]?.image?.imageBytes;
+          if (imageData) {
+            return `data:image/png;base64,${imageData}`;
+          }
+        } else {
+          console.error("Google Imagen 오류:", await res.text().catch(() => ""));
+        }
+      } catch {
+        // Imagen 실패 시 다음 폴백
+      }
+    }
+  }
+
+  // 2. DALL-E 시도 (OpenAI provider 선택 시 우선, 또는 Google 실패 시 폴백)
+  const openaiKey = await getOpenAIKey();
   if (openaiKey) {
     try {
       const res = await fetch("https://api.openai.com/v1/images/generations", {
@@ -295,7 +337,7 @@ async function fetchThumbnail(keyword: string, providerId?: string): Promise<str
         },
         body: JSON.stringify({
           model: "dall-e-3",
-          prompt: `A beautiful, professional travel blog thumbnail photo for: "${keyword}". Style: bright, vibrant, high-quality travel photography with warm lighting. No text or watermarks.`,
+          prompt: imagePrompt,
           n: 1,
           size: "1792x1024",
           quality: "standard",
@@ -312,7 +354,7 @@ async function fetchThumbnail(keyword: string, providerId?: string): Promise<str
     }
   }
 
-  // 2. Unsplash 검색 폴백
+  // 3. Unsplash 검색 폴백
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (accessKey) {
     try {
@@ -331,17 +373,27 @@ async function fetchThumbnail(keyword: string, providerId?: string): Promise<str
     }
   }
 
-  // 3. picsum 폴백
+  // 4. picsum 폴백
   const seed = `${keyword}-${Date.now()}`;
   return `https://picsum.photos/seed/${encodeURIComponent(seed)}/1200/630`;
 }
 
-// OpenAI API 키 가져오기 (providerId로 지정된 것 또는 DB에서 OpenAI 제공자 찾기)
-async function getOpenAIKey(providerId?: string): Promise<string | null> {
-  // 환경변수 체크
-  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
+// Google API 키 가져오기
+async function getGoogleKey(): Promise<string | null> {
+  try {
+    const googleProvider = await prisma.aIProvider.findFirst({
+      where: { provider: "google", isActive: true, authType: "apikey" },
+      select: { apiKey: true },
+    });
+    return googleProvider?.apiKey || null;
+  } catch {
+    return null;
+  }
+}
 
-  // DB에서 OpenAI 제공자 찾기
+// OpenAI API 키 가져오기
+async function getOpenAIKey(): Promise<string | null> {
+  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
   try {
     const openaiProvider = await prisma.aIProvider.findFirst({
       where: { provider: "openai", isActive: true },
@@ -587,6 +639,66 @@ async function callXAI(
     return NextResponse.json({ success: true, ...result });
   } catch {
     console.error("x.ai 응답 JSON 파싱 실패:", content);
+    return NextResponse.json(
+      { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+}
+
+// === OpenRouter 호출 (OpenAI 호환 API) ===
+
+async function callOpenRouter(
+  apiKey: string,
+  model: string,
+  topic: string,
+  keywords: string,
+  tone: string,
+  category?: string,
+  existingTitles?: string
+) {
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category, existingTitles);
+
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+      "HTTP-Referer": "https://boryoung.co.kr",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 4000,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("OpenRouter API 오류:", errorData);
+    const errorMessage = errorData?.error?.message || JSON.stringify(errorData);
+    return NextResponse.json(
+      { error: `OpenRouter API 오류: ${errorMessage}` },
+      { status: 500 }
+    );
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+
+  if (!content) {
+    return NextResponse.json({ error: "AI 응답이 비어있습니다" }, { status: 500 });
+  }
+
+  try {
+    const result = await processAIResult(parseAIResponse(content));
+    return NextResponse.json({ success: true, ...result });
+  } catch {
+    console.error("OpenRouter 응답 JSON 파싱 실패:", content);
     return NextResponse.json(
       { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
       { status: 500 }
