@@ -195,7 +195,7 @@ async function testZhipu(provider: {
     );
   }
 
-  const response = await fetch("https://open.bigmodel.cn/api/paas/v4/models", {
+  const response = await fetch("https://api.z.ai/api/paas/v4/models", {
     headers: { Authorization: `Bearer ${apiKey}` },
   });
 

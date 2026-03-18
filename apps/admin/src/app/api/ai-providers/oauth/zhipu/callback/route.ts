@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const callbackUrl = `${request.nextUrl.origin}/api/ai-providers/oauth/zhipu/callback`;
 
     // Authorization code를 토큰으로 교환
-    const tokenRes = await fetch("https://open.bigmodel.cn/oauth/token", {
+    const tokenRes = await fetch("https://z.ai/oauth/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({

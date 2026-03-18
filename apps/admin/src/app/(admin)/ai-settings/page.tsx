@@ -46,7 +46,7 @@ const PROVIDER_OPTIONS = [
   { value: "anthropic", label: "Anthropic (Claude)" },
   { value: "google", label: "Google (Gemini)" },
   { value: "xai", label: "x.ai (Grok)" },
-  { value: "zhipu", label: "GLM (智谱AI)" },
+  { value: "zhipu", label: "z.ai (GLM)" },
 ];
 
 const MODEL_OPTIONS: Record<string, { value: string; label: string }[]> = {
@@ -69,6 +69,7 @@ const MODEL_OPTIONS: Record<string, { value: string; label: string }[]> = {
   ],
   zhipu: [
     { value: "glm-5", label: "GLM-5" },
+    { value: "glm-4.6v", label: "GLM-4.6V (멀티모달)" },
     { value: "glm-4-flash", label: "GLM-4-Flash" },
     { value: "glm-4", label: "GLM-4" },
     { value: "glm-4-plus", label: "GLM-4-Plus" },

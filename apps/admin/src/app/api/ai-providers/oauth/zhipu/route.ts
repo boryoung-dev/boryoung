@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     state: providerId,
   });
 
-  const authUrl = `https://open.bigmodel.cn/oauth/authorize?${params.toString()}`;
+  const authUrl = `https://z.ai/oauth/authorize?${params.toString()}`;
 
   return NextResponse.json({ success: true, authUrl });
 }
