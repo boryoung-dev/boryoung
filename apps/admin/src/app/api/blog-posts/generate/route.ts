@@ -73,6 +73,16 @@ export async function POST(request: NextRequest) {
       return await callGoogle(provider, model || "gemini-2.0-flash", topic, keywords, tone, category);
     }
 
+    if (provider.provider === "xai") {
+      if (!apiKey) {
+        return NextResponse.json(
+          { error: "x.ai API 키가 설정되지 않았습니다" },
+          { status: 400 }
+        );
+      }
+      return await callXAI(apiKey, model || "grok-3-mini", topic, keywords, tone, category);
+    }
+
     return NextResponse.json(
       { error: `지원하지 않는 AI 제공자입니다: ${provider.provider}` },
       { status: 400 }
@@ -309,6 +319,63 @@ async function callGoogle(
     return NextResponse.json({ success: true, ...result });
   } catch {
     console.error("Google 응답 JSON 파싱 실패:", content);
+    return NextResponse.json(
+      { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+}
+
+// === x.ai (Grok) 호출 ===
+
+async function callXAI(
+  apiKey: string,
+  model: string,
+  topic: string,
+  keywords: string,
+  tone: string,
+  category?: string
+) {
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
+
+  const response = await fetch("https://api.x.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 4000,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("x.ai API 오류:", errorData);
+    return NextResponse.json(
+      { error: "AI 글 생성에 실패했습니다. 잠시 후 다시 시도해주세요." },
+      { status: 500 }
+    );
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+
+  if (!content) {
+    return NextResponse.json({ error: "AI 응답이 비어있습니다" }, { status: 500 });
+  }
+
+  try {
+    const result = parseAIResponse(content);
+    return NextResponse.json({ success: true, ...result });
+  } catch {
+    console.error("x.ai 응답 JSON 파싱 실패:", content);
     return NextResponse.json(
       { error: "AI 응답을 처리할 수 없습니다. 다시 시도해주세요." },
       { status: 500 }

@@ -11,6 +11,10 @@ import {
   Bot,
   Check,
   Loader2,
+  Wifi,
+  WifiOff,
+  Star,
+  Zap,
 } from "lucide-react";
 import Modal, {
   ModalCancelButton,
@@ -41,6 +45,7 @@ const PROVIDER_OPTIONS = [
   { value: "openai", label: "OpenAI" },
   { value: "anthropic", label: "Anthropic (Claude)" },
   { value: "google", label: "Google (Gemini)" },
+  { value: "xai", label: "x.ai (Grok)" },
 ];
 
 const MODEL_OPTIONS: Record<string, { value: string; label: string }[]> = {
@@ -57,6 +62,10 @@ const MODEL_OPTIONS: Record<string, { value: string; label: string }[]> = {
     { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
     { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
   ],
+  xai: [
+    { value: "grok-3", label: "Grok 3" },
+    { value: "grok-3-mini", label: "Grok 3 Mini" },
+  ],
 };
 
 const AUTH_TYPE_OPTIONS = [
@@ -71,11 +80,13 @@ function ProviderIcon({ provider }: { provider: string }) {
     openai: "bg-green-100 text-green-700",
     anthropic: "bg-orange-100 text-orange-700",
     google: "bg-blue-100 text-blue-700",
+    xai: "bg-purple-100 text-purple-700",
   };
   const labels: Record<string, string> = {
     openai: "AI",
     anthropic: "CL",
     google: "GE",
+    xai: "XA",
   };
   return (
     <div
@@ -101,6 +112,7 @@ export default function AISettingsPage() {
   const [editTarget, setEditTarget] = useState<AIProviderItem | null>(null);
   const [saving, setSaving] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
+  const [testingId, setTestingId] = useState<string | null>(null);
 
   // 폼 상태
   const [formData, setFormData] = useState({
@@ -297,6 +309,28 @@ export default function AISettingsPage() {
     }
   };
 
+  // 연결 테스트
+  const handleTestConnection = async (id: string) => {
+    setTestingId(id);
+    try {
+      const res = await fetch("/api/ai-providers/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders } as any,
+        body: JSON.stringify({ providerId: id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast(data.message || "연결 성공!", "success");
+      } else {
+        toast(`연결 실패: ${data.error || "알 수 없는 오류"}`, "error");
+      }
+    } catch {
+      toast("연결 테스트 중 오류가 발생했습니다", "error");
+    } finally {
+      setTestingId(null);
+    }
+  };
+
   // Google OAuth 시작
   const startGoogleOAuth = async (providerId: string) => {
     setOauthLoading(true);
@@ -324,7 +358,7 @@ export default function AISettingsPage() {
     setFormData({
       name: provider.name,
       provider: provider.provider,
-      apiKey: provider.apiKey || "",
+      apiKey: "",
       model: provider.model || MODEL_OPTIONS[provider.provider]?.[0]?.value || "",
       isDefault: provider.isDefault,
       authType: provider.authType,
@@ -404,7 +438,7 @@ export default function AISettingsPage() {
                   : "border-gray-200"
               } ${!p.isActive ? "opacity-60" : ""}`}
             >
-              {/* 상단: 로고 + 이름 + 상태 */}
+              {/* 상단: 로고 + 이름 + 뱃지 */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <ProviderIcon provider={p.provider} />
@@ -412,15 +446,33 @@ export default function AISettingsPage() {
                     <h3 className="font-semibold text-gray-900 text-sm">
                       {p.name}
                     </h3>
-                    <p className="text-xs text-gray-500">
-                      {getProviderLabel(p.provider)}
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${
+                        {
+                          openai: "bg-green-50 text-green-600",
+                          anthropic: "bg-orange-50 text-orange-600",
+                          google: "bg-blue-50 text-blue-600",
+                          xai: "bg-purple-50 text-purple-600",
+                        }[p.provider] || "bg-gray-50 text-gray-600"
+                      }`}>
+                        {getProviderLabel(p.provider)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   {p.isDefault && (
-                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-100 text-blue-700 rounded-full">
-                      기본
+                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-semibold bg-yellow-100 text-yellow-700 rounded-full">
+                      <Star className="w-3 h-3" /> 기본
+                    </span>
+                  )}
+                  {p.apiKey || (p.authType === "oauth" && p.oauthData) ? (
+                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-semibold bg-green-100 text-green-700 rounded-full">
+                      <Wifi className="w-3 h-3" /> 연결됨
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-500 rounded-full">
+                      <WifiOff className="w-3 h-3" /> 미설정
                     </span>
                   )}
                 </div>
@@ -439,7 +491,7 @@ export default function AISettingsPage() {
                   <span className="font-medium">
                     {p.authType === "oauth" ? "OAuth" : "API 키"}
                     {p.authType === "apikey" && p.apiKey && (
-                      <span className="ml-1 text-gray-400">({p.apiKey})</span>
+                      <span className="ml-1 text-gray-400 font-mono">{p.apiKey}</span>
                     )}
                     {p.authType === "oauth" && p.oauthData && (
                       <span className="ml-1 text-green-600">연결됨</span>
@@ -489,6 +541,18 @@ export default function AISettingsPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleTestConnection(p.id)}
+                    disabled={testingId === p.id}
+                    className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                    title="연결 테스트"
+                  >
+                    {testingId === p.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Zap className="w-4 h-4" />
+                    )}
+                  </button>
                   <button
                     onClick={() => openEditModal(p)}
                     className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -684,9 +748,14 @@ function ProviderForm({
             }
             className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm font-mono"
             placeholder={
-              isEdit ? "빈칸이면 변경하지 않음" : "sk-... 또는 API 키 입력"
+              isEdit ? "새 키를 입력하거나 빈칸이면 기존 키 유지" : "sk-... 또는 API 키 입력"
             }
           />
+          {isEdit && (
+            <p className="text-xs text-gray-400 mt-1">
+              기존 키가 저장되어 있습니다. 변경하려면 새 키를 입력하세요.
+            </p>
+          )}
         </div>
       )}
 

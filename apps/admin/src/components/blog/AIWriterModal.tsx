@@ -522,12 +522,20 @@ export default function AIWriterModal({
                   <option value="">
                     {aiProviders.length === 0 ? "데모 모드 (제공자 없음)" : "기본 제공자 사용"}
                   </option>
-                  {aiProviders.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({p.provider}{p.model ? ` - ${p.model}` : ""})
-                      {p.isDefault ? " [기본]" : ""}
-                    </option>
-                  ))}
+                  {aiProviders.map((p) => {
+                    const providerLabel: Record<string, string> = {
+                      openai: "OpenAI",
+                      anthropic: "Anthropic",
+                      google: "Google",
+                      xai: "x.ai",
+                    };
+                    return (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ({providerLabel[p.provider] || p.provider}{p.model ? ` - ${p.model}` : ""})
+                        {p.isDefault ? " [기본]" : ""}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
