@@ -20,6 +20,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 기존 발행된 글 조회 (중복 방지용)
+    const existingPosts = await prisma.blogPost.findMany({
+      where: { isPublished: true },
+      select: { title: true, category: true, tags: true },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+    const existingTitles = existingPosts.map((p) => p.title).join("\n- ");
+
     // AI 제공자 결정
     let provider = null;
     if (providerId) {
@@ -42,7 +51,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, ...demoResult });
       }
       // 환경변수 기반 OpenAI 호출
-      return await callOpenAI(envApiKey, "gpt-4o-mini", topic, keywords, tone, category);
+      return await callOpenAI(envApiKey, "gpt-4o-mini", topic, keywords, tone, category, existingTitles);
     }
 
     // 제공자별 API 호출
@@ -56,7 +65,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      return await callOpenAI(apiKey, model || "gpt-4o-mini", topic, keywords, tone, category);
+      return await callOpenAI(apiKey, model || "gpt-4o-mini", topic, keywords, tone, category, existingTitles);
     }
 
     if (provider.provider === "anthropic") {
@@ -66,15 +75,15 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      return await callAnthropic(apiKey, model || "claude-sonnet-4-20250514", topic, keywords, tone, category);
+      return await callAnthropic(apiKey, model || "claude-sonnet-4-20250514", topic, keywords, tone, category, existingTitles);
     }
 
     if (provider.provider === "google") {
-      return await callGoogle(provider, model || "gemini-2.0-flash", topic, keywords, tone, category);
+      return await callGoogle(provider, model || "gemini-2.0-flash", topic, keywords, tone, category, existingTitles);
     }
 
     if (provider.provider === "zhipu") {
-      return await callZhipu(provider, model || "glm-5", topic, keywords, tone, category);
+      return await callZhipu(provider, model || "glm-5", topic, keywords, tone, category, existingTitles);
     }
 
     if (provider.provider === "xai") {
@@ -84,7 +93,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      return await callXAI(apiKey, model || "grok-3-mini", topic, keywords, tone, category);
+      return await callXAI(apiKey, model || "grok-3-mini", topic, keywords, tone, category, existingTitles);
     }
 
     return NextResponse.json(
@@ -102,7 +111,7 @@ export async function POST(request: NextRequest) {
 
 // === 공통 프롬프트 ===
 
-function buildPrompts(topic: string, keywords: string, tone: string, category?: string) {
+function buildPrompts(topic: string, keywords: string, tone: string, category?: string, existingTitles?: string) {
   const toneMap: Record<string, string> = {
     professional: "전문적이고 신뢰감 있는 톤",
     friendly: "친근하고 따뜻한 톤",
@@ -117,6 +126,7 @@ function buildPrompts(topic: string, keywords: string, tone: string, category?: 
 - 매번 다른 관점, 다른 도입부, 다른 비유를 사용하세요
 - 같은 주제라도 시즌, 날씨, 여행 스타일 등 다른 각도에서 접근하세요
 - 이전에 작성된 글과 겹치지 않도록 독창적인 표현을 사용하세요
+${existingTitles ? `\n[중복 방지 - 기존 게시글]\n아래는 이미 작성된 글 제목 목록입니다. 이 제목들과 겹치지 않는 새로운 제목과 내용을 작성하세요:\n- ${existingTitles}` : ""}
 
 [글쓰기 스타일]
 - 짧은 문장으로 끊어 쓰기 (한 문장이 30자를 넘지 않게)
@@ -198,9 +208,10 @@ async function callOpenAI(
   topic: string,
   keywords: string,
   tone: string,
-  category?: string
+  category?: string,
+  existingTitles?: string
 ) {
-  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category, existingTitles);
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -255,9 +266,10 @@ async function callAnthropic(
   topic: string,
   keywords: string,
   tone: string,
-  category?: string
+  category?: string,
+  existingTitles?: string
 ) {
-  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category, existingTitles);
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -310,9 +322,10 @@ async function callGoogle(
   topic: string,
   keywords: string,
   tone: string,
-  category?: string
+  category?: string,
+  existingTitles?: string
 ) {
-  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category, existingTitles);
   const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
 
   let url: string;
@@ -377,9 +390,10 @@ async function callXAI(
   topic: string,
   keywords: string,
   tone: string,
-  category?: string
+  category?: string,
+  existingTitles?: string
 ) {
-  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category, existingTitles);
 
   const response = await fetch("https://api.x.ai/v1/chat/completions", {
     method: "POST",
@@ -434,9 +448,10 @@ async function callZhipu(
   topic: string,
   keywords: string,
   tone: string,
-  category?: string
+  category?: string,
+  existingTitles?: string
 ) {
-  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category);
+  const { systemPrompt, userPrompt } = buildPrompts(topic, keywords, tone, category, existingTitles);
 
   // API 키 또는 OAuth 토큰 결정
   let apiKey: string;

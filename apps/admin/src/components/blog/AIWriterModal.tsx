@@ -13,6 +13,8 @@ import {
   ImageIcon,
   CheckCircle,
   AlertCircle,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -174,6 +176,21 @@ function calculateSEOChecks(
   ];
 }
 
+// === 네이버 블로그 호환 HTML 변환 ===
+function prepareForNaverBlog(html: string): string {
+  // blockquote에 inline style 추가 (네이버는 class 무시)
+  return html.replace(
+    /<blockquote>/g,
+    '<blockquote style="background:#f8f9fa;border-left:4px solid #4285f4;padding:16px 20px;margin:24px 0;border-radius:8px;">'
+  );
+}
+
+// === 기존 게시글 타입 ===
+interface ExistingPost {
+  title: string;
+  category: string | null;
+}
+
 // === 컴포넌트 ===
 
 // === AI 제공자 타입 ===
@@ -213,6 +230,10 @@ export default function AIWriterModal({
   const [editableTitle, setEditableTitle] = useState("");
   const [editableContent, setEditableContent] = useState("");
 
+  // 기존 게시글 상태
+  const [existingPosts, setExistingPosts] = useState<ExistingPost[]>([]);
+  const [existingPostsOpen, setExistingPostsOpen] = useState(false);
+
   // 이미지 검색 상태
   const [imageSearching, setImageSearching] = useState<string | null>(null);
   const [searchedImages, setSearchedImages] = useState<Record<string, ImageResult[]>>({});
@@ -247,6 +268,27 @@ export default function AIWriterModal({
         .catch(() => {});
     }
   }, [isOpen, providersLoaded, authHeaders]);
+
+  // 기존 발행된 글 목록 로드
+  useEffect(() => {
+    if (isOpen && Object.keys(authHeaders).length > 0) {
+      fetch("/api/blog-posts?limit=10&published=true", {
+        headers: authHeaders as any,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.posts) {
+            setExistingPosts(
+              data.posts.map((p: any) => ({
+                title: p.title,
+                category: p.category,
+              }))
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen, authHeaders]);
 
   // === 핸들러 ===
 
@@ -354,11 +396,12 @@ export default function AIWriterModal({
     handleClose();
   };
 
-  // HTML 복사
+  // HTML 복사 (네이버 블로그 호환 형식)
   const handleCopyHtml = async () => {
     try {
-      await navigator.clipboard.writeText(editableContent);
-      toast("HTML이 복사되었습니다", "success");
+      const naverHtml = prepareForNaverBlog(editableContent);
+      await navigator.clipboard.writeText(naverHtml);
+      toast("네이버 블로그 호환 HTML이 복사되었습니다", "success");
     } catch {
       toast("복사에 실패했습니다", "error");
     }
@@ -540,6 +583,41 @@ export default function AIWriterModal({
                 </select>
               </div>
 
+              {/* 기존 게시글 목록 (접이식) */}
+              {existingPosts.length > 0 && (
+                <div className="border border-gray-200 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setExistingPostsOpen(!existingPostsOpen)}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    {existingPostsOpen ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4" />
+                    )}
+                    기존 게시글 ({existingPosts.length}개)
+                  </button>
+                  {existingPostsOpen && (
+                    <div className="px-3 pb-3">
+                      <ul className="space-y-1">
+                        {existingPosts.map((post, i) => (
+                          <li key={i} className="text-xs text-gray-400 truncate">
+                            {post.category && (
+                              <span className="text-gray-300 mr-1">[{post.category}]</span>
+                            )}
+                            {post.title}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <p className="px-3 pb-2 text-xs text-gray-400">
+                    AI가 기존 글과 겹치지 않게 자동으로 작성합니다
+                  </p>
+                </div>
+              )}
+
               {/* 생성 버튼 */}
               <button
                 onClick={handleGenerate}
@@ -706,10 +784,32 @@ export default function AIWriterModal({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   본문 미리보기
                 </label>
-                <div
-                  className="prose prose-sm max-w-none border border-gray-200 rounded-lg p-4 max-h-[400px] overflow-y-auto"
-                  dangerouslySetInnerHTML={{ __html: editableContent }}
-                />
+                <div className="border border-gray-200 rounded-lg p-4 max-h-[400px] overflow-y-auto bg-white">
+                  <style dangerouslySetInnerHTML={{ __html: `
+                    .blog-preview blockquote {
+                      background: #f8f9fa;
+                      border-left: 4px solid #4285f4;
+                      padding: 16px 20px;
+                      margin: 24px 0;
+                      border-radius: 8px;
+                      font-size: 16px;
+                    }
+                    .blog-preview img {
+                      max-width: 100%;
+                      border-radius: 12px;
+                    }
+                    .blog-preview hr {
+                      border: none;
+                      border-top: 1px solid #eee;
+                      margin: 32px 0;
+                    }
+                  `}} />
+                  <div
+                    className="blog-preview prose prose-sm"
+                    style={{ maxWidth: 720, margin: "0 auto" }}
+                    dangerouslySetInnerHTML={{ __html: editableContent }}
+                  />
+                </div>
               </div>
 
               {/* 액션 버튼들 */}
