@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { MessageSquare, Reply, Trash2 } from "lucide-react";
+import FilterTabs from "@/components/ui/FilterTabs";
 import Select from "@/components/ui/Select";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -186,25 +187,17 @@ export default function InquiriesPage() {
       </div>
 
       {/* 필터 */}
-      <div className="flex gap-2 mb-6">
-        {[
-          { value: "all", label: `전체 (${inquiries.length})` },
-          { value: "PENDING", label: `대기중 (${inquiries.filter((i) => i.status === "PENDING").length})` },
-          { value: "REPLIED", label: `답변완료 (${inquiries.filter((i) => i.status === "REPLIED").length})` },
-          { value: "CLOSED", label: `종료 (${inquiries.filter((i) => i.status === "CLOSED").length})` },
-        ].map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setSelectedStatus(tab.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              selectedStatus === tab.value
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-600 hover:bg-gray-100 transition-colors"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-6">
+        <FilterTabs
+          tabs={[
+            { key: "all", label: "전체", count: inquiries.length },
+            { key: "PENDING", label: "대기중", count: inquiries.filter((i) => i.status === "PENDING").length },
+            { key: "REPLIED", label: "답변완료", count: inquiries.filter((i) => i.status === "REPLIED").length },
+            { key: "CLOSED", label: "종료", count: inquiries.filter((i) => i.status === "CLOSED").length },
+          ]}
+          activeTab={selectedStatus}
+          onTabChange={(key) => setSelectedStatus(key)}
+        />
       </div>
 
       {/* 문의 목록 테이블 */}

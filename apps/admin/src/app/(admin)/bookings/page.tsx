@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Eye, CalendarCheck } from "lucide-react";
+import FilterTabs from "@/components/ui/FilterTabs";
 
 interface Booking {
   id: string;
@@ -86,20 +87,18 @@ export default function AdminBookingsPage() {
       </div>
 
       {/* 필터 */}
-      <div className="flex gap-2 mb-6">
-        {filterButtons.map((btn) => (
-          <button
-            key={btn.value}
-            onClick={() => setFilter(btn.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              filter === btn.value
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-600 hover:bg-gray-100 transition-colors"
-            }`}
-          >
-            {btn.label}
-          </button>
-        ))}
+      <div className="mb-6">
+        <FilterTabs
+          tabs={filterButtons.map((btn) => ({
+            key: btn.value,
+            label: btn.label,
+            count: btn.value === ""
+              ? bookings.length
+              : bookings.filter((b) => b.status === btn.value).length,
+          }))}
+          activeTab={filter}
+          onTabChange={(key) => setFilter(key)}
+        />
       </div>
 
       {/* 예약 목록 */}

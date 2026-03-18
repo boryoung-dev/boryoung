@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Pencil, Trash2, Eye, EyeOff, MessageSquare } from "lucide-react";
+import FilterTabs from "@/components/ui/FilterTabs";
 import Select from "@/components/ui/Select";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -236,24 +237,16 @@ export default function ReviewsPage() {
       </div>
 
       {/* 필터 */}
-      <div className="flex gap-2 mb-6">
-        {[
-          { value: "all" as const, label: `전체 (${reviews.length})` },
-          { value: "published" as const, label: `공개 (${reviews.filter((r) => r.isPublished).length})` },
-          { value: "unpublished" as const, label: `비공개 (${reviews.filter((r) => !r.isPublished).length})` },
-        ].map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setStatusFilter(tab.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              statusFilter === tab.value
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-600 hover:bg-gray-100 transition-colors"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-6">
+        <FilterTabs
+          tabs={[
+            { key: "all", label: "전체", count: reviews.length },
+            { key: "published", label: "공개", count: reviews.filter((r) => r.isPublished).length },
+            { key: "unpublished", label: "비공개", count: reviews.filter((r) => !r.isPublished).length },
+          ]}
+          activeTab={statusFilter}
+          onTabChange={(key) => setStatusFilter(key as "all" | "published" | "unpublished")}
+        />
       </div>
 
       {/* 리뷰 테이블 */}

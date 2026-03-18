@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Pencil, Trash2, FileText, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, Sparkles, Search } from "lucide-react";
+import FilterTabs from "@/components/ui/FilterTabs";
 import Select from "@/components/ui/Select";
 import { TiptapEditor } from "@/components/editor/TiptapEditor";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
@@ -57,6 +58,8 @@ export default function BlogPostsPage() {
   });
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
   const [filterPublished, setFilterPublished] = useState<"all" | "published" | "draft">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [aiModalOpen, setAiModalOpen] = useState(false);
 
   useEffect(() => {
@@ -195,7 +198,22 @@ export default function BlogPostsPage() {
     }
   };
 
-  const filteredPosts = posts;
+  // 검색어 디바운스 (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // 검색어로 클라이언트 사이드 필터링
+  const filteredPosts = useMemo(() => {
+    if (!debouncedQuery.trim()) return posts;
+    const q = debouncedQuery.trim().toLowerCase();
+    return posts.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        (p.excerpt && p.excerpt.toLowerCase().includes(q))
+    );
+  }, [posts, debouncedQuery]);
 
   if (isLoading || loading) {
     return (
@@ -227,24 +245,30 @@ export default function BlogPostsPage() {
       </div>
 
       {/* 필터 탭 */}
-      <div className="flex gap-2 mb-6">
-        {[
-          { value: "all" as const, label: "전체" },
-          { value: "published" as const, label: "발행됨" },
-          { value: "draft" as const, label: "비공개" },
-        ].map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setFilterPublished(tab.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              filterPublished === tab.value
-                ? "bg-blue-600 text-white shadow-sm"
-                : "text-gray-600 hover:bg-gray-100 transition-colors"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-6">
+        <FilterTabs
+          tabs={[
+            { key: "all", label: "전체", count: posts.length },
+            { key: "published", label: "발행됨", count: posts.filter((p) => p.isPublished).length },
+            { key: "draft", label: "비공개", count: posts.filter((p) => !p.isPublished).length },
+          ]}
+          activeTab={filterPublished}
+          onTabChange={(key) => setFilterPublished(key as "all" | "published" | "draft")}
+        />
+      </div>
+
+      {/* 검색바 */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="제목, 내용으로 검색..."
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+          />
+        </div>
       </div>
 
       {filteredPosts.length === 0 ? (
