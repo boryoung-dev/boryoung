@@ -20,12 +20,19 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const clientId = process.env.ZHIPU_CLIENT_ID;
-  const clientSecret = process.env.ZHIPU_CLIENT_SECRET;
+  // DB에서 해당 제공자의 OAuth Client ID/Secret 조회 (환경변수 폴백)
+  let clientId = process.env.ZHIPU_CLIENT_ID;
+  let clientSecret = process.env.ZHIPU_CLIENT_SECRET;
+
+  if (providerId) {
+    const provider = await prisma.aIProvider.findUnique({ where: { id: providerId } });
+    if (provider?.oauthClientId) clientId = provider.oauthClientId;
+    if (provider?.oauthClientSecret) clientSecret = provider.oauthClientSecret;
+  }
 
   if (!clientId || !clientSecret) {
     return NextResponse.redirect(
-      new URL(`/ai-settings?error=${encodeURIComponent("ZHIPU OAuth 환경변수가 설정되지 않았습니다")}`, request.nextUrl.origin)
+      new URL(`/ai-settings?error=${encodeURIComponent("ZHIPU OAuth Client ID/Secret이 설정되지 않았습니다. 제공자 설정에서 입력하세요.")}`, request.nextUrl.origin)
     );
   }
 

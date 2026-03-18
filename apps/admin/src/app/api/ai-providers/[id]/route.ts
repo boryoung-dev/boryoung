@@ -33,7 +33,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      provider: { ...provider, apiKey: maskApiKey(provider.apiKey) },
+      provider: { ...provider, apiKey: maskApiKey(provider.apiKey), oauthClientSecret: maskApiKey(provider.oauthClientSecret) },
     });
   } catch (error) {
     console.error("AI 제공자 조회 오류:", error);
@@ -58,7 +58,7 @@ export async function PUT(
 
   try {
     const body = await request.json();
-    const { name, provider, apiKey, model, isDefault, isActive, authType } = body;
+    const { name, provider, apiKey, model, isDefault, isActive, authType, oauthClientId, oauthClientSecret } = body;
 
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
@@ -70,6 +70,12 @@ export async function PUT(
     // apiKey가 마스킹된 값이 아닌 경우에만 업데이트
     if (apiKey !== undefined && !apiKey.includes("****")) {
       updateData.apiKey = apiKey || null;
+    }
+
+    // OAuth Client ID/Secret 업데이트
+    if (oauthClientId !== undefined) updateData.oauthClientId = oauthClientId || null;
+    if (oauthClientSecret !== undefined && !oauthClientSecret.includes("****")) {
+      updateData.oauthClientSecret = oauthClientSecret || null;
     }
 
     // 기본 제공자 설정 시 기존 기본 제공자 해제
@@ -90,7 +96,7 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      provider: { ...updated, apiKey: maskApiKey(updated.apiKey) },
+      provider: { ...updated, apiKey: maskApiKey(updated.apiKey), oauthClientSecret: maskApiKey(updated.oauthClientSecret) },
     });
   } catch (error: any) {
     console.error("AI 제공자 수정 오류:", error);

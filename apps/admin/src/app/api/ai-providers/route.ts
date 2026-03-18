@@ -21,10 +21,11 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    // API 키 마스킹하여 반환
+    // API 키, OAuth Client Secret 마스킹하여 반환
     const maskedProviders = providers.map((p) => ({
       ...p,
       apiKey: maskApiKey(p.apiKey),
+      oauthClientSecret: maskApiKey(p.oauthClientSecret),
     }));
 
     return NextResponse.json({ success: true, providers: maskedProviders });
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, provider, apiKey, model, isDefault, authType } = body;
+    const { name, provider, apiKey, model, isDefault, authType, oauthClientId, oauthClientSecret } = body;
 
     if (!name || !provider) {
       return NextResponse.json(
@@ -71,13 +72,15 @@ export async function POST(request: NextRequest) {
         model: model || null,
         isDefault: isDefault || false,
         authType: authType || "apikey",
+        oauthClientId: oauthClientId || null,
+        oauthClientSecret: oauthClientSecret || null,
       },
     });
 
     return NextResponse.json(
       {
         success: true,
-        provider: { ...newProvider, apiKey: maskApiKey(newProvider.apiKey) },
+        provider: { ...newProvider, apiKey: maskApiKey(newProvider.apiKey), oauthClientSecret: maskApiKey(newProvider.oauthClientSecret) },
       },
       { status: 201 }
     );

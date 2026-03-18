@@ -367,8 +367,10 @@ model AIProvider {
   model     String?  // 기본 모델 (gpt-4o-mini, claude-sonnet-4-20250514, gemini-2.0-flash 등)
   isDefault Boolean  @default(false) // 기본 제공자
   isActive  Boolean  @default(true)
-  authType  String   @default("apikey") // apikey 또는 oauth
-  oauthData Json?    // OAuth 토큰 데이터
+  authType          String   @default("apikey") // apikey 또는 oauth
+  oauthData         Json?    // OAuth 토큰 데이터
+  oauthClientId     String?  // OAuth Client ID
+  oauthClientSecret String?  // OAuth Client Secret
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

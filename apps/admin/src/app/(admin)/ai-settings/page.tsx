@@ -9,12 +9,12 @@ import {
   Trash2,
   Sparkles,
   Bot,
-  Check,
   Loader2,
   Wifi,
   WifiOff,
   Star,
   Zap,
+  Link,
 } from "lucide-react";
 import Modal, {
   ModalCancelButton,
@@ -35,6 +35,8 @@ interface AIProviderItem {
   isActive: boolean;
   authType: string;
   oauthData: any;
+  oauthClientId: string | null;
+  oauthClientSecret: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -132,6 +134,8 @@ export default function AISettingsPage() {
     model: "gpt-4o-mini",
     isDefault: false,
     authType: "apikey",
+    oauthClientId: "",
+    oauthClientSecret: "",
   });
 
   // OAuth 콜백 메시지 처리
@@ -190,6 +194,14 @@ export default function AISettingsPage() {
     }
     if (formData.authType === "apikey" && !formData.apiKey.trim()) {
       toast("API 키를 입력해주세요", "error");
+      return;
+    }
+    if (formData.authType === "oauth" && !formData.oauthClientId.trim()) {
+      toast("OAuth Client ID를 입력해주세요", "error");
+      return;
+    }
+    if (formData.authType === "oauth" && !formData.oauthClientSecret.trim()) {
+      toast("OAuth Client Secret을 입력해주세요", "error");
       return;
     }
 
@@ -396,6 +408,8 @@ export default function AISettingsPage() {
       model: provider.model || MODEL_OPTIONS[provider.provider]?.[0]?.value || "",
       isDefault: provider.isDefault,
       authType: provider.authType,
+      oauthClientId: provider.oauthClientId || "",
+      oauthClientSecret: "",
     });
     setShowEditModal(true);
   };
@@ -409,6 +423,8 @@ export default function AISettingsPage() {
       model: "gpt-4o-mini",
       isDefault: false,
       authType: "apikey",
+      oauthClientId: "",
+      oauthClientSecret: "",
     });
   };
 
@@ -462,7 +478,7 @@ export default function AISettingsPage() {
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           {providers.map((p) => (
             <div
               key={p.id}
@@ -472,30 +488,18 @@ export default function AISettingsPage() {
                   : "border-gray-200"
               } ${!p.isActive ? "opacity-60" : ""}`}
             >
-              {/* 상단: 로고 + 이름 + 뱃지 */}
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <ProviderIcon provider={p.provider} />
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">
-                      {p.name}
-                    </h3>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${
-                        {
-                          openai: "bg-green-50 text-green-600",
-                          anthropic: "bg-orange-50 text-orange-600",
-                          google: "bg-blue-50 text-blue-600",
-                          xai: "bg-purple-50 text-purple-600",
-                          zhipu: "bg-cyan-50 text-cyan-600",
-                        }[p.provider] || "bg-gray-50 text-gray-600"
-                      }`}>
-                        {getProviderLabel(p.provider)}
-                      </span>
-                    </div>
-                  </div>
+              {/* 상단: 아이콘 + 이름 + 제공자 뱃지 + 상태 뱃지 */}
+              <div className="flex items-center gap-3 mb-4">
+                <ProviderIcon provider={p.provider} />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 text-sm truncate">
+                    {p.name}
+                  </h3>
+                  <span className="text-xs text-gray-500">
+                    {getProviderLabel(p.provider)}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 shrink-0">
                   {p.isDefault && (
                     <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-semibold bg-yellow-100 text-yellow-700 rounded-full">
                       <Star className="w-3 h-3" /> 기본
@@ -513,83 +517,69 @@ export default function AISettingsPage() {
                 </div>
               </div>
 
-              {/* 모델 + 인증 방식 */}
+              {/* 바디: 모델, 인증, API 키 정보 */}
               <div className="space-y-1.5 mb-4">
                 {p.model && (
-                  <div className="flex items-center gap-2 text-xs text-gray-600">
-                    <span className="text-gray-400">모델:</span>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="text-gray-400 shrink-0">모델:</span>
                     <span className="font-medium">{p.model}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-xs text-gray-600">
-                  <span className="text-gray-400">인증:</span>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span className="text-gray-400 shrink-0">인증:</span>
                   <span className="font-medium">
                     {p.authType === "oauth" ? "OAuth" : "API 키"}
-                    {p.authType === "apikey" && p.apiKey && (
-                      <span className="ml-1 text-gray-400 font-mono">{p.apiKey}</span>
-                    )}
-                    {p.authType === "oauth" && p.oauthData && (
-                      <span className="ml-1 text-green-600">연결됨</span>
-                    )}
                   </span>
                 </div>
+                {p.authType === "apikey" && p.apiKey && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="text-gray-400 shrink-0">API 키:</span>
+                    <span className="font-mono text-gray-500">{p.apiKey}</span>
+                  </div>
+                )}
+                {p.authType === "oauth" && p.oauthData && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="text-gray-400 shrink-0">OAuth:</span>
+                    <span className="text-green-600 font-medium">연결됨</span>
+                  </div>
+                )}
               </div>
 
-              {/* 하단: 액션 버튼들 */}
+              {/* 푸터: 구분선 + 액션 버튼들 (아이콘만) */}
               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                <div className="flex items-center gap-1">
-                  {/* 활성/비활성 토글 */}
-                  <button
-                    onClick={() => handleToggleActive(p.id, !p.isActive)}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                      p.isActive ? "bg-green-500" : "bg-gray-300"
+                {/* 활성/비활성 토글 */}
+                <button
+                  onClick={() => handleToggleActive(p.id, !p.isActive)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${
+                    p.isActive ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                  title={p.isActive ? "비활성화" : "활성화"}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                      p.isActive
+                        ? "translate-x-[18px]"
+                        : "translate-x-[2px]"
                     }`}
-                    title={p.isActive ? "비활성화" : "활성화"}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                        p.isActive
-                          ? "translate-x-[18px]"
-                          : "translate-x-[2px]"
-                      }`}
-                    />
-                  </button>
+                  />
+                </button>
+
+                <div className="flex items-center gap-1">
                   {/* 기본 설정 */}
                   {!p.isDefault && (
                     <button
                       onClick={() => handleSetDefault(p.id)}
-                      className="ml-2 px-2 py-1 text-[10px] text-gray-500 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+                      className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
                       title="기본 제공자로 설정"
                     >
-                      기본으로
+                      <Star className="w-4 h-4" />
                     </button>
                   )}
-                  {/* Google OAuth 재연결 */}
-                  {p.provider === "google" && p.authType === "oauth" && (
-                    <button
-                      onClick={() => startGoogleOAuth(p.id)}
-                      disabled={oauthLoading}
-                      className="ml-2 px-2 py-1 text-[10px] text-blue-600 border border-blue-200 rounded hover:bg-blue-50 transition-colors disabled:opacity-50"
-                    >
-                      {oauthLoading ? "연결 중..." : "Google 재연결"}
-                    </button>
-                  )}
-                  {/* ZHIPU OAuth 재연결 */}
-                  {p.provider === "zhipu" && p.authType === "oauth" && (
-                    <button
-                      onClick={() => startZhipuOAuth(p.id)}
-                      disabled={oauthLoading}
-                      className="ml-2 px-2 py-1 text-[10px] text-cyan-600 border border-cyan-200 rounded hover:bg-cyan-50 transition-colors disabled:opacity-50"
-                    >
-                      {oauthLoading ? "연결 중..." : "智谱 재연결"}
-                    </button>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
+                  {/* 연결 테스트 */}
                   <button
                     onClick={() => handleTestConnection(p.id)}
                     disabled={testingId === p.id}
-                    className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
                     title="연결 테스트"
                   >
                     {testingId === p.id ? (
@@ -598,16 +588,33 @@ export default function AISettingsPage() {
                       <Zap className="w-4 h-4" />
                     )}
                   </button>
+                  {/* OAuth 재연결 */}
+                  {(p.provider === "google" || p.provider === "zhipu") && p.authType === "oauth" && (
+                    <button
+                      onClick={() =>
+                        p.provider === "google"
+                          ? startGoogleOAuth(p.id)
+                          : startZhipuOAuth(p.id)
+                      }
+                      disabled={oauthLoading}
+                      className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+                      title="OAuth 재연결"
+                    >
+                      <Link className="w-4 h-4" />
+                    </button>
+                  )}
+                  {/* 수정 */}
                   <button
                     onClick={() => openEditModal(p)}
-                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
                     title="수정"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
+                  {/* 삭제 */}
                   <button
                     onClick={() => handleDelete(p.id, p.name)}
-                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors"
                     title="삭제"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -699,6 +706,8 @@ function ProviderForm({
     model: string;
     isDefault: boolean;
     authType: string;
+    oauthClientId: string;
+    oauthClientSecret: string;
   };
   setFormData: (data: any) => void;
   onProviderChange: (provider: string) => void;
@@ -806,44 +815,82 @@ function ProviderForm({
         </div>
       )}
 
-      {/* OAuth (oauth 선택 시) */}
-      {formData.authType === "oauth" && supportsOAuth && onStartOAuth && (
-        <div>
-          <button
-            type="button"
-            onClick={onStartOAuth}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-          >
-            {formData.provider === "google" ? (
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-            ) : (
-              <span className="w-5 h-5 flex items-center justify-center rounded bg-cyan-100 text-cyan-700 text-xs font-bold">智</span>
+      {/* OAuth Client ID/Secret (oauth 선택 시) */}
+      {formData.authType === "oauth" && supportsOAuth && (
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Client ID {!isEdit && "*"}
+            </label>
+            <input
+              type="text"
+              value={formData.oauthClientId}
+              onChange={(e) =>
+                setFormData({ ...formData, oauthClientId: e.target.value })
+              }
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm font-mono"
+              placeholder="OAuth Client ID 입력"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Client Secret {!isEdit && "*"}
+            </label>
+            <input
+              type="password"
+              value={formData.oauthClientSecret}
+              onChange={(e) =>
+                setFormData({ ...formData, oauthClientSecret: e.target.value })
+              }
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm font-mono"
+              placeholder={
+                isEdit ? "새 Secret을 입력하거나 빈칸이면 기존 값 유지" : "OAuth Client Secret 입력"
+              }
+            />
+            {isEdit && (
+              <p className="text-xs text-gray-400 mt-1">
+                기존 Secret이 저장되어 있습니다. 변경하려면 새 값을 입력하세요.
+              </p>
             )}
-            {formData.provider === "google" ? "Google 계정 연결" : "智谱 계정 연결"}
-          </button>
-        </div>
-      )}
+          </div>
+          <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
+            {formData.provider === "google"
+              ? "Google Cloud Console에서 발급받은 OAuth Client ID/Secret을 입력하세요."
+              : "z.ai에서 발급받은 OAuth Client ID/Secret을 입력하세요."}
+          </p>
 
-      {formData.authType === "oauth" && supportsOAuth && !onStartOAuth && (
-        <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3">
-          저장 후 {formData.provider === "google" ? "Google" : "智谱"} 계정을 연결할 수 있습니다.
+          {/* OAuth 연결 버튼 (수정 모달에서만 표시) */}
+          {onStartOAuth && (
+            <button
+              type="button"
+              onClick={onStartOAuth}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            >
+              {formData.provider === "google" ? (
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                </svg>
+              ) : (
+                <span className="w-5 h-5 flex items-center justify-center rounded bg-cyan-100 text-cyan-700 text-xs font-bold">智</span>
+              )}
+              {formData.provider === "google" ? "Google 계정 연결" : "智谱 계정 연결"}
+            </button>
+          )}
         </div>
       )}
 
