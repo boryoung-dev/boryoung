@@ -7,6 +7,8 @@ import { SiteFooter } from "@/components/common/SiteFooter";
 import { KakaoFloating } from "@/components/common/KakaoFloating";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { SITE_URL, SITE_NAME } from "@/lib/seo";
+import BlogPostTemplate from "@/components/magazine/BlogPostTemplate";
+import type { BlogSection } from "@/components/magazine/BlogPostTemplate";
 
 // 새 글 발행 시 바로 반영되도록 캐시 비활성화
 export const dynamic = "force-dynamic";
@@ -165,15 +167,28 @@ export default async function MagazineDetailPage({ params }: Props) {
         )}
 
         {/* 본문 */}
-        <article className="prose prose-lg max-w-none mb-16">
-          {post.contentHtml ? (
-            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.contentHtml) }} />
-          ) : (
-            <div className="whitespace-pre-wrap text-[color:var(--fg)] leading-relaxed">
-              {post.content}
-            </div>
-          )}
-        </article>
+        {(() => {
+          // 구조화된 JSON 콘텐츠 감지
+          try {
+            const parsed = JSON.parse(post.content);
+            if (parsed.sections && Array.isArray(parsed.sections)) {
+              return <BlogPostTemplate sections={parsed.sections as BlogSection[]} />;
+            }
+          } catch {
+            // JSON 파싱 실패 → 기존 방식으로 렌더링
+          }
+          return (
+            <article className="prose prose-lg max-w-none mb-16">
+              {post.contentHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.contentHtml) }} />
+              ) : (
+                <div className="whitespace-pre-wrap text-[color:var(--fg)] leading-relaxed">
+                  {post.content}
+                </div>
+              )}
+            </article>
+          );
+        })()}
 
         {/* 관련 글 */}
         {relatedPosts.length > 0 && (

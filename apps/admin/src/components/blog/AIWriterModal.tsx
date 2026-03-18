@@ -42,6 +42,8 @@ interface GeneratedContent {
   category: string;
   tags: string[];
   suggestedImages: SuggestedImage[];
+  thumbnail: string | null;
+  sections?: any[];
 }
 
 interface SEOCheck {
@@ -60,6 +62,8 @@ interface AIWriterModalProps {
     content: string;
     category: string;
     tags: string[];
+    thumbnail?: string | null;
+    sections?: any[];
   }) => void;
 }
 
@@ -317,13 +321,20 @@ export default function AIWriterModal({
         return;
       }
 
+      // 구조화된 섹션이 있으면 JSON으로 content 저장
+      const contentValue = data.sections
+        ? JSON.stringify({ sections: data.sections })
+        : data.content || "";
+
       const generated: GeneratedContent = {
         title: data.title,
         excerpt: data.excerpt,
-        content: data.content,
+        content: contentValue,
         category: data.category || category,
         tags: data.tags || [],
         suggestedImages: data.suggestedImages || [],
+        thumbnail: data.thumbnail || null,
+        sections: data.sections || undefined,
       };
 
       setResult(generated);
@@ -392,6 +403,8 @@ export default function AIWriterModal({
       content: editableContent,
       category: result.category,
       tags: result.tags,
+      thumbnail: result.thumbnail,
+      sections: result.sections,
     });
     handleClose();
   };
@@ -779,36 +792,47 @@ export default function AIWriterModal({
                 </div>
               )}
 
-              {/* HTML 미리보기 */}
+              {/* 본문 미리보기 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   본문 미리보기
                 </label>
                 <div className="border border-gray-200 rounded-lg p-4 max-h-[400px] overflow-y-auto bg-white">
-                  <style dangerouslySetInnerHTML={{ __html: `
-                    .blog-preview blockquote {
-                      background: #f8f9fa;
-                      border-left: 4px solid #4285f4;
-                      padding: 16px 20px;
-                      margin: 24px 0;
-                      border-radius: 8px;
-                      font-size: 16px;
-                    }
-                    .blog-preview img {
-                      max-width: 100%;
-                      border-radius: 12px;
-                    }
-                    .blog-preview hr {
-                      border: none;
-                      border-top: 1px solid #eee;
-                      margin: 32px 0;
-                    }
-                  `}} />
-                  <div
-                    className="blog-preview prose prose-sm"
-                    style={{ maxWidth: 720, margin: "0 auto" }}
-                    dangerouslySetInnerHTML={{ __html: editableContent }}
-                  />
+                  {result.sections ? (
+                    <div className="space-y-6" style={{ maxWidth: 720, margin: "0 auto" }}>
+                      {result.sections.map((section: any, i: number) => (
+                        <div key={i} className="border-b border-gray-100 pb-4 last:border-0">
+                          <span className="inline-block px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-purple-100 text-purple-600 mb-2">
+                            {section.type}
+                          </span>
+                          {section.heading && (
+                            <h3 className="text-base font-bold text-gray-900 mb-1">{section.heading}</h3>
+                          )}
+                          {section.text && (
+                            <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">{section.text}</p>
+                          )}
+                          {section.items && (
+                            <ul className="mt-1 space-y-1">
+                              {section.items.map((item: string, j: number) => (
+                                <li key={j} className="text-sm text-gray-600 flex gap-2">
+                                  <span className="text-purple-500">•</span> {item}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {section.image && (
+                            <img src={section.image} alt={section.imageAlt || ""} className="mt-2 rounded-lg w-full max-h-40 object-cover" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div
+                      className="blog-preview prose prose-sm"
+                      style={{ maxWidth: 720, margin: "0 auto" }}
+                      dangerouslySetInnerHTML={{ __html: editableContent }}
+                    />
+                  )}
                 </div>
               </div>
 

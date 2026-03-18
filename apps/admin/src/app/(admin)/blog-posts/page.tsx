@@ -368,15 +368,19 @@ export default function BlogPostsPage() {
         onClose={() => setAiModalOpen(false)}
         onSendToEditor={(data) => {
           setEditingPost(null);
+          // 구조화된 섹션이 있으면 JSON으로 content 저장
+          const contentValue = data.sections
+            ? JSON.stringify({ sections: data.sections })
+            : data.content;
           setFormData({
             title: data.title,
             category: data.category || "",
             excerpt: data.excerpt || "",
-            content: data.content,
-            thumbnail: "",
+            content: contentValue,
+            thumbnail: data.thumbnail || "",
             isPublished: false,
           });
-          setThumbnailPreview("");
+          setThumbnailPreview(data.thumbnail || "");
           setAiModalOpen(false);
           setModalOpen(true);
         }}
