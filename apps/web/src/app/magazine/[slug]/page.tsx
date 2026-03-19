@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "글을 찾을 수 없습니다" };
   }
 
-  const title = `${post.title} - 보령항공여행 매거진`;
+  const title = post.title;
   const description = post.excerpt || post.title;
   const url = `${SITE_URL}/magazine/${slug}`;
 

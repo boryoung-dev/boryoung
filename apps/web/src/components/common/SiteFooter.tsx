@@ -60,7 +60,7 @@ export function SiteFooter() {
           <div className="flex flex-col gap-4">
             <h3 className="text-white/40 uppercase tracking-widest text-[11px] font-medium">사이트맵</h3>
             <nav className="flex flex-col gap-2">
-              <Link href="/products" className="text-white/60 hover:text-white transition-colors">
+              <Link href="/tours" className="text-white/60 hover:text-white transition-colors">
                 여행상품
               </Link>
               <Link href="/magazine" className="text-white/60 hover:text-white transition-colors">
@@ -164,7 +164,7 @@ export function SiteFooter() {
             주소 : 경기도 김포시 태장로 795번길 23, 537호(장기동)
           </p>
           <p className="mt-3">
-            &copy; 2009 boryoung.com All rights reserved.
+            &copy; 2026 boryoung.com All rights reserved.
           </p>
         </div>
       </div>
