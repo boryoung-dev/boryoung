@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   },
 };
 
-// 새 글 발행 시 바로 반영되도록 캐시 비활성화
-export const dynamic = "force-dynamic";
+// 60초마다 재검증 (ISR) — 새 글 발행 시 최대 60초 내 반영
+export const revalidate = 60;
 
 export default async function MagazinePage() {
   const posts = await prisma.blogPost.findMany({

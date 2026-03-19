@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   },
 };
 
+// 60초마다 재검증 (ISR)
+export const revalidate = 60;
+
 export default async function Home() {
   return <HomePage />;
 }
