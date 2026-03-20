@@ -112,37 +112,6 @@ function locationToAngles(lat: number, lng: number): [number, number] {
   ];
 }
 
-/** cobe 회전 상태 기준으로 마커를 2D 화면 좌표로 투영 */
-function projectMarker(
-  lat: number,
-  lng: number,
-  phi: number,
-  theta: number,
-  canvasSize: number
-): { x: number; y: number; visible: boolean } {
-  const latRad = (lat * Math.PI) / 180;
-  const lngRad = (lng * Math.PI) / 180;
-
-  // cobe에서 카메라가 바라보는 경도 방향
-  const deltaLng = lngRad - (3 * Math.PI / 2 - phi);
-
-  // 구면 → 직교 (카메라 기준 상대 좌표)
-  const x = Math.cos(latRad) * Math.sin(deltaLng);
-  const y = Math.sin(latRad);
-  const z = Math.cos(latRad) * Math.cos(deltaLng);
-
-  // theta 틸트 적용 (X축 회전)
-  const y2 = y * Math.cos(theta) - z * Math.sin(theta);
-  const z2 = y * Math.sin(theta) + z * Math.cos(theta);
-
-  const radius = canvasSize / 2;
-  return {
-    x: radius + x * radius,
-    y: radius - y2 * radius,
-    visible: z2 > 0,
-  };
-}
-
 export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerInteracting = useRef<{ x: number; y: number } | null>(null);
@@ -158,7 +127,6 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
   const globeInstanceRef = useRef<ReturnType<typeof createGlobe> | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const autoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
 
   const handleDestinationClick = useCallback((index: number) => {
     setSelectedIndex((prev) => (prev === index ? null : index));
@@ -209,26 +177,6 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
         state.theta = thetaRef.current;
         state.width = widthRef.current * 2;
         state.height = widthRef.current * 2;
-
-        // 이모지 오버레이 위치 업데이트
-        const overlay = overlayRef.current;
-        if (overlay) {
-          const canvasSize = widthRef.current;
-          const els = overlay.children;
-          for (let i = 0; i < DESTINATIONS.length && i < els.length; i++) {
-            const d = DESTINATIONS[i];
-            const proj = projectMarker(d.lat, d.lng, phiRef.current, thetaRef.current, canvasSize);
-            const el = els[i] as HTMLElement;
-            if (proj.visible) {
-              el.style.transform = `translate(${proj.x}px, ${proj.y}px) translate(-50%, -50%)`;
-              el.style.opacity = "1";
-              el.style.pointerEvents = "auto";
-            } else {
-              el.style.opacity = "0";
-              el.style.pointerEvents = "none";
-            }
-          }
-        }
       },
     });
 
@@ -428,27 +376,6 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
                 className="h-full w-full cursor-grab"
                 style={{ contain: "layout paint size", width: "100%", height: "100%" }}
               />
-              {/* 국기 이모지 오버레이 */}
-              <div
-                ref={overlayRef}
-                className="absolute inset-0 pointer-events-none"
-                style={{ contain: "layout size" }}
-              >
-                {DESTINATIONS.map((dest, i) => (
-                  <button
-                    key={dest.key}
-                    type="button"
-                    onClick={() => handleDestinationClick(i)}
-                    className={`absolute top-0 left-0 pointer-events-auto cursor-pointer transition-transform duration-150 hover:scale-125 ${
-                      selectedIndex === i ? "scale-125" : ""
-                    }`}
-                    style={{ opacity: 0, willChange: "transform, opacity" }}
-                    title={dest.name}
-                  >
-                    <span className="text-xl md:text-2xl drop-shadow-md">{dest.emoji}</span>
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* 테마 선택 (로컬 확인용) */}
