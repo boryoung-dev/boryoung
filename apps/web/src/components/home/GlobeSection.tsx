@@ -190,32 +190,7 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
       dragged = false;
       canvas.style.cursor = "grabbing";
     };
-    const onPointerUp = (e: PointerEvent) => {
-      if (!dragged) {
-        const rect = canvas.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
-        const canvasSize = rect.width;
-
-        let closestIdx = -1;
-        let closestDist = Infinity;
-        const hitThreshold = canvasSize * 0.08;
-
-        for (let i = 0; i < DESTINATIONS.length; i++) {
-          const d = DESTINATIONS[i];
-          const proj = projectMarker(d.lat, d.lng, phiRef.current, thetaRef.current, canvasSize);
-          if (!proj.visible) continue;
-          const dist = Math.sqrt((clickX - proj.x) ** 2 + (clickY - proj.y) ** 2);
-          if (dist < hitThreshold && dist < closestDist) {
-            closestDist = dist;
-            closestIdx = i;
-          }
-        }
-
-        if (closestIdx >= 0) {
-          handleDestinationClick(closestIdx);
-        }
-      }
+    const onPointerUp = () => {
       pointerInteracting.current = null;
       canvas.style.cursor = "grab";
     };
