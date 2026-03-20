@@ -164,7 +164,10 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
       baseColor: [...theme.baseColor],
       markerColor: [...theme.markerColor],
       glowColor: [...theme.glowColor],
-      markers: [],
+      markers: DESTINATIONS.map((d, i) => ({
+        location: [d.lat, d.lng] as [number, number],
+        size: selectedIndex === i ? 0.12 : 0.06,
+      })),
       onRender: (state) => {
         if (focusRef.current && pointerInteracting.current === null) {
           const [focusPhi, focusTheta] = focusRef.current;
@@ -232,7 +235,7 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
       canvas.removeEventListener("pointerout", onPointerOut);
       canvas.removeEventListener("pointermove", onPointerMove);
     };
-  }, [themeKey, handleDestinationClick]);
+  }, [themeKey, selectedIndex, handleDestinationClick]);
 
   // 캐러셀 자동 루프
   useEffect(() => {
