@@ -112,6 +112,22 @@ function locationToAngles(lat: number, lng: number): [number, number] {
   ];
 }
 
+/** 마커 클릭 감지용: 구면 좌표 → 2D 투영 */
+function projectMarker(
+  lat: number, lng: number, phi: number, theta: number, canvasSize: number
+): { x: number; y: number; visible: boolean } {
+  const latRad = (lat * Math.PI) / 180;
+  const lngRad = (lng * Math.PI) / 180;
+  const deltaLng = lngRad - (3 * Math.PI / 2 - phi);
+  const x = Math.cos(latRad) * Math.sin(deltaLng);
+  const y = Math.sin(latRad);
+  const z = Math.cos(latRad) * Math.cos(deltaLng);
+  const y2 = y * Math.cos(theta) - z * Math.sin(theta);
+  const z2 = y * Math.sin(theta) + z * Math.cos(theta);
+  const r = canvasSize / 2;
+  return { x: r + x * r, y: r - y2 * r, visible: z2 > 0 };
+}
+
 export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerInteracting = useRef<{ x: number; y: number } | null>(null);
@@ -193,7 +209,26 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
       dragged = false;
       canvas.style.cursor = "grabbing";
     };
-    const onPointerUp = () => {
+    const onPointerUp = (e: PointerEvent) => {
+      if (!dragged) {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        const canvasSize = rect.width;
+        let closestIdx = -1;
+        let closestDist = Infinity;
+        const hitThreshold = canvasSize * 0.1;
+        for (let i = 0; i < DESTINATIONS.length; i++) {
+          const proj = projectMarker(DESTINATIONS[i].lat, DESTINATIONS[i].lng, phiRef.current, thetaRef.current, canvasSize);
+          if (!proj.visible) continue;
+          const dist = Math.sqrt((clickX - proj.x) ** 2 + (clickY - proj.y) ** 2);
+          if (dist < hitThreshold && dist < closestDist) {
+            closestDist = dist;
+            closestIdx = i;
+          }
+        }
+        if (closestIdx >= 0) handleDestinationClick(closestIdx);
+      }
       pointerInteracting.current = null;
       canvas.style.cursor = "grab";
     };
