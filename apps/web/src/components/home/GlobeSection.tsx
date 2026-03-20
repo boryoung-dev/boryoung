@@ -17,13 +17,93 @@ interface GlobeSectionProps {
 }
 
 const DESTINATIONS = [
+  { name: "한국", key: "domestic-jeju", lat: 36.5, lng: 127.0, emoji: "🇰🇷", desc: "제주·강원·경기 명문 코스", href: "/tours?country=domestic-jeju" },
   { name: "일본", key: "japan", lat: 36.2, lng: 138.2, emoji: "🇯🇵", desc: "규슈·오키나와·홋카이도", href: "/tours?country=japan" },
   { name: "태국", key: "thailand", lat: 15.87, lng: 100.99, emoji: "🇹🇭", desc: "방콕·치앙마이·파타야", href: "/tours?country=thailand" },
   { name: "베트남", key: "vietnam", lat: 16.05, lng: 108.22, emoji: "🇻🇳", desc: "다낭·호치민·하노이", href: "/tours?country=vietnam" },
   { name: "대만", key: "taiwan", lat: 25.03, lng: 121.56, emoji: "🇹🇼", desc: "타이베이 근교 명문 코스", href: "/tours?country=taiwan" },
   { name: "괌·사이판", key: "guam-saipan", lat: 13.44, lng: 144.79, emoji: "🇬🇺", desc: "오션뷰 리조트 골프", href: "/tours?country=guam-saipan" },
-  { name: "제주", key: "domestic-jeju", lat: 33.49, lng: 126.53, emoji: "🏌️", desc: "핀크스·나인브릿지", href: "/tours?country=domestic-jeju" },
 ];
+
+const DEFAULT_SELECTED = 0; // 한국 디폴트 선택
+
+/** 지구본 테마 프리셋 */
+const GLOBE_THEMES = {
+  "light-blue": {
+    label: "라이트 블루",
+    dark: 0,
+    diffuse: 1.2,
+    mapBrightness: 1.2,
+    baseColor: [0.92, 0.95, 0.97] as [number, number, number],
+    markerColor: [0.1, 0.4, 0.9] as [number, number, number],
+    glowColor: [0.88, 0.91, 0.94] as [number, number, number],
+  },
+  "dark": {
+    label: "다크",
+    dark: 1,
+    diffuse: 1.2,
+    mapBrightness: 6,
+    baseColor: [0.3, 0.3, 0.3] as [number, number, number],
+    markerColor: [0.1, 0.8, 1] as [number, number, number],
+    glowColor: [0.05, 0.05, 0.15] as [number, number, number],
+  },
+  "emerald": {
+    label: "에메랄드",
+    dark: 0,
+    diffuse: 1.4,
+    mapBrightness: 1.0,
+    baseColor: [0.85, 0.95, 0.88] as [number, number, number],
+    markerColor: [0.15, 0.6, 0.35] as [number, number, number],
+    glowColor: [0.82, 0.93, 0.85] as [number, number, number],
+  },
+  "sunset": {
+    label: "선셋",
+    dark: 0.3,
+    diffuse: 2,
+    mapBrightness: 2,
+    baseColor: [1, 0.85, 0.75] as [number, number, number],
+    markerColor: [0.9, 0.3, 0.1] as [number, number, number],
+    glowColor: [1, 0.9, 0.8] as [number, number, number],
+  },
+  "midnight": {
+    label: "미드나잇",
+    dark: 1,
+    diffuse: 0.8,
+    mapBrightness: 8,
+    baseColor: [0.15, 0.15, 0.3] as [number, number, number],
+    markerColor: [0.9, 0.6, 1] as [number, number, number],
+    glowColor: [0.08, 0.08, 0.2] as [number, number, number],
+  },
+  "gold": {
+    label: "골드",
+    dark: 0.2,
+    diffuse: 1.6,
+    mapBrightness: 2.5,
+    baseColor: [0.95, 0.88, 0.7] as [number, number, number],
+    markerColor: [0.85, 0.65, 0.1] as [number, number, number],
+    glowColor: [0.95, 0.9, 0.75] as [number, number, number],
+  },
+  "ocean": {
+    label: "오션",
+    dark: 0.5,
+    diffuse: 1.5,
+    mapBrightness: 4,
+    baseColor: [0.1, 0.3, 0.6] as [number, number, number],
+    markerColor: [0, 0.9, 0.7] as [number, number, number],
+    glowColor: [0.1, 0.2, 0.4] as [number, number, number],
+  },
+  "monochrome": {
+    label: "모노크롬",
+    dark: 0,
+    diffuse: 1.0,
+    mapBrightness: 1.5,
+    baseColor: [0.9, 0.9, 0.9] as [number, number, number],
+    markerColor: [0.2, 0.2, 0.2] as [number, number, number],
+    glowColor: [0.85, 0.85, 0.85] as [number, number, number],
+  },
+} as const;
+
+type GlobeThemeKey = keyof typeof GLOBE_THEMES;
 
 function locationToAngles(lat: number, lng: number): [number, number] {
   return [
@@ -32,15 +112,53 @@ function locationToAngles(lat: number, lng: number): [number, number] {
   ];
 }
 
+/** cobe 회전 상태 기준으로 마커를 2D 화면 좌표로 투영 */
+function projectMarker(
+  lat: number,
+  lng: number,
+  phi: number,
+  theta: number,
+  canvasSize: number
+): { x: number; y: number; visible: boolean } {
+  const latRad = (lat * Math.PI) / 180;
+  const lngRad = (lng * Math.PI) / 180;
+
+  // cobe에서 카메라가 바라보는 경도 방향
+  const deltaLng = lngRad - (3 * Math.PI / 2 - phi);
+
+  // 구면 → 직교 (카메라 기준 상대 좌표)
+  const x = Math.cos(latRad) * Math.sin(deltaLng);
+  const y = Math.sin(latRad);
+  const z = Math.cos(latRad) * Math.cos(deltaLng);
+
+  // theta 틸트 적용 (X축 회전)
+  const y2 = y * Math.cos(theta) - z * Math.sin(theta);
+  const z2 = y * Math.sin(theta) + z * Math.cos(theta);
+
+  const radius = canvasSize / 2;
+  return {
+    x: radius + x * radius,
+    y: radius - y2 * radius,
+    visible: z2 > 0,
+  };
+}
+
 export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerInteracting = useRef<{ x: number; y: number } | null>(null);
-  const phiRef = useRef(0);
-  const thetaRef = useRef(0.3);
+  // 한국 좌표로 초기 포커스
+  const initAngles = locationToAngles(DESTINATIONS[DEFAULT_SELECTED].lat, DESTINATIONS[DEFAULT_SELECTED].lng);
+  const phiRef = useRef(initAngles[0]);
+  const thetaRef = useRef(initAngles[1]);
   const widthRef = useRef(0);
   const focusRef = useRef<[number, number] | null>(null);
 
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(DEFAULT_SELECTED);
+  const [themeKey, setThemeKey] = useState<GlobeThemeKey>("light-blue");
+  const globeInstanceRef = useRef<ReturnType<typeof createGlobe> | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const autoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   const handleDestinationClick = useCallback((index: number) => {
     setSelectedIndex((prev) => (prev === index ? null : index));
@@ -59,23 +177,26 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
     window.addEventListener("resize", onResize);
     onResize();
 
+    const theme = GLOBE_THEMES[themeKey];
+
+    if (globeInstanceRef.current) {
+      globeInstanceRef.current.destroy();
+    }
+
     const globe = createGlobe(canvas, {
       devicePixelRatio: 2,
       width: widthRef.current * 2,
       height: widthRef.current * 2,
-      phi: 0,
-      theta: 0.3,
-      dark: 0,
-      diffuse: 1.2,
+      phi: phiRef.current,
+      theta: thetaRef.current,
+      dark: theme.dark,
+      diffuse: theme.diffuse,
       mapSamples: 24000,
-      mapBrightness: 1.2,
-      baseColor: [0.92, 0.95, 0.97],
-      markerColor: [0.1, 0.4, 0.9],
-      glowColor: [0.88, 0.91, 0.94],
-      markers: DESTINATIONS.map((d) => ({
-        location: [d.lat, d.lng] as [number, number],
-        size: 0.07,
-      })),
+      mapBrightness: theme.mapBrightness,
+      baseColor: [...theme.baseColor],
+      markerColor: [...theme.markerColor],
+      glowColor: [...theme.glowColor],
+      markers: [],
       onRender: (state) => {
         if (focusRef.current && pointerInteracting.current === null) {
           const [focusPhi, focusTheta] = focusRef.current;
@@ -88,14 +209,65 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
         state.theta = thetaRef.current;
         state.width = widthRef.current * 2;
         state.height = widthRef.current * 2;
+
+        // 이모지 오버레이 위치 업데이트
+        const overlay = overlayRef.current;
+        if (overlay) {
+          const canvasSize = widthRef.current;
+          const els = overlay.children;
+          for (let i = 0; i < DESTINATIONS.length && i < els.length; i++) {
+            const d = DESTINATIONS[i];
+            const proj = projectMarker(d.lat, d.lng, phiRef.current, thetaRef.current, canvasSize);
+            const el = els[i] as HTMLElement;
+            if (proj.visible) {
+              el.style.transform = `translate(${proj.x}px, ${proj.y}px) translate(-50%, -50%)`;
+              el.style.opacity = "1";
+              el.style.pointerEvents = "auto";
+            } else {
+              el.style.opacity = "0";
+              el.style.pointerEvents = "none";
+            }
+          }
+        }
       },
     });
 
+    const pointerStart = { x: 0, y: 0 };
+    let dragged = false;
+
     const onPointerDown = (e: PointerEvent) => {
       pointerInteracting.current = { x: e.clientX, y: e.clientY };
+      pointerStart.x = e.clientX;
+      pointerStart.y = e.clientY;
+      dragged = false;
       canvas.style.cursor = "grabbing";
     };
-    const onPointerUp = () => {
+    const onPointerUp = (e: PointerEvent) => {
+      if (!dragged) {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        const canvasSize = rect.width;
+
+        let closestIdx = -1;
+        let closestDist = Infinity;
+        const hitThreshold = canvasSize * 0.08;
+
+        for (let i = 0; i < DESTINATIONS.length; i++) {
+          const d = DESTINATIONS[i];
+          const proj = projectMarker(d.lat, d.lng, phiRef.current, thetaRef.current, canvasSize);
+          if (!proj.visible) continue;
+          const dist = Math.sqrt((clickX - proj.x) ** 2 + (clickY - proj.y) ** 2);
+          if (dist < hitThreshold && dist < closestDist) {
+            closestDist = dist;
+            closestIdx = i;
+          }
+        }
+
+        if (closestIdx >= 0) {
+          handleDestinationClick(closestIdx);
+        }
+      }
       pointerInteracting.current = null;
       canvas.style.cursor = "grab";
     };
@@ -107,6 +279,13 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
       if (pointerInteracting.current !== null) {
         const dx = e.clientX - pointerInteracting.current.x;
         const dy = e.clientY - pointerInteracting.current.y;
+
+        const totalDx = e.clientX - pointerStart.x;
+        const totalDy = e.clientY - pointerStart.y;
+        if (Math.abs(totalDx) > 5 || Math.abs(totalDy) > 5) {
+          dragged = true;
+        }
+
         phiRef.current += dx * 0.003;
         thetaRef.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, thetaRef.current - dy * 0.003));
         pointerInteracting.current = { x: e.clientX, y: e.clientY };
@@ -119,17 +298,80 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
     canvas.addEventListener("pointerout", onPointerOut);
     canvas.addEventListener("pointermove", onPointerMove);
 
+    globeInstanceRef.current = globe;
+
     return () => {
       globe.destroy();
+      globeInstanceRef.current = null;
       window.removeEventListener("resize", onResize);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointerup", onPointerUp);
       canvas.removeEventListener("pointerout", onPointerOut);
       canvas.removeEventListener("pointermove", onPointerMove);
     };
-  }, []);
+  }, [themeKey, handleDestinationClick]);
 
-  // 선택된 국가의 상품
+  // 캐러셀 자동 루프
+  useEffect(() => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollLeft = 0;
+    }
+
+    // 이전 타이머 정리
+    if (autoScrollRef.current) {
+      clearInterval(autoScrollRef.current);
+      autoScrollRef.current = null;
+    }
+
+    const container = carouselRef.current;
+    if (!container || selectedIndex === null) return;
+
+    const CARD_WIDTH = 276; // 260px + 16px gap
+    const INTERVAL = 3000;
+
+    autoScrollRef.current = setInterval(() => {
+      if (!container) return;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      if (maxScroll <= 0) return;
+
+      const nextScroll = container.scrollLeft + CARD_WIDTH;
+      if (nextScroll >= maxScroll) {
+        // 끝에 도달하면 처음으로
+        container.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        container.scrollTo({ left: nextScroll, behavior: "smooth" });
+      }
+    }, INTERVAL);
+
+    // 사용자 터치/마우스 시 일시 정지 후 재개
+    const onInteractionStart = () => {
+      if (autoScrollRef.current) clearInterval(autoScrollRef.current);
+    };
+    const onInteractionEnd = () => {
+      if (autoScrollRef.current) clearInterval(autoScrollRef.current);
+      autoScrollRef.current = setInterval(() => {
+        if (!container) return;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        if (maxScroll <= 0) return;
+        const nextScroll = container.scrollLeft + CARD_WIDTH;
+        if (nextScroll >= maxScroll) {
+          container.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          container.scrollTo({ left: nextScroll, behavior: "smooth" });
+        }
+      }, INTERVAL);
+    };
+
+    container.addEventListener("pointerdown", onInteractionStart);
+    container.addEventListener("pointerup", onInteractionEnd);
+
+    return () => {
+      if (autoScrollRef.current) clearInterval(autoScrollRef.current);
+      container.removeEventListener("pointerdown", onInteractionStart);
+      container.removeEventListener("pointerup", onInteractionEnd);
+    };
+  }, [selectedIndex]);
+
   const selectedDest = selectedIndex !== null ? DESTINATIONS[selectedIndex] : null;
   const selectedProducts = selectedDest ? (productsByCountry[selectedDest.key] || []) : [];
 
@@ -177,18 +419,69 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
         </div>
 
         {/* 지구본 + 상세 패널 */}
-        <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:gap-12">
-          {/* 3D 지구본 */}
-          <div className="relative w-full max-w-[380px] lg:max-w-[420px] flex-shrink-0 aspect-square">
-            <canvas
-              ref={canvasRef}
-              className="h-full w-full cursor-grab"
-              style={{ contain: "layout paint size", width: "100%", height: "100%" }}
-            />
+        <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-center lg:gap-10">
+          {/* 3D 지구본 — 컴팩트 사이즈 */}
+          <div className="flex flex-col items-center gap-4 flex-shrink-0">
+            <div className="relative w-[340px] h-[340px] md:w-[400px] md:h-[400px]">
+              <canvas
+                ref={canvasRef}
+                className="h-full w-full cursor-grab"
+                style={{ contain: "layout paint size", width: "100%", height: "100%" }}
+              />
+              {/* 국기 이모지 오버레이 */}
+              <div
+                ref={overlayRef}
+                className="absolute inset-0 pointer-events-none"
+                style={{ contain: "layout size" }}
+              >
+                {DESTINATIONS.map((dest, i) => (
+                  <button
+                    key={dest.key}
+                    type="button"
+                    onClick={() => handleDestinationClick(i)}
+                    className={`absolute top-0 left-0 pointer-events-auto cursor-pointer transition-transform duration-150 hover:scale-125 ${
+                      selectedIndex === i ? "scale-125" : ""
+                    }`}
+                    style={{ opacity: 0, willChange: "transform, opacity" }}
+                    title={dest.name}
+                  >
+                    <span className="text-xl md:text-2xl drop-shadow-md">{dest.emoji}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 테마 선택 (로컬 확인용) */}
+            {process.env.NODE_ENV === "development" && (
+              <div className="flex flex-wrap justify-center gap-1.5 max-w-[360px]">
+                {(Object.keys(GLOBE_THEMES) as GlobeThemeKey[]).map((key) => {
+                  const t = GLOBE_THEMES[key];
+                  const bg = `rgb(${Math.round(t.baseColor[0] * 255)}, ${Math.round(t.baseColor[1] * 255)}, ${Math.round(t.baseColor[2] * 255)})`;
+                  const marker = `rgb(${Math.round(t.markerColor[0] * 255)}, ${Math.round(t.markerColor[1] * 255)}, ${Math.round(t.markerColor[2] * 255)})`;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setThemeKey(key)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                        themeKey === key
+                          ? "border-[color:var(--fg)] shadow-md scale-105"
+                          : "border-[color:var(--border)] hover:border-[color:var(--fg)]/50"
+                      }`}
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full border border-black/10"
+                        style={{ background: `linear-gradient(135deg, ${bg}, ${marker})` }}
+                      />
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* 우측: 상품 캐러셀 또는 안내 */}
-          <div className="w-full lg:flex-1">
+          {/* 우측: 수평 캐러셀 또는 안내 */}
+          <div className="w-full lg:flex-1 min-w-0">
             {selectedDest && selectedProducts.length > 0 ? (
               <div>
                 <div className="flex items-center justify-between mb-5">
@@ -209,15 +502,18 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
                   </Link>
                 </div>
 
-                {/* 상품 캐러셀 */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {selectedProducts.slice(0, 4).map((product) => (
+                {/* 수평 캐러셀 */}
+                <div
+                  ref={carouselRef}
+                  className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide"
+                >
+                  {selectedProducts.map((product) => (
                     <Link
                       key={product.slug}
                       href={`/tours/${product.slug}`}
-                      className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+                      className="group flex-shrink-0 w-[240px] sm:w-[260px] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 snap-start"
                     >
-                      <div className="aspect-[16/10] overflow-hidden">
+                      <div className="aspect-[4/3] overflow-hidden">
                         {product.imageUrl ? (
                           <img
                             src={product.imageUrl}
@@ -264,7 +560,7 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
                 <div className="text-5xl mb-4">🌏</div>
                 <p className="text-lg font-semibold text-[color:var(--fg)]">국가를 선택해 주세요</p>
                 <p className="mt-2 text-sm text-[color:var(--muted)]">
-                  지구본을 돌리거나 상단 국가 태그를 클릭하면<br />
+                  지구본의 마커를 클릭하거나 상단 국가 태그를 선택하면<br />
                   해당 국가의 골프투어 상품을 확인할 수 있습니다.
                 </p>
               </div>
