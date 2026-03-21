@@ -1,7 +1,8 @@
 "use client";
 
-import useEmblaCarousel from "embla-carousel-react";
+import { useState } from "react";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface FeaturedItem {
   id: string;
@@ -16,22 +17,23 @@ interface FeaturedTourCarouselProps {
   items: FeaturedItem[];
 }
 
-/** 추천 골프투어 4-카드 수평 캐러셀 */
+/** 추천 골프투어 2행 3열 캐러셀 */
 export function FeaturedTourCarousel({ items }: FeaturedTourCarouselProps) {
-  const [emblaRef] = useEmblaCarousel({
-    align: "start",
-    containScroll: "trimSnaps",
-    dragFree: true,
-  });
+  const perPage = 6; // 2행 x 3열
+  const totalPages = Math.ceil(items.length / perPage);
+  const [page, setPage] = useState(0);
+
+  const currentItems = items.slice(page * perPage, (page + 1) * perPage);
 
   return (
-    <div className="overflow-hidden" ref={emblaRef}>
-      <div className="flex gap-4">
-        {items.map((item) => (
+    <div>
+      {/* 2행 3열 그리드 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {currentItems.map((item) => (
           <Link
             key={item.id}
             href={item.slug ? `/tours/${item.slug}` : "/tours"}
-            className="group relative flex-shrink-0 w-[260px] sm:w-[280px] md:w-[calc(25%-12px)] min-w-[260px] aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)] block"
+            className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)] block"
           >
             <img
               src={item.imageUrl}
@@ -61,6 +63,43 @@ export function FeaturedTourCarousel({ items }: FeaturedTourCarouselProps) {
           </Link>
         ))}
       </div>
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--border)] text-[color:var(--muted)] hover:bg-[color:var(--surface)] transition disabled:opacity-30"
+            aria-label="이전"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div className="flex gap-1.5">
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setPage(i)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  i === page ? "bg-[color:var(--fg)] w-5" : "bg-[color:var(--border)]"
+                }`}
+                aria-label={`${i + 1}페이지`}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page === totalPages - 1}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--border)] text-[color:var(--muted)] hover:bg-[color:var(--surface)] transition disabled:opacity-30"
+            aria-label="다음"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -56,8 +56,8 @@ export async function HomePage() {
     }),
   ]);
 
-  // 상위 4개 추천 상품 (캐러셀용)
-  const featured = rankingItems.slice(0, 4);
+  // 추천 상품 전체 (2행 3열 캐러셀)
+  const featured = rankingItems;
 
   // 국가별 상품 그룹핑 (지구본용)
   const DEST_MAP: Record<string, string> = {
