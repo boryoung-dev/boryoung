@@ -323,8 +323,10 @@ async function fetchThumbnail(keyword: string, providerType?: string): Promise<s
             if (imageUrl.startsWith("data:image")) {
               const uploadedUrl = await uploadBase64ToSupabase(imageUrl);
               if (uploadedUrl) return uploadedUrl;
+              // Supabase 업로드 실패 시 base64 반환하지 않고 다음 폴백으로 진행
+            } else {
+              return imageUrl;
             }
-            return imageUrl;
           }
         } else {
           console.error("OpenRouter Nano Banana 오류:", await res.text().catch(() => ""));
@@ -355,7 +357,10 @@ async function fetchThumbnail(keyword: string, providerType?: string): Promise<s
           const data = await res.json();
           const imageData = data.predictions?.[0]?.bytesBase64Encoded;
           if (imageData) {
-            return `data:image/png;base64,${imageData}`;
+            const base64Url = `data:image/png;base64,${imageData}`;
+            const uploadedUrl = await uploadBase64ToSupabase(base64Url);
+            if (uploadedUrl) return uploadedUrl;
+            // Supabase 업로드 실패 시 다음 폴백으로 진행
           }
         }
       } catch {
