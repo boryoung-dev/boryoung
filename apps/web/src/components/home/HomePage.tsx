@@ -6,17 +6,31 @@ import Link from "next/link";
 
 import { HeroSection } from "./sections/HeroSection";
 import { GlobeSection } from "./GlobeSection";
+import { PopularDestinationsCarousel } from "./PopularDestinationsCarousel";
+import { FeaturedTourCarousel } from "./FeaturedTourCarousel";
 import { SiteHeader } from "../common/SiteHeader";
 import { KakaoFloating } from "../common/KakaoFloating";
 import { SiteFooter } from "../common/SiteFooter";
 import { AnimateOnScroll } from "../common/AnimateOnScroll";
 
-// 국가 목적지 데이터
-const DESTINATIONS = [
-  { name: "일본", desc: "규슈·오키나와·홋카이도 명문 코스", href: "/tours?country=japan", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80" },
-  { name: "베트남", desc: "다낭·호치민 리조트 골프", href: "/tours?country=vietnam", image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80" },
-  { name: "태국", desc: "방콕·치앙마이·파타야 무제한 라운딩", href: "/tours?country=thailand", image: "https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=800&q=80" },
-  { name: "대만", desc: "타이베이 근교 명문 골프장", href: "/tours?country=taiwan", image: "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=800&q=80" },
+// 패키지 인기 여행지 (해외)
+const PACKAGE_DESTINATIONS = [
+  { name: "나트랑", image: "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=800&q=80" },
+  { name: "다낭", image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80" },
+  { name: "장가계", image: "https://images.unsplash.com/photo-1513415277900-a62401e19be4?w=800&q=80" },
+  { name: "오사카", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80" },
+  { name: "삿포로", image: "https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=800&q=80" },
+  { name: "파리", image: "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=800&q=80" },
+];
+
+// 국내 인기 여행지
+const DOMESTIC_DESTINATIONS = [
+  { name: "제주도", image: "https://images.unsplash.com/photo-1579169825453-1f9c4f9e8a7e?w=800&q=80" },
+  { name: "서울", image: "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=800&q=80" },
+  { name: "부산", image: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&q=80" },
+  { name: "강릉", image: "https://images.unsplash.com/photo-1596402184320-417e7178b2cd?w=800&q=80" },
+  { name: "인천", image: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800&q=80" },
+  { name: "경주", image: "https://images.unsplash.com/photo-1553881781-4c55174dc758?w=800&q=80" },
 ];
 
 export async function HomePage() {
@@ -42,8 +56,8 @@ export async function HomePage() {
     }),
   ]);
 
-  // 상위 5개 추천 상품
-  const featured = rankingItems.slice(0, 5);
+  // 상위 4개 추천 상품 (캐러셀용)
+  const featured = rankingItems.slice(0, 4);
 
   // 국가별 상품 그룹핑 (지구본용)
   const DEST_MAP: Record<string, string> = {
@@ -70,11 +84,10 @@ export async function HomePage() {
       <SiteHeader />
 
       <main>
-        {/* 1. 풀스크린 히어로 */}
-        {heroSection && (
+        {/* 히어로 — 추후 활성화 */}
+        {/* {heroSection && (
           <div className="relative">
             <HeroSection {...heroSection} banners={banners} />
-            {/* 국가 바로가기 (히어로 하단) */}
             <div className="flex justify-center flex-wrap gap-2 md:gap-3 py-5">
               {[
                 { name: "일본", emoji: "🇯🇵" },
@@ -95,9 +108,30 @@ export async function HomePage() {
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
-        {/* 2. 추천 골프투어 — 비대칭 그리드 */}
+        {/* 1. 3D 지구본 — 국가별 투어 탐색 */}
+        <GlobeSection productsByCountry={productsByCountry} />
+
+        {/* 3. 패키지 인기 여행지 (해외) */}
+        <AnimateOnScroll animation="fadeUp">
+          <PopularDestinationsCarousel
+            title="패키지 인기 여행지"
+            destinations={PACKAGE_DESTINATIONS}
+            href="/tours"
+          />
+        </AnimateOnScroll>
+
+        {/* 4. 국내 인기 여행지 */}
+        <AnimateOnScroll animation="fadeUp">
+          <PopularDestinationsCarousel
+            title="국내 인기 여행지"
+            destinations={DOMESTIC_DESTINATIONS}
+            href="/tours"
+          />
+        </AnimateOnScroll>
+
+        {/* 5. 추천 골프투어 — 4카드 수평 캐러셀 */}
         {featured.length > 0 && (
           <section className="py-16 md:py-20">
             <div className="max-w-[1200px] mx-auto px-4 md:px-6">
@@ -110,73 +144,14 @@ export async function HomePage() {
                 </div>
               </AnimateOnScroll>
 
-              {/* 비대칭 그리드: 큰 카드 2개 + 작은 카드 3개 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {featured.slice(0, 2).map((item, i) => (
-                  <AnimateOnScroll key={item.id} animation="scaleIn" delay={i * 150}>
-                    <Link href={item.slug ? `/tours/${item.slug}` : "/tours"} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)] block">
-                      <img src={item.imageUrl} alt={item.title} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                        {item.badges && item.badges.length > 0 && (
-                          <div className="flex gap-2 mb-3">
-                            {item.badges.map((b) => (
-                              <span key={b} className="text-[10px] font-medium px-2.5 py-1 bg-white/15 backdrop-blur-sm rounded-full text-white">{b}</span>
-                            ))}
-                          </div>
-                        )}
-                        <h3 className="text-xl md:text-2xl font-semibold text-white tracking-tight mb-1">{item.title}</h3>
-                        <p className="text-white/60 text-sm">{item.price}</p>
-                      </div>
-                    </Link>
-                  </AnimateOnScroll>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {featured.slice(2, 5).map((item, i) => (
-                  <AnimateOnScroll key={item.id} animation="fadeUp" delay={i * 100}>
-                    <Link href={item.slug ? `/tours/${item.slug}` : "/tours"} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)] block">
-                      <img src={item.imageUrl} alt={item.title} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-5">
-                        <h3 className="text-base font-semibold text-white tracking-tight mb-0.5 line-clamp-1">{item.title}</h3>
-                        <p className="text-white/60 text-[13px]">{item.price}</p>
-                      </div>
-                    </Link>
-                  </AnimateOnScroll>
-                ))}
-              </div>
+              <AnimateOnScroll animation="fadeUp" delay={100}>
+                <FeaturedTourCarousel items={featured} />
+              </AnimateOnScroll>
             </div>
           </section>
         )}
 
-        {/* 3. 3D 지구본 — 국가별 투어 탐색 */}
-        <GlobeSection productsByCountry={productsByCountry} />
-
-        {/* 4. 국가별 여행 — 2x2 대형 그리드 */}
-        <section className="py-16 md:py-20 bg-[color:var(--surface)]">
-          <div className="max-w-[1200px] mx-auto px-4 md:px-6">
-            <AnimateOnScroll animation="fadeUp">
-              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-8">여행지</h2>
-            </AnimateOnScroll>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {DESTINATIONS.map((dest, i) => (
-                <AnimateOnScroll key={dest.name} animation="fadeUp" delay={i * 100}>
-                  <Link href={dest.href} className="group relative aspect-[16/9] rounded-2xl overflow-hidden block">
-                    <img src={dest.image} alt={dest.name} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors" />
-                    <div className="absolute bottom-0 left-0 p-6 md:p-8">
-                      <h3 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-1">{dest.name}</h3>
-                      <p className="text-white/70 text-sm">{dest.desc}</p>
-                    </div>
-                  </Link>
-                </AnimateOnScroll>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 4. 신뢰 + CTA */}
+        {/* 6. 신뢰 + CTA */}
         <section className="py-20 md:py-28">
           <div className="max-w-3xl mx-auto px-6 text-center">
             <AnimateOnScroll animation="fadeUp">

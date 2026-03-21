@@ -1,0 +1,71 @@
+"use client";
+
+import useEmblaCarousel from "embla-carousel-react";
+import Link from "next/link";
+
+interface Destination {
+  name: string;
+  image: string;
+}
+
+interface PopularDestinationsCarouselProps {
+  title: string;
+  destinations: Destination[];
+  href: string;
+}
+
+/** 인기 여행지 수평 캐러셀 컴포넌트 */
+export function PopularDestinationsCarousel({
+  title,
+  destinations,
+  href,
+}: PopularDestinationsCarouselProps) {
+  const [emblaRef] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    dragFree: true,
+  });
+
+  return (
+    <section className="py-12 md:py-16">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+        <div className="flex items-end justify-between mb-6">
+          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">
+            {title}
+          </h2>
+          <Link
+            href={href}
+            className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
+          >
+            전체 보기 →
+          </Link>
+        </div>
+
+        {/* 캐러셀 영역 */}
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex gap-4">
+            {destinations.map((dest) => (
+              <Link
+                key={dest.name}
+                href={href}
+                className="group flex-shrink-0 w-[140px] sm:w-[160px] md:w-[176px]"
+              >
+                <div className="aspect-square rounded-2xl overflow-hidden bg-[color:var(--surface)] mb-2">
+                  <img
+                    src={dest.image}
+                    alt={dest.name}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
+                  />
+                </div>
+                <p className="text-sm font-medium text-center text-[color:var(--fg)]">
+                  {dest.name}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
