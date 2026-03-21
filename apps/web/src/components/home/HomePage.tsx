@@ -8,6 +8,7 @@ import { HeroSection } from "./sections/HeroSection";
 import { GlobeSection } from "./GlobeSection";
 import { PopularDestinationsCarousel } from "./PopularDestinationsCarousel";
 import { FeaturedTourCarousel } from "./FeaturedTourCarousel";
+import { ProductShowcase } from "./ProductShowcase";
 import { SiteHeader } from "../common/SiteHeader";
 import { KakaoFloating } from "../common/KakaoFloating";
 import { SiteFooter } from "../common/SiteFooter";
@@ -58,6 +59,25 @@ export async function HomePage() {
 
   // 추천 상품 전체 (2행 3열 캐러셀)
   const featured = rankingItems;
+
+  // ProductShowcase용 데이터 변환
+  const showcaseProducts = allProducts.map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    imageUrl: p.images?.[0]?.url || "",
+    destination: p.destination || "",
+    duration: p.durationText || (p.nights && p.days ? `${p.nights}박 ${p.days}일` : ""),
+    basePrice: p.basePrice ?? 0,
+    originalPrice: p.originalPrice ?? undefined,
+    rating: 4.5 + Math.random() * 0.4, // 임시 평점
+    reviewCount: Math.floor(50 + Math.random() * 200), // 임시 리뷰 수
+    badge: p.isFeatured ? "특가" : undefined,
+  }));
+
+  // 특가 상품 (할인가 있는 상품)
+  const dealProducts = showcaseProducts.filter((p) => p.originalPrice && p.originalPrice > p.basePrice);
+  // 신규 상품 (최근 등록)
+  const newProducts = showcaseProducts.slice().reverse().slice(0, 8);
 
   // 국가별 상품 그룹핑 (지구본용)
   const DEST_MAP: Record<string, string> = {
@@ -151,7 +171,26 @@ export async function HomePage() {
           </section>
         )}
 
-        {/* 6. 신뢰 + CTA */}
+        {/* 6. 이번 주 특가 골프투어 */}
+        {dealProducts.length > 0 && (
+          <ProductShowcase
+            title="이번 주 특가 골프투어"
+            products={dealProducts}
+            tabs={["전체", "일본", "태국", "베트남", "대만", "제주"]}
+            showMoreHref="/tours"
+          />
+        )}
+
+        {/* 7. 신규 등록 골프투어 */}
+        {newProducts.length > 0 && (
+          <ProductShowcase
+            title="신규 등록 골프투어"
+            products={newProducts}
+            showMoreHref="/tours"
+          />
+        )}
+
+        {/* 8. 신뢰 + CTA */}
         <section className="py-20 md:py-28">
           <div className="max-w-3xl mx-auto px-6 text-center">
             <AnimateOnScroll animation="fadeUp">
