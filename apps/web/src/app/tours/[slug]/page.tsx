@@ -11,6 +11,18 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+// 빌드 시 모든 상품 페이지를 미리 생성
+export async function generateStaticParams() {
+  const { prisma } = await import("@/lib/prisma");
+  const products = await prisma.tourProduct.findMany({
+    where: { isActive: true },
+    select: { slug: true },
+  });
+  return products.map((p) => ({ slug: p.slug }));
+}
+
+export const revalidate = 60;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getTourProduct(slug);

@@ -13,6 +13,15 @@ import type { BlogSection } from "@/components/magazine/BlogPostTemplate";
 // 60초마다 재검증 (ISR) — 새 글 발행 시 최대 60초 내 반영
 export const revalidate = 60;
 
+// 빌드 시 모든 매거진 글을 미리 생성
+export async function generateStaticParams() {
+  const posts = await prisma.blogPost.findMany({
+    where: { isPublished: true },
+    select: { slug: true },
+  });
+  return posts.map((p) => ({ slug: p.slug }));
+}
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
