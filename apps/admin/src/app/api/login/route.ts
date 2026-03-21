@@ -67,11 +67,13 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Login error:', error);
-    
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       {
         success: false,
         error: '로그인 중 오류가 발생했습니다',
+        detail: errorMessage,
       },
       { status: 500 }
     );
