@@ -28,8 +28,9 @@ export default function AdminLoginPage() {
       const result = await response.json();
       
       if (result.success) {
-        // 로그인 성공 - 토큰 저장
+        // 로그인 성공 - 토큰 + 관리자 정보 저장
         localStorage.setItem('adminToken', result.token);
+        localStorage.setItem('adminInfo', JSON.stringify(result.admin));
         router.push('/dashboard');
       } else {
         setError(result.error || '로그인에 실패했습니다');
