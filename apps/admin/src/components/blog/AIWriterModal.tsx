@@ -422,7 +422,45 @@ export default function AIWriterModal({
     toast("이미지가 본문에 삽입되었습니다", "success");
   };
 
-  // 에디터로 보내기
+  // 바로 발행
+  const [publishing, setPublishing] = useState(false);
+  const handlePublishNow = async () => {
+    if (!result || publishing) return;
+    setPublishing(true);
+    try {
+      const res = await fetch("/api/blog-posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        } as any,
+        body: JSON.stringify({
+          title: editableTitle,
+          excerpt: result.excerpt,
+          content: editableContent,
+          contentHtml: editableContent,
+          category: result.category || null,
+          tags: result.tags || [],
+          thumbnail: result.thumbnail || null,
+          isPublished: true,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast("글이 발행되었습니다!", "success");
+        handleClose();
+        window.location.reload();
+      } else {
+        toast(data.error || "발행에 실패했습니다", "error");
+      }
+    } catch {
+      toast("발행 중 오류가 발생했습니다", "error");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  // 에디터로 보내기 (수정 후 발행)
   const handleSendToEditor = () => {
     if (!result) return;
     onSendToEditor({
@@ -435,28 +473,6 @@ export default function AIWriterModal({
       sections: result.sections,
     });
     handleClose();
-  };
-
-  // HTML 복사 (네이버 블로그 호환 형식)
-  const handleCopyHtml = async () => {
-    try {
-      const naverHtml = prepareForNaverBlog(editableContent);
-      await navigator.clipboard.writeText(naverHtml);
-      toast("네이버 블로그 호환 HTML이 복사되었습니다", "success");
-    } catch {
-      toast("복사에 실패했습니다", "error");
-    }
-  };
-
-  // 마크다운 복사
-  const handleCopyMarkdown = async () => {
-    try {
-      const md = await convertHtmlToMarkdown(editableContent);
-      await navigator.clipboard.writeText(md);
-      toast("마크다운이 복사되었습니다", "success");
-    } catch {
-      toast("복사에 실패했습니다", "error");
-    }
   };
 
   // 다시 생성 (1단계로 돌아가기)
@@ -884,25 +900,28 @@ export default function AIWriterModal({
               {/* 액션 버튼들 */}
               <div className="flex flex-wrap gap-3 pt-2">
                 <button
+                  onClick={handlePublishNow}
+                  disabled={publishing}
+                  className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {publishing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      발행 중...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      바로 발행
+                    </>
+                  )}
+                </button>
+                <button
                   onClick={handleSendToEditor}
-                  className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <Send className="w-4 h-4" />
-                  에디터로 보내기
-                </button>
-                <button
-                  onClick={handleCopyHtml}
-                  className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <Copy className="w-4 h-4" />
-                  HTML 복사
-                </button>
-                <button
-                  onClick={handleCopyMarkdown}
-                  className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <Check className="w-4 h-4" />
-                  마크다운 복사
+                  수정 후 발행
                 </button>
                 <button
                   onClick={handleRegenerate}
