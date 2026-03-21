@@ -61,6 +61,7 @@ export default function BlogPostsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (Object.keys(authHeaders).length > 0 && !isLoading) {
@@ -139,12 +140,15 @@ export default function BlogPostsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (submitting) return;
+
     const plainContent = formData.content.replace(/<[^>]*>/g, "").trim();
     if (!formData.title.trim() || !plainContent) {
       toast("제목과 본문은 필수입니다", "error");
       return;
     }
 
+    setSubmitting(true);
     try {
       const url = editingPost ? `/api/blog-posts/${editingPost.id}` : "/api/blog-posts";
       const method = editingPost ? "PUT" : "POST";
@@ -166,6 +170,7 @@ export default function BlogPostsPage() {
 
       const data = await res.json();
       if (data.success) {
+        toast(editingPost ? "글이 수정되었습니다" : "글이 작성되었습니다", "success");
         setModalOpen(false);
         fetchPosts();
       } else {
@@ -174,6 +179,8 @@ export default function BlogPostsPage() {
     } catch (error) {
       console.error("블로그 글 저장 실패:", error);
       toast("블로그 글 저장 중 오류가 발생했습니다", "error");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -397,11 +404,12 @@ export default function BlogPostsPage() {
             <ModalCancelButton onClick={() => setModalOpen(false)} />
             <ModalConfirmButton
               type="submit"
+              disabled={submitting}
               onClick={() => {
                 document.getElementById("blog-form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
               }}
             >
-              {editingPost ? "수정" : "작성"}
+              {submitting ? "저장 중..." : editingPost ? "수정" : "작성"}
             </ModalConfirmButton>
           </>
         }

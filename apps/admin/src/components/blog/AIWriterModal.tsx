@@ -230,6 +230,8 @@ export default function AIWriterModal({
 
   // 생성 결과 상태
   const [generating, setGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressText, setProgressText] = useState("");
   const [result, setResult] = useState<GeneratedContent | null>(null);
   const [editableTitle, setEditableTitle] = useState("");
   const [editableContent, setEditableContent] = useState("");
@@ -299,6 +301,23 @@ export default function AIWriterModal({
   // AI 글 생성 (주제/키워드 비어있으면 자동 생성)
   const handleGenerate = async () => {
     setGenerating(true);
+    setProgress(0);
+    setProgressText("주제 분석 중...");
+
+    // 진행률 시뮬레이션
+    const progressSteps = [
+      { at: 500, value: 10, text: "기존 글 중복 확인 중..." },
+      { at: 1500, value: 25, text: "AI 글 작성 시작..." },
+      { at: 3000, value: 40, text: "본문 생성 중..." },
+      { at: 6000, value: 55, text: "SEO 최적화 중..." },
+      { at: 9000, value: 65, text: "썸네일 이미지 생성 중..." },
+      { at: 13000, value: 75, text: "이미지 업로드 중..." },
+      { at: 17000, value: 85, text: "최종 검수 중..." },
+    ];
+    const timers = progressSteps.map(({ at, value, text }) =>
+      setTimeout(() => { setProgress(value); setProgressText(text); }, at)
+    );
+
     try {
       // 주제/키워드가 비어있으면 autoTopic 모드로 요청
       const autoMode = !topic.trim() && !keywords.trim();
@@ -341,6 +360,8 @@ export default function AIWriterModal({
         sections: data.sections || undefined,
       };
 
+      setProgress(100);
+      setProgressText("완료!");
       setResult(generated);
       setEditableTitle(generated.title);
       setEditableContent(generated.content);
@@ -350,7 +371,10 @@ export default function AIWriterModal({
       console.error("AI 글 생성 실패:", error);
       toast("AI 글 생성 중 오류가 발생했습니다", "error");
     } finally {
+      timers.forEach(clearTimeout);
       setGenerating(false);
+      setProgress(0);
+      setProgressText("");
     }
   };
 
@@ -637,23 +661,34 @@ export default function AIWriterModal({
               )}
 
               {/* 생성 버튼 */}
-              <button
-                onClick={handleGenerate}
-                disabled={generating}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
-                {generating ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    AI가 글을 작성하고 있습니다...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-5 h-5" />
-                    {topic.trim() || keywords.trim() ? "AI로 글 생성" : "AI가 주제 선정 + 글 생성"}
-                  </>
-                )}
-              </button>
+              {generating ? (
+                <div className="w-full space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                      {progressText}
+                    </span>
+                    <span className="font-semibold text-blue-600">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full transition-all duration-700 ease-out"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-center text-gray-400">
+                    AI가 글을 작성하고 있습니다. 약 20~30초 소요됩니다.
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={handleGenerate}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  {topic.trim() || keywords.trim() ? "AI로 글 생성" : "AI가 주제 선정 + 글 생성"}
+                </button>
+              )}
               {!topic.trim() && !keywords.trim() && (
                 <p className="text-xs text-center text-gray-400 -mt-2">
                   주제/키워드를 비워두면 AI가 자동으로 골프 여행 주제를 선정합니다
