@@ -40,18 +40,9 @@ function HeroSearchForm() {
 
 export const revalidate = 60;
 
-export default async function ToursPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string; tag?: string; search?: string }>;
-}) {
-  const resolvedParams = await searchParams;
+export default async function ToursPage() {
   const [products, categories, tags] = await Promise.all([
-    getTourProducts({
-      categorySlug: resolvedParams.category,
-      tagSlug: resolvedParams.tag,
-      search: resolvedParams.search,
-    }),
+    getTourProducts({}),
     getCategories(),
     getTags(),
   ]);
@@ -77,11 +68,7 @@ export default async function ToursPage({
             initialProducts={products}
             categories={categories}
             tags={tags}
-            initialFilters={{
-              category: resolvedParams.category,
-              tag: resolvedParams.tag,
-              search: resolvedParams.search,
-            }}
+            initialFilters={{}}
           />
         </Suspense>
       </main>
