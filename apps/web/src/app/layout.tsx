@@ -119,7 +119,7 @@ const jsonLd = {
     closes: "18:00",
   },
   sameAs: [
-    "https://pf.kakao.com/_xgxoBxj",
+    "https://pf.kakao.com/_XaITs",
     "https://blog.naver.com/boryoung2",
   ],
   priceRange: "$$",

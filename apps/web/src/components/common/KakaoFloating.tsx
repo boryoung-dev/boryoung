@@ -52,7 +52,7 @@ export function KakaoFloating() {
 
         {/* 카카오톡 상담 */}
         <a
-          href="https://pf.kakao.com/_xgxoBxj"
+          href="https://pf.kakao.com/_XaITs"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 pl-4 pr-3 py-2.5 bg-[#FAE100] rounded-full shadow-lg border border-[#E5CC00] text-sm font-bold text-[#371D1E] hover:bg-[#F5D800] transition-colors"

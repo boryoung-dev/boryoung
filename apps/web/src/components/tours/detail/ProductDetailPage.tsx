@@ -115,7 +115,7 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
             )}
           </div>
           <a
-            href="https://pf.kakao.com/_xgxoBxj"
+            href="https://pf.kakao.com/_XaITs"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-1.5 px-5 py-3 bg-[#FAE100] text-[#3C1E1E] rounded-[28px] font-semibold text-sm hover:opacity-90 transition"

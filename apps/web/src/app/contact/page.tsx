@@ -169,7 +169,7 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <a
-                  href="https://pf.kakao.com/_xgxoBxj"
+                  href="https://pf.kakao.com/_XaITs"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full text-center bg-[#371D1E] text-[#FEE500] font-semibold py-3 rounded-xl hover:bg-[#271310] transition-colors text-sm"

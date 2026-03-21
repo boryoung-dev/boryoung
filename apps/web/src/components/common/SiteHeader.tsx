@@ -118,7 +118,7 @@ export function SiteHeader() {
           <div className="flex items-center gap-1.5">
             {/* 카카오톡 */}
             <a
-              href="https://pf.kakao.com/_xgxoBxj"
+              href="https://pf.kakao.com/_XaITs"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden md:flex h-8 w-8 items-center justify-center rounded-full text-[color:var(--muted)] opacity-50 hover:opacity-100 hover:text-yellow-600 hover:bg-yellow-50 transition-all duration-300"
@@ -234,7 +234,7 @@ export function SiteHeader() {
             </a>
             <div className="flex gap-2">
               <a
-                href="https://pf.kakao.com/_xgxoBxj"
+                href="https://pf.kakao.com/_XaITs"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FEE500] text-[#371D1E] text-xs font-medium"

@@ -149,7 +149,7 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
             전화 상담하기
           </a>
           <a
-            href="https://pf.kakao.com/_xgxoBxj"
+            href="https://pf.kakao.com/_XaITs"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full h-12 bg-[#FEE500] text-[#371D1E] rounded-xl font-medium hover:opacity-90 transition"

@@ -115,7 +115,7 @@ export function SiteFooter() {
             <div className="flex items-center gap-4 mt-1">
               {/* 카카오톡 채널 */}
               <a
-                href="https://pf.kakao.com/_xgxoBxj"
+                href="https://pf.kakao.com/_XaITs"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="카카오톡 채널"

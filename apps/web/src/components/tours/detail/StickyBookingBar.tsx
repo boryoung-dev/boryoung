@@ -84,7 +84,7 @@ export function StickyBookingBar({ product }: StickyBookingBarProps) {
         </a>
 
         <a
-          href="https://pf.kakao.com/_xgxoBxj"
+          href="https://pf.kakao.com/_XaITs"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full h-12 mt-3 bg-[#FAE100] text-[#3C1E1E] rounded-xl font-semibold text-sm hover:opacity-90 transition"
