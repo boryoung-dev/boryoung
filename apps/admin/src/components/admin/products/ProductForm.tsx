@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { BasicInfoTab } from "./tabs/BasicInfoTab";
@@ -37,6 +37,11 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("basic");
   const [isSaving, setIsSaving] = useState(false);
+
+  // 신규 등록 시 이미지/일정/가격옵션 로컬 상태
+  const pendingImagesRef = useRef<any[]>([]);
+  const pendingItinerariesRef = useRef<any[]>([]);
+  const pendingPriceOptionsRef = useRef<any[]>([]);
 
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
@@ -76,6 +81,78 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
   const updateField = (field: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  // 신규 등록 후 관련 데이터 일괄 저장
+  const saveRelatedData = async (productId: string) => {
+    const headers = { "Content-Type": "application/json", ...authHeaders } as any;
+
+    // 이미지 저장
+    const images = pendingImagesRef.current;
+    if (images.length > 0) {
+      try {
+        await fetch(`/api/products/${productId}/images`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            images: images.map((img: any) => ({
+              url: img.url,
+              alt: img.alt || null,
+              type: img.type || "DETAIL",
+              isThumbnail: img.isThumbnail || false,
+            })),
+          }),
+        });
+      } catch {}
+    }
+
+    // 일정 저장
+    const itineraries = pendingItinerariesRef.current;
+    if (itineraries.length > 0) {
+      try {
+        await fetch(`/api/products/${productId}/itineraries`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            itineraries: itineraries.map((item: any) => ({
+              day: item.day,
+              title: item.title,
+              description: item.description,
+              meals: item.meals,
+              accommodation: item.accommodation,
+              golfCourse: item.golfCourse,
+              golfHoles: item.golfHoles,
+              transport: item.transport,
+              activities: item.activities?.filter((a: any) => a.time || a.activity) || [],
+            })),
+          }),
+        });
+      } catch {}
+    }
+
+    // 가격옵션 저장
+    const priceOptions = pendingPriceOptionsRef.current;
+    if (priceOptions.length > 0) {
+      try {
+        await fetch(`/api/products/${productId}/price-options`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            priceOptions: priceOptions.map((opt: any) => ({
+              name: opt.name,
+              description: opt.description,
+              price: opt.price ?? 0,
+              priceType: opt.priceType,
+              season: opt.season,
+              validFrom: opt.validFrom || null,
+              validTo: opt.validTo || null,
+              isDefault: opt.isDefault,
+              isActive: opt.isActive,
+            })),
+          }),
+        });
+      } catch {}
+    }
   };
 
   const handleSave = async () => {
@@ -119,11 +196,13 @@ export function ProductForm({ initialData }: ProductFormProps) {
       const data = await res.json();
 
       if (data.success) {
-        toast(initialData ? "상품이 수정되었습니다" : "상품이 등록되었습니다", "success");
+        // 신규 등록 시 이미지/일정/가격옵션 한번에 저장
         if (!initialData && data.product?.id) {
-          // 신규 등록 시 편집 페이지로 이동 (이미지/일정/가격 탭 사용 가능하도록)
+          await saveRelatedData(data.product.id);
+          toast("상품이 등록되었습니다", "success");
           router.push(`/products/${data.product.id}/edit`);
         } else {
+          toast("상품이 수정되었습니다", "success");
           router.push("/products");
         }
       } else {
@@ -135,6 +214,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
       setIsSaving(false);
     }
   };
+
+  const isNewMode = !initialData;
 
   return (
     <div>
@@ -166,13 +247,25 @@ export function ProductForm({ initialData }: ProductFormProps) {
           <ContentTab formData={formData} updateField={updateField} />
         )}
         {activeTab === "images" && (
-          <ImagesTab productId={initialData?.id} images={initialData?.images || []} />
+          <ImagesTab
+            productId={initialData?.id}
+            images={initialData?.images || []}
+            onPendingChange={isNewMode ? (imgs: any[]) => { pendingImagesRef.current = imgs; } : undefined}
+          />
         )}
         {activeTab === "itinerary" && (
-          <ItineraryTab productId={initialData?.id} itineraries={initialData?.itineraries || []} />
+          <ItineraryTab
+            productId={initialData?.id}
+            itineraries={initialData?.itineraries || []}
+            onPendingChange={isNewMode ? (items: any[]) => { pendingItinerariesRef.current = items; } : undefined}
+          />
         )}
         {activeTab === "pricing" && (
-          <PricingTab productId={initialData?.id} priceOptions={initialData?.priceOptions || []} />
+          <PricingTab
+            productId={initialData?.id}
+            priceOptions={initialData?.priceOptions || []}
+            onPendingChange={isNewMode ? (opts: any[]) => { pendingPriceOptionsRef.current = opts; } : undefined}
+          />
         )}
         {activeTab === "schedule" && (
           <ScheduleTab formData={formData} updateField={updateField} />

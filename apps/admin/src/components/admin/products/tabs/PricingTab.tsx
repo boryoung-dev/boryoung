@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Plus, Trash2, Save, Loader2 } from "lucide-react";
 import Select from "@/components/ui/Select";
@@ -22,9 +22,10 @@ interface PriceItem {
 interface Props {
   productId?: string;
   priceOptions: any[];
+  onPendingChange?: (options: any[]) => void;
 }
 
-export function PricingTab({ productId, priceOptions: initial }: Props) {
+export function PricingTab({ productId, priceOptions: initial, onPendingChange }: Props) {
   const { authHeaders } = useAdminAuth();
   const { toast } = useToast();
   const [options, setOptions] = useState<PriceItem[]>(
@@ -46,22 +47,18 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const isNewMode = !productId && !!onPendingChange;
+
+  useEffect(() => {
+    if (isNewMode) onPendingChange?.(options);
+  }, [options]);
+
   const markChanged = () => setHasChanges(true);
 
   const addOption = () => {
     setOptions((prev) => [
       ...prev,
-      {
-        name: "",
-        description: "",
-        price: null,
-        priceType: "PER_PERSON",
-        season: "",
-        validFrom: "",
-        validTo: "",
-        isDefault: false,
-        isActive: true,
-      },
+      { name: "", description: "", price: null, priceType: "PER_PERSON", season: "", validFrom: "", validTo: "", isDefault: false, isActive: true },
     ]);
     markChanged();
   };
@@ -127,17 +124,15 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
     }
   };
 
-  if (!productId) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        <p>가격 옵션을 관리하려면 먼저 상품을 저장해주세요.</p>
-        <p className="text-sm mt-1">기본 정보 탭에서 필수 항목을 입력 후 하단의 등록 버튼을 눌러주세요.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
+      {isNewMode && (
+        <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+          <span className="flex-shrink-0">!</span>
+          <p>가격 옵션을 추가하면 상품 등록 시 함께 저장됩니다.</p>
+        </div>
+      )}
+
       {options.map((opt, idx) => (
         <div key={idx} className="border rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
@@ -149,96 +144,39 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">옵션명</label>
-              <input
-                type="text"
-                value={opt.name}
-                onChange={(e) => updateOption(idx, "name", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                placeholder="1인실 추가"
-              />
+              <input type="text" value={opt.name} onChange={(e) => updateOption(idx, "name", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="1인실 추가" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">가격 (원)</label>
-              <input
-                type="number"
-                value={opt.price ?? ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  updateOption(idx, "price", val === "" ? null : parseInt(val));
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              />
+              <input type="number" value={opt.price ?? ""} onChange={(e) => { const val = e.target.value; updateOption(idx, "price", val === "" ? null : parseInt(val)); }} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">가격 유형</label>
-              <Select
-                value={opt.priceType}
-                onChange={(val) => updateOption(idx, "priceType", val)}
-                options={[
-                  { value: "PER_PERSON", label: "1인당" },
-                  { value: "PER_ROOM", label: "1실당" },
-                  { value: "ADDITIONAL", label: "추가" },
-                ]}
-                className="w-full"
-              />
+              <Select value={opt.priceType} onChange={(val) => updateOption(idx, "priceType", val)} options={[{ value: "PER_PERSON", label: "1인당" }, { value: "PER_ROOM", label: "1실당" }, { value: "ADDITIONAL", label: "추가" }]} className="w-full" />
             </div>
             <div className="md:col-span-2 lg:col-span-3">
               <label className="block text-xs font-medium text-gray-600 mb-1">옵션 설명</label>
-              <input
-                type="text"
-                value={opt.description}
-                onChange={(e) => updateOption(idx, "description", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                placeholder="옵션에 대한 상세 설명"
-              />
+              <input type="text" value={opt.description} onChange={(e) => updateOption(idx, "description", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="옵션에 대한 상세 설명" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">시즌</label>
-              <Select
-                value={opt.season}
-                onChange={(val) => updateOption(idx, "season", val)}
-                options={[
-                  { value: "", label: "전체 시즌" },
-                  { value: "PEAK", label: "성수기" },
-                  { value: "REGULAR", label: "일반" },
-                  { value: "OFF", label: "비수기" },
-                ]}
-                className="w-full"
-              />
+              <Select value={opt.season} onChange={(val) => updateOption(idx, "season", val)} options={[{ value: "", label: "전체 시즌" }, { value: "PEAK", label: "성수기" }, { value: "REGULAR", label: "일반" }, { value: "OFF", label: "비수기" }]} className="w-full" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">유효 시작일</label>
-              <input
-                type="date"
-                value={opt.validFrom}
-                onChange={(e) => updateOption(idx, "validFrom", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              />
+              <input type="date" value={opt.validFrom} onChange={(e) => updateOption(idx, "validFrom", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">유효 종료일</label>
-              <input
-                type="date"
-                value={opt.validTo}
-                onChange={(e) => updateOption(idx, "validTo", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              />
+              <input type="date" value={opt.validTo} onChange={(e) => updateOption(idx, "validTo", e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
             </div>
             <div className="flex items-end gap-4">
               <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={opt.isDefault}
-                  onChange={(e) => updateOption(idx, "isDefault", e.target.checked)}
-                />
+                <input type="checkbox" checked={opt.isDefault} onChange={(e) => updateOption(idx, "isDefault", e.target.checked)} />
                 기본옵션
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={opt.isActive}
-                  onChange={(e) => updateOption(idx, "isActive", e.target.checked)}
-                />
+                <input type="checkbox" checked={opt.isActive} onChange={(e) => updateOption(idx, "isActive", e.target.checked)} />
                 활성
               </label>
             </div>
@@ -246,26 +184,15 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
         </div>
       ))}
 
-      <button
-        onClick={addOption}
-        className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600"
-      >
+      <button onClick={addOption} className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600">
         <Plus className="w-4 h-4" /> 가격 옵션 추가
       </button>
 
-      {/* 저장 버튼 */}
-      {options.length > 0 && (
+      {/* 저장 버튼 (편집 모드에서만) */}
+      {!isNewMode && options.length > 0 && (
         <div className="flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={saving || !hasChanges}
-            className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {saving ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> 저장 중...</>
-            ) : (
-              <><Save className="w-4 h-4" /> 가격 옵션 저장</>
-            )}
+          <button onClick={handleSave} disabled={saving || !hasChanges} className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            {saving ? (<><Loader2 className="w-4 h-4 animate-spin" /> 저장 중...</>) : (<><Save className="w-4 h-4" /> 가격 옵션 저장</>)}
           </button>
         </div>
       )}

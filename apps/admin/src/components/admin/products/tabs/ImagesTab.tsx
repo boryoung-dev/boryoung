@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Upload, X, Loader2, Save, ChevronUp, ChevronDown } from "lucide-react";
 import Select from "@/components/ui/Select";
@@ -17,15 +17,22 @@ const IMAGE_TYPES = [
 interface Props {
   productId?: string;
   images: any[];
+  onPendingChange?: (images: any[]) => void;
 }
 
-export function ImagesTab({ productId, images: initialImages }: Props) {
+export function ImagesTab({ productId, images: initialImages, onPendingChange }: Props) {
   const { authHeaders } = useAdminAuth();
   const { toast } = useToast();
   const [images, setImages] = useState(initialImages);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
+  const isNewMode = !productId && !!onPendingChange;
+
+  useEffect(() => {
+    if (isNewMode) onPendingChange?.(images);
+  }, [images]);
 
   const markChanged = () => setHasChanges(true);
 
@@ -51,7 +58,7 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
           setImages((prev) => [
             ...prev,
             {
-              id: `temp-${Date.now()}`,
+              id: `temp-${Date.now()}-${Math.random()}`,
               url: data.url,
               alt: "",
               type: "DETAIL",
@@ -94,7 +101,9 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
     if (newIndex < 0 || newIndex >= images.length) return;
     setImages((prev) => {
       const arr = [...prev];
-      [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
+      const temp = arr[index];
+      arr[index] = arr[newIndex];
+      arr[newIndex] = temp;
       return arr;
     });
     markChanged();
@@ -131,17 +140,15 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
     }
   };
 
-  if (!productId) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        <p>이미지를 관리하려면 먼저 상품을 저장해주세요.</p>
-        <p className="text-sm mt-1">기본 정보 탭에서 필수 항목을 입력 후 하단의 등록 버튼을 눌러주세요.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
+      {isNewMode && (
+        <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+          <span className="flex-shrink-0">!</span>
+          <p>이미지를 추가하면 상품 등록 시 함께 저장됩니다.</p>
+        </div>
+      )}
+
       {/* 업로드 */}
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
         <input
@@ -181,7 +188,6 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
                   <X className="w-3 h-3" />
                 </button>
               </div>
-              {/* 순서 이동 버튼 */}
               <div className="absolute top-2 left-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={() => moveImage(idx, "up")}
@@ -198,7 +204,6 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
                   <ChevronDown className="w-3 h-3" />
                 </button>
               </div>
-              {/* 순서 번호 */}
               <span className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
                 {idx + 1}
               </span>
@@ -222,7 +227,6 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
                   {img.isThumbnail ? "대표" : "대표설정"}
                 </button>
               </div>
-              {/* ALT 텍스트 */}
               <input
                 type="text"
                 value={img.alt || ""}
@@ -235,8 +239,8 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
         ))}
       </div>
 
-      {/* 저장 버튼 */}
-      {images.length > 0 && (
+      {/* 저장 버튼 (편집 모드에서만) */}
+      {!isNewMode && images.length > 0 && (
         <div className="flex justify-end">
           <button
             onClick={handleSave}
