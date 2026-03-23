@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["@repo/ui", "@repo/database"],
   serverExternalPackages: ["@prisma/client", "prisma"],
+  outputFileTracingIncludes: {
+    "/api/**": [
+      "../../node_modules/.prisma/client/**",
+      "../../node_modules/@prisma/client/**",
+      "../../node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/**",
+      "../../packages/database/node_modules/.prisma/client/**",
+    ],
+  },
   images: {
     remotePatterns: [
       {
