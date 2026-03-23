@@ -74,8 +74,8 @@ export async function getTourProducts(filters?: {
 export async function getTourProduct(slug: string) {
   const decodedSlug = decodeURIComponent(slug);
 
-  const product = await prisma.tourProduct.findUnique({
-    where: { slug: decodedSlug },
+  const product = await prisma.tourProduct.findFirst({
+    where: { slug: decodedSlug, isActive: true },
     include: {
       category: {
         include: {

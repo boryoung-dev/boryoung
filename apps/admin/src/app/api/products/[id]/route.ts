@@ -82,7 +82,7 @@ export async function PUT(
         ...productData,
         publishedAt: productData.publishedAt
           ? new Date(productData.publishedAt)
-          : undefined,
+          : productData.publishedAt === null ? null : undefined,
       },
       include: {
         category: true,

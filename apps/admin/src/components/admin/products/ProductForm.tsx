@@ -10,6 +10,7 @@ import { ItineraryTab } from "./tabs/ItineraryTab";
 import { PricingTab } from "./tabs/PricingTab";
 import { TagsSeoTab } from "./tabs/TagsSeoTab";
 import { SettingsTab } from "./tabs/SettingsTab";
+import { ScheduleTab } from "./tabs/ScheduleTab";
 import { TemplateEditorTab } from "./tabs/TemplateEditorTab";
 import { Save, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
@@ -20,6 +21,7 @@ const tabs = [
   { id: "images", label: "이미지" },
   { id: "itinerary", label: "일정" },
   { id: "pricing", label: "가격 옵션" },
+  { id: "schedule", label: "출발일정" },
   { id: "tags", label: "태그/SEO" },
   { id: "settings", label: "설정" },
   { id: "template", label: "✏️ 페이지 편집" },
@@ -69,6 +71,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       : "",
     tagIds: initialData?.tagList?.map((t: any) => t.id) || [],
     contentHtml: initialData?.contentHtml || "",
+    scheduleDates: Array.isArray(initialData?.scheduleDates) ? initialData.scheduleDates : [],
   });
 
   const updateField = (field: string, value: any) => {
@@ -92,15 +95,15 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
       const body = {
         ...formData,
-        nights: formData.nights || undefined,
-        days: formData.days || undefined,
-        basePrice: formData.basePrice || undefined,
-        originalPrice: formData.originalPrice || undefined,
-        minPeople: formData.minPeople || undefined,
-        maxPeople: formData.maxPeople || undefined,
-        totalHoles: formData.totalHoles || undefined,
+        nights: formData.nights != null ? formData.nights : undefined,
+        days: formData.days != null ? formData.days : undefined,
+        basePrice: formData.basePrice != null ? formData.basePrice : undefined,
+        originalPrice: formData.originalPrice != null ? formData.originalPrice : undefined,
+        minPeople: formData.minPeople != null ? formData.minPeople : undefined,
+        maxPeople: formData.maxPeople != null ? formData.maxPeople : undefined,
+        totalHoles: formData.totalHoles != null ? formData.totalHoles : undefined,
         difficulty: formData.difficulty || undefined,
-        publishedAt: formData.publishedAt || undefined,
+        publishedAt: formData.publishedAt || null,
         excerpt: formData.excerpt || undefined,
         metaTitle: formData.metaTitle || undefined,
         metaDescription: formData.metaDescription || undefined,
@@ -117,7 +120,12 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
       if (data.success) {
         toast(initialData ? "상품이 수정되었습니다" : "상품이 등록되었습니다", "success");
-        router.push("/products");
+        if (!initialData && data.product?.id) {
+          // 신규 등록 시 편집 페이지로 이동 (이미지/일정/가격 탭 사용 가능하도록)
+          router.push(`/products/${data.product.id}/edit`);
+        } else {
+          router.push("/products");
+        }
       } else {
         toast(data.error || "저장 실패", "error");
       }
@@ -152,7 +160,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       {/* 탭 콘텐츠 */}
       <div className="bg-white rounded-b-lg shadow p-6">
         {activeTab === "basic" && (
-          <BasicInfoTab formData={formData} updateField={updateField} />
+          <BasicInfoTab formData={formData} updateField={updateField} isEditMode={!!initialData} />
         )}
         {activeTab === "content" && (
           <ContentTab formData={formData} updateField={updateField} />
@@ -165,6 +173,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
         )}
         {activeTab === "pricing" && (
           <PricingTab productId={initialData?.id} priceOptions={initialData?.priceOptions || []} />
+        )}
+        {activeTab === "schedule" && (
+          <ScheduleTab formData={formData} updateField={updateField} />
         )}
         {activeTab === "tags" && (
           <TagsSeoTab formData={formData} updateField={updateField} />

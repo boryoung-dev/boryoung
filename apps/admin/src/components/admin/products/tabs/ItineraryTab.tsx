@@ -2,8 +2,13 @@
 
 import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Trash2, GripVertical, Save, Loader2 } from "lucide-react";
+import { Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown, Clock } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+
+interface Activity {
+  time: string;
+  activity: string;
+}
 
 interface ItineraryItem {
   id?: string;
@@ -15,6 +20,7 @@ interface ItineraryItem {
   golfCourse: string;
   golfHoles: number | null;
   transport: string;
+  activities: Activity[];
 }
 
 interface Props {
@@ -31,6 +37,7 @@ const emptyDay = (day: number): ItineraryItem => ({
   golfCourse: "",
   golfHoles: null,
   transport: "",
+  activities: [],
 });
 
 export function ItineraryTab({ productId, itineraries: initial }: Props) {
@@ -48,11 +55,13 @@ export function ItineraryTab({ productId, itineraries: initial }: Props) {
           golfCourse: it.golfCourse || "",
           golfHoles: it.golfHoles,
           transport: it.transport || "",
+          activities: Array.isArray(it.activities) ? it.activities : [],
         }))
       : [emptyDay(1)]
   );
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [expandedActivities, setExpandedActivities] = useState<Set<number>>(new Set());
 
   const markChanged = () => setHasChanges(true);
 
@@ -75,6 +84,58 @@ export function ItineraryTab({ productId, itineraries: initial }: Props) {
     markChanged();
   };
 
+  const moveDay = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= items.length) return;
+    setItems((prev) => {
+      const arr = [...prev];
+      const temp = arr[index];
+      arr[index] = arr[newIndex];
+      arr[newIndex] = temp;
+      return arr.map((item, i) => ({ ...item, day: i + 1 }));
+    });
+    markChanged();
+  };
+
+  // Activities 관리
+  const toggleActivities = (idx: number) => {
+    setExpandedActivities((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
+  const addActivity = (dayIdx: number) => {
+    const updated = [...items];
+    updated[dayIdx] = {
+      ...updated[dayIdx],
+      activities: [...updated[dayIdx].activities, { time: "", activity: "" }],
+    };
+    setItems(updated);
+    markChanged();
+  };
+
+  const updateActivity = (dayIdx: number, actIdx: number, field: string, value: string) => {
+    const updated = [...items];
+    const activities = [...updated[dayIdx].activities];
+    activities[actIdx] = { ...activities[actIdx], [field]: value };
+    updated[dayIdx] = { ...updated[dayIdx], activities };
+    setItems(updated);
+    markChanged();
+  };
+
+  const removeActivity = (dayIdx: number, actIdx: number) => {
+    const updated = [...items];
+    updated[dayIdx] = {
+      ...updated[dayIdx],
+      activities: updated[dayIdx].activities.filter((_, i) => i !== actIdx),
+    };
+    setItems(updated);
+    markChanged();
+  };
+
   const handleSave = async () => {
     if (!productId) return;
     setSaving(true);
@@ -92,6 +153,7 @@ export function ItineraryTab({ productId, itineraries: initial }: Props) {
             golfCourse: item.golfCourse,
             golfHoles: item.golfHoles,
             transport: item.transport,
+            activities: item.activities.filter((a) => a.time || a.activity),
           })),
         }),
       });
@@ -108,6 +170,7 @@ export function ItineraryTab({ productId, itineraries: initial }: Props) {
             golfCourse: it.golfCourse || "",
             golfHoles: it.golfHoles,
             transport: it.transport || "",
+            activities: Array.isArray(it.activities) ? it.activities : [],
           }))
         );
         setHasChanges(false);
@@ -126,6 +189,7 @@ export function ItineraryTab({ productId, itineraries: initial }: Props) {
     return (
       <div className="text-center py-8 text-gray-500">
         <p>일정을 관리하려면 먼저 상품을 저장해주세요.</p>
+        <p className="text-sm mt-1">기본 정보 탭에서 필수 항목을 입력 후 하단의 등록 버튼을 눌러주세요.</p>
       </div>
     );
   }
@@ -136,7 +200,23 @@ export function ItineraryTab({ productId, itineraries: initial }: Props) {
         <div key={idx} className="border rounded-lg p-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <GripVertical className="w-4 h-4 text-gray-400" />
+              {/* 순서 이동 버튼 */}
+              <div className="flex flex-col">
+                <button
+                  onClick={() => moveDay(idx, "up")}
+                  disabled={idx === 0}
+                  className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                >
+                  <ChevronUp className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => moveDay(idx, "down")}
+                  disabled={idx === items.length - 1}
+                  className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                >
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
               <span className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">
                 {item.day}일차
               </span>
@@ -202,6 +282,20 @@ export function ItineraryTab({ productId, itineraries: initial }: Props) {
               />
             </div>
             <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">라운드 홀 수</label>
+              <input
+                type="number"
+                min="0"
+                value={item.golfHoles ?? ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  updateDay(idx, "golfHoles", val === "" ? null : parseInt(val));
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                placeholder="18"
+              />
+            </div>
+            <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">이동수단</label>
               <input
                 type="text"
@@ -211,6 +305,53 @@ export function ItineraryTab({ productId, itineraries: initial }: Props) {
                 placeholder="전용버스"
               />
             </div>
+          </div>
+
+          {/* 세부 활동 (activities) */}
+          <div className="mt-4 border-t pt-3">
+            <button
+              onClick={() => toggleActivities(idx)}
+              className="flex items-center gap-2 text-xs font-medium text-gray-600 hover:text-blue-600"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              세부 활동 ({item.activities.length}건)
+              <span className="text-gray-400">{expandedActivities.has(idx) ? "▲" : "▼"}</span>
+            </button>
+
+            {expandedActivities.has(idx) && (
+              <div className="mt-2 space-y-2">
+                {item.activities.map((act, actIdx) => (
+                  <div key={actIdx} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={act.time}
+                      onChange={(e) => updateActivity(idx, actIdx, "time", e.target.value)}
+                      className="w-24 px-2 py-1.5 border border-gray-300 rounded text-xs"
+                      placeholder="08:00"
+                    />
+                    <input
+                      type="text"
+                      value={act.activity}
+                      onChange={(e) => updateActivity(idx, actIdx, "activity", e.target.value)}
+                      className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs"
+                      placeholder="호텔 출발"
+                    />
+                    <button
+                      onClick={() => removeActivity(idx, actIdx)}
+                      className="p-1 text-gray-400 hover:text-red-600"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => addActivity(idx)}
+                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
+                >
+                  <Plus className="w-3 h-3" /> 활동 추가
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ))}

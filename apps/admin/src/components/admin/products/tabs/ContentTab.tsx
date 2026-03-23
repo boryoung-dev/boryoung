@@ -38,19 +38,17 @@ export function ContentTab({ formData, updateField }: Props) {
         />
       </div>
 
-      {/* 리치 에디터 안내 */}
-      <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-        <span className="flex-shrink-0">💡</span>
-        <p>리치 텍스트(이미지, 표, 서식 등)로 편집하려면 <strong>&quot;페이지 편집&quot;</strong> 탭을 이용해주세요.</p>
-      </div>
-
       {/* 본문 */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">상품 소개</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">상품 소개 (텍스트)</label>
+        <p className="text-xs text-gray-400 mb-2">
+          간단한 텍스트 소개입니다. 이미지/표/서식이 필요하면 &quot;페이지 편집&quot; 탭의 리치 에디터를 사용해주세요.
+          리치 에디터 내용이 있으면 웹에서 우선 표시됩니다.
+        </p>
         <textarea
           value={formData.content || ""}
           onChange={(e) => updateField("content", e.target.value)}
-          rows={10}
+          rows={8}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="상세 상품 소개 내용"
         />

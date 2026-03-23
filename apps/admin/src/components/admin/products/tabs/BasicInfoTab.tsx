@@ -7,9 +7,10 @@ import Select from "@/components/ui/Select";
 interface Props {
   formData: any;
   updateField: (field: string, value: any) => void;
+  isEditMode?: boolean;
 }
 
-export function BasicInfoTab({ formData, updateField }: Props) {
+export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
   const { authHeaders } = useAdminAuth();
   const [categories, setCategories] = useState<any[]>([]);
 
@@ -38,7 +39,7 @@ export function BasicInfoTab({ formData, updateField }: Props) {
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
-      .replace(/[^a-z0-9가-힣\s-]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
       .trim();
@@ -46,7 +47,10 @@ export function BasicInfoTab({ formData, updateField }: Props) {
 
   const handleTitleChange = (title: string) => {
     updateField("title", title);
-    updateField("slug", generateSlug(title));
+    // 수정 모드에서는 slug을 자동으로 덮어쓰지 않음 (URL 깨짐 방지)
+    if (!isEditMode) {
+      updateField("slug", generateSlug(title));
+    }
   };
 
   const updateDuration = (nights: number, days: number) => {
@@ -55,6 +59,24 @@ export function BasicInfoTab({ formData, updateField }: Props) {
     if (nights && days) {
       updateField("durationText", `${nights}박${days}일`);
     }
+  };
+
+  // 골프 코스 관리
+  const golfCourses = Array.isArray(formData.golfCourses) ? formData.golfCourses : [];
+
+  const addGolfCourse = () => {
+    updateField("golfCourses", [...golfCourses, { name: "", holes: 18, par: 72 }]);
+  };
+
+  const updateGolfCourse = (index: number, field: string, value: any) => {
+    const updated = golfCourses.map((c: any, i: number) =>
+      i === index ? { ...c, [field]: value } : c
+    );
+    updateField("golfCourses", updated);
+  };
+
+  const removeGolfCourse = (index: number) => {
+    updateField("golfCourses", golfCourses.filter((_: any, i: number) => i !== index));
   };
 
   return (
@@ -86,22 +108,29 @@ export function BasicInfoTab({ formData, updateField }: Props) {
           />
         </div>
 
-        {/* Slug (자동생성) */}
-        {formData.slug && (
-          <div className="lg:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
-              {formData.slug}
-            </div>
-          </div>
-        )}
+        {/* Slug */}
+        <div className="lg:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Slug {isEditMode && <span className="text-xs text-amber-600 ml-1">(변경 시 기존 URL이 깨질 수 있습니다)</span>}
+          </label>
+          <input
+            type="text"
+            value={formData.slug}
+            onChange={(e) => updateField("slug", e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="자동 생성됩니다"
+            readOnly={!isEditMode && !!formData.slug}
+          />
+          {isEditMode && (
+            <p className="mt-1 text-xs text-gray-400">영문, 숫자, 하이픈만 사용 권장</p>
+          )}
+        </div>
 
         {/* 카테고리 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             카테고리 <span className="text-red-500">*</span>
           </label>
-          {/* 카테고리 선택 (계층 구조 포함) */}
           <Select
             value={formData.categoryId}
             onChange={(val) => updateField("categoryId", val)}
@@ -181,8 +210,11 @@ export function BasicInfoTab({ formData, updateField }: Props) {
           <label className="block text-sm font-medium text-gray-700 mb-1">기본 가격 (원)</label>
           <input
             type="number"
-            value={formData.basePrice || ""}
-            onChange={(e) => updateField("basePrice", parseInt(e.target.value) || null)}
+            value={formData.basePrice ?? ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              updateField("basePrice", val === "" ? null : parseInt(val));
+            }}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="1990000"
           />
@@ -191,8 +223,11 @@ export function BasicInfoTab({ formData, updateField }: Props) {
           <label className="block text-sm font-medium text-gray-700 mb-1">정가 (원, 선택)</label>
           <input
             type="number"
-            value={formData.originalPrice || ""}
-            onChange={(e) => updateField("originalPrice", parseInt(e.target.value) || null)}
+            value={formData.originalPrice ?? ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              updateField("originalPrice", val === "" ? null : parseInt(val));
+            }}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="2490000"
           />
@@ -218,6 +253,99 @@ export function BasicInfoTab({ formData, updateField }: Props) {
             onChange={(e) => updateField("maxPeople", parseInt(e.target.value) || null)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
+        </div>
+      </div>
+
+      {/* 골프 정보 섹션 */}
+      <div className="border-t pt-6">
+        <h3 className="text-sm font-semibold text-gray-800 mb-4">골프 정보</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">난이도</label>
+            <Select
+              value={formData.difficulty || ""}
+              onChange={(val) => updateField("difficulty", val || "")}
+              options={[
+                { value: "", label: "선택 안함" },
+                { value: "BEGINNER", label: "초급" },
+                { value: "INTERMEDIATE", label: "중급" },
+                { value: "ADVANCED", label: "상급" },
+                { value: "ALL", label: "전체" },
+              ]}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">총 홀 수</label>
+            <input
+              type="number"
+              min="0"
+              value={formData.totalHoles ?? ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                updateField("totalHoles", val === "" ? null : parseInt(val));
+              }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="54"
+            />
+          </div>
+        </div>
+
+        {/* 골프 코스 목록 */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-gray-700">골프 코스</label>
+            <button
+              onClick={addGolfCourse}
+              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+            >
+              + 코스 추가
+            </button>
+          </div>
+          {golfCourses.length === 0 && (
+            <p className="text-sm text-gray-400">골프 코스를 추가해주세요</p>
+          )}
+          <div className="space-y-3">
+            {golfCourses.map((course: any, idx: number) => (
+              <div key={idx} className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={course.name || ""}
+                    onChange={(e) => updateGolfCourse(idx, "name", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="코스명"
+                  />
+                </div>
+                <div className="w-24">
+                  <input
+                    type="number"
+                    value={course.holes ?? 18}
+                    onChange={(e) => updateGolfCourse(idx, "holes", parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="홀"
+                  />
+                  <span className="text-xs text-gray-400">홀</span>
+                </div>
+                <div className="w-24">
+                  <input
+                    type="number"
+                    value={course.par ?? 72}
+                    onChange={(e) => updateGolfCourse(idx, "par", parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="파"
+                  />
+                  <span className="text-xs text-gray-400">파</span>
+                </div>
+                <button
+                  onClick={() => removeGolfCourse(idx)}
+                  className="p-2 text-gray-400 hover:text-red-600 mt-0.5"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

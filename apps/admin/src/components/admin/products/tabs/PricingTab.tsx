@@ -13,6 +13,8 @@ interface PriceItem {
   price: number | null;
   priceType: string;
   season: string;
+  validFrom: string;
+  validTo: string;
   isDefault: boolean;
   isActive: boolean;
 }
@@ -34,6 +36,8 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
           price: o.price,
           priceType: o.priceType || "PER_PERSON",
           season: o.season || "",
+          validFrom: o.validFrom ? new Date(o.validFrom).toISOString().slice(0, 10) : "",
+          validTo: o.validTo ? new Date(o.validTo).toISOString().slice(0, 10) : "",
           isDefault: o.isDefault || false,
           isActive: o.isActive ?? true,
         }))
@@ -53,6 +57,8 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
         price: null,
         priceType: "PER_PERSON",
         season: "",
+        validFrom: "",
+        validTo: "",
         isDefault: false,
         isActive: true,
       },
@@ -83,9 +89,11 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
           priceOptions: options.map((opt) => ({
             name: opt.name,
             description: opt.description,
-            price: opt.price || 0,
+            price: opt.price ?? 0,
             priceType: opt.priceType,
             season: opt.season,
+            validFrom: opt.validFrom || null,
+            validTo: opt.validTo || null,
             isDefault: opt.isDefault,
             isActive: opt.isActive,
           })),
@@ -101,6 +109,8 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
             price: o.price,
             priceType: o.priceType || "PER_PERSON",
             season: o.season || "",
+            validFrom: o.validFrom ? new Date(o.validFrom).toISOString().slice(0, 10) : "",
+            validTo: o.validTo ? new Date(o.validTo).toISOString().slice(0, 10) : "",
             isDefault: o.isDefault || false,
             isActive: o.isActive ?? true,
           }))
@@ -121,6 +131,7 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
     return (
       <div className="text-center py-8 text-gray-500">
         <p>가격 옵션을 관리하려면 먼저 상품을 저장해주세요.</p>
+        <p className="text-sm mt-1">기본 정보 탭에서 필수 항목을 입력 후 하단의 등록 버튼을 눌러주세요.</p>
       </div>
     );
   }
@@ -150,14 +161,16 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
               <label className="block text-xs font-medium text-gray-600 mb-1">가격 (원)</label>
               <input
                 type="number"
-                value={opt.price || ""}
-                onChange={(e) => updateOption(idx, "price", parseInt(e.target.value) || null)}
+                value={opt.price ?? ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  updateOption(idx, "price", val === "" ? null : parseInt(val));
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">가격 유형</label>
-              {/* 가격 유형 선택 */}
               <Select
                 value={opt.priceType}
                 onChange={(val) => updateOption(idx, "priceType", val)}
@@ -169,9 +182,18 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
                 className="w-full"
               />
             </div>
+            <div className="md:col-span-2 lg:col-span-3">
+              <label className="block text-xs font-medium text-gray-600 mb-1">옵션 설명</label>
+              <input
+                type="text"
+                value={opt.description}
+                onChange={(e) => updateOption(idx, "description", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                placeholder="옵션에 대한 상세 설명"
+              />
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">시즌</label>
-              {/* 시즌 선택 */}
               <Select
                 value={opt.season}
                 onChange={(val) => updateOption(idx, "season", val)}
@@ -182,6 +204,24 @@ export function PricingTab({ productId, priceOptions: initial }: Props) {
                   { value: "OFF", label: "비수기" },
                 ]}
                 className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">유효 시작일</label>
+              <input
+                type="date"
+                value={opt.validFrom}
+                onChange={(e) => updateOption(idx, "validFrom", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">유효 종료일</label>
+              <input
+                type="date"
+                value={opt.validTo}
+                onChange={(e) => updateOption(idx, "validTo", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
             </div>
             <div className="flex items-end gap-4">

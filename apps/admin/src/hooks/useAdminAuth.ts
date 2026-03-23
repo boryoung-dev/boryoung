@@ -29,6 +29,7 @@ export function useAdminAuth() {
     const storedAdmin = localStorage.getItem("adminInfo");
 
     if (!storedToken) {
+      setIsLoading(false);
       router.push("/login");
       return;
     }
@@ -39,12 +40,14 @@ export function useAdminAuth() {
       if (payload.exp && payload.exp * 1000 < Date.now()) {
         localStorage.removeItem("adminToken");
         localStorage.removeItem("adminInfo");
+        setIsLoading(false);
         router.push("/login");
         return;
       }
     } catch {
       localStorage.removeItem("adminToken");
       localStorage.removeItem("adminInfo");
+      setIsLoading(false);
       router.push("/login");
       return;
     }

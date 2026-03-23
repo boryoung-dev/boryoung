@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Upload, X, Loader2, Save } from "lucide-react";
+import { Upload, X, Loader2, Save, ChevronUp, ChevronDown } from "lucide-react";
 import Select from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
 
@@ -53,6 +53,7 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
             {
               id: `temp-${Date.now()}`,
               url: data.url,
+              alt: "",
               type: "DETAIL",
               sortOrder: prev.length,
               isThumbnail: prev.length === 0,
@@ -81,6 +82,24 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
     markChanged();
   };
 
+  const updateImage = (index: number, field: string, value: any) => {
+    setImages((prev) =>
+      prev.map((img, i) => (i === index ? { ...img, [field]: value } : img))
+    );
+    markChanged();
+  };
+
+  const moveImage = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= images.length) return;
+    setImages((prev) => {
+      const arr = [...prev];
+      [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
+      return arr;
+    });
+    markChanged();
+  };
+
   const handleSave = async () => {
     if (!productId) return;
     setSaving(true);
@@ -89,7 +108,7 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...authHeaders } as any,
         body: JSON.stringify({
-          images: images.map((img, idx) => ({
+          images: images.map((img) => ({
             url: img.url,
             alt: img.alt || null,
             type: img.type || "DETAIL",
@@ -116,6 +135,7 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
     return (
       <div className="text-center py-8 text-gray-500">
         <p>이미지를 관리하려면 먼저 상품을 저장해주세요.</p>
+        <p className="text-sm mt-1">기본 정보 탭에서 필수 항목을 입력 후 하단의 등록 버튼을 눌러주세요.</p>
       </div>
     );
   }
@@ -148,29 +168,46 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
       </div>
 
       {/* 이미지 목록 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {images.map((img, idx) => (
-          <div key={img.id} className="relative group rounded-lg overflow-hidden border">
-            <img src={img.url} alt="" referrerPolicy="no-referrer" className="w-full aspect-[4/3] object-cover" />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors">
-              <button
-                onClick={() => removeImage(idx)}
-                className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-3 h-3" />
-              </button>
+          <div key={img.id || idx} className="border rounded-lg overflow-hidden">
+            <div className="relative group">
+              <img src={img.url} alt={img.alt || ""} referrerPolicy="no-referrer" className="w-full aspect-[4/3] object-cover" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors">
+                <button
+                  onClick={() => removeImage(idx)}
+                  className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+              {/* 순서 이동 버튼 */}
+              <div className="absolute top-2 left-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => moveImage(idx, "up")}
+                  disabled={idx === 0}
+                  className="p-1 bg-white/90 text-gray-700 rounded shadow disabled:opacity-30"
+                >
+                  <ChevronUp className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={() => moveImage(idx, "down")}
+                  disabled={idx === images.length - 1}
+                  className="p-1 bg-white/90 text-gray-700 rounded shadow disabled:opacity-30"
+                >
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              </div>
+              {/* 순서 번호 */}
+              <span className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                {idx + 1}
+              </span>
             </div>
-            <div className="p-2 bg-white">
+            <div className="p-3 bg-white space-y-2">
               <div className="flex items-center justify-between">
-                {/* 이미지 타입 선택 */}
                 <Select
                   value={img.type || "DETAIL"}
-                  onChange={(val) => {
-                    setImages((prev) =>
-                      prev.map((i, j) => (j === idx ? { ...i, type: val } : i))
-                    );
-                    markChanged();
-                  }}
+                  onChange={(val) => updateImage(idx, "type", val)}
                   options={IMAGE_TYPES.map((t) => ({ value: t.value, label: t.label }))}
                   className="w-28"
                 />
@@ -185,6 +222,14 @@ export function ImagesTab({ productId, images: initialImages }: Props) {
                   {img.isThumbnail ? "대표" : "대표설정"}
                 </button>
               </div>
+              {/* ALT 텍스트 */}
+              <input
+                type="text"
+                value={img.alt || ""}
+                onChange={(e) => updateImage(idx, "alt", e.target.value)}
+                className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs text-gray-600"
+                placeholder="이미지 설명 (alt 텍스트)"
+              />
             </div>
           </div>
         ))}
