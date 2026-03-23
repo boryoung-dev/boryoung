@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@repo/ui", "@repo/database"],
+  serverExternalPackages: ["@prisma/client", "prisma"],
   images: {
     remotePatterns: [
       {
