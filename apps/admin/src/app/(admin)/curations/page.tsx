@@ -279,6 +279,24 @@ export default function CurationsPage() {
     );
   };
 
+  const moveProduct = (productId: string, direction: "up" | "down") => {
+    setSelectedProductIds((prev) => {
+      const idx = prev.indexOf(productId);
+      if (idx === -1) return prev;
+      const newIdx = direction === "up" ? idx - 1 : idx + 1;
+      if (newIdx < 0 || newIdx >= prev.length) return prev;
+      const arr = [...prev];
+      const temp = arr[idx];
+      arr[idx] = arr[newIdx];
+      arr[newIdx] = temp;
+      return arr;
+    });
+  };
+
+  const removeProduct = (productId: string) => {
+    setSelectedProductIds((prev) => prev.filter((id) => id !== productId));
+  };
+
   const handleSaveProducts = async () => {
     if (!managingCuration) return;
     try {
@@ -551,15 +569,21 @@ export default function CurationsPage() {
             </div>
             {selectedProductIds.length > 0 && (
               <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-xs font-medium text-blue-700 mb-2">선택된 상품 ({selectedProductIds.length}개)</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedProductIds.map((pid) => {
+                <p className="text-xs font-medium text-blue-700 mb-2">선택된 상품 ({selectedProductIds.length}개) — 순서대로 표시됩니다</p>
+                <div className="space-y-1.5">
+                  {selectedProductIds.map((pid, idx) => {
                     const product = allProducts.find((p) => p.id === pid);
                     return product ? (
-                      <span key={pid} className="inline-flex items-center gap-1 px-2 py-1 bg-white text-blue-700 rounded text-xs border border-blue-200">
-                        {product.title}
-                        <button type="button" onClick={() => toggleProductSelection(pid)} className="text-blue-400 hover:text-red-500 ml-1">x</button>
-                      </span>
+                      <div key={pid} className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-blue-200 text-sm">
+                        <span className="text-xs text-gray-400 font-mono w-5">{idx + 1}</span>
+                        <span className="flex-1 truncate">{product.title}</span>
+                        <span className="text-xs text-gray-400">{product.destination}</span>
+                        <div className="flex gap-0.5">
+                          <button type="button" onClick={() => moveProduct(pid, "up")} disabled={idx === 0} className="p-0.5 text-gray-400 hover:text-blue-600 disabled:opacity-30">▲</button>
+                          <button type="button" onClick={() => moveProduct(pid, "down")} disabled={idx === selectedProductIds.length - 1} className="p-0.5 text-gray-400 hover:text-blue-600 disabled:opacity-30">▼</button>
+                        </div>
+                        <button type="button" onClick={() => removeProduct(pid)} className="p-0.5 text-gray-400 hover:text-red-500">✕</button>
+                      </div>
                     ) : null;
                   })}
                 </div>
