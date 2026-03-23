@@ -42,9 +42,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       title,
+      subtitle,
       description,
       imageUrl,
       linkUrl,
+      sectionType,
+      displayConfig,
       sortOrder,
       isActive
     } = body;
@@ -59,9 +62,12 @@ export async function POST(request: NextRequest) {
     const curation = await prisma.curation.create({
       data: {
         title,
+        subtitle,
         description,
         imageUrl,
         linkUrl,
+        sectionType,
+        displayConfig,
         sortOrder: sortOrder ?? 0,
         isActive: isActive ?? true
       }

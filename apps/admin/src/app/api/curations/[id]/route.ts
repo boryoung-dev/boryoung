@@ -62,9 +62,12 @@ export async function PUT(
 
     const {
       title,
+      subtitle,
       description,
       imageUrl,
       linkUrl,
+      sectionType,
+      displayConfig,
       sortOrder,
       isActive
     } = body;
@@ -73,9 +76,12 @@ export async function PUT(
       where: { id },
       data: {
         ...(title !== undefined && { title }),
+        ...(subtitle !== undefined && { subtitle }),
         ...(description !== undefined && { description }),
         ...(imageUrl !== undefined && { imageUrl }),
         ...(linkUrl !== undefined && { linkUrl }),
+        ...(sectionType !== undefined && { sectionType }),
+        ...(displayConfig !== undefined && { displayConfig }),
         ...(sortOrder !== undefined && { sortOrder }),
         ...(isActive !== undefined && { isActive })
       }

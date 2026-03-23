@@ -405,20 +405,24 @@ model Admin {
 // ============================================
 
 model Curation {
-  id          String            @id @default(cuid())
-  title       String            // "이번주 인기", "가성비 BEST" 등
-  description String?           @db.Text
-  imageUrl    String?
-  linkUrl     String?           // 클릭 시 이동 URL
-  sortOrder   Int               @default(0)
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id            String            @id @default(cuid())
+  title         String            // "이번주 인기", "가성비 BEST" 등
+  subtitle      String?           // 부제
+  description   String?           @db.Text
+  imageUrl      String?
+  linkUrl       String?           // 클릭 시 이동 URL
+  sectionType   String?           // 섹션 타입: featured_grid, product_carousel, product_showcase, destinations_carousel, banner_hero, trust_cta
+  displayConfig Json?             // 표시 설정 (예: {"columns": 3, "rows": 2, "tabs": ["전체","일본"], "layout": "grid|carousel"})
+  sortOrder     Int               @default(0)
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
-  products    CurationProduct[]
+  products      CurationProduct[]
 
   @@index([isActive])
   @@index([sortOrder])
+  @@index([sectionType])
   @@map("curations")
 }
 
