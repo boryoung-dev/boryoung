@@ -1,6 +1,7 @@
 // 개선된 Prisma 스키마 - 보령항공여행사
 generator client {
   provider      = "prisma-client-js"
+  output        = "../generated/prisma"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 

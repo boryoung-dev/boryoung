@@ -1,4 +1,4 @@
 export { prisma } from "./client";
-export { PrismaClient } from "@prisma/client";
-export type * from "@prisma/client";
+export { PrismaClient } from "../generated/prisma";
+export type * from "../generated/prisma";
 export * from "./validations/index";
