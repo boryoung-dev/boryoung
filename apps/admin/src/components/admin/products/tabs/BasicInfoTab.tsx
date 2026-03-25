@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery } from "@/hooks/useApi";
 import Select from "@/components/ui/Select";
 
 interface Props {
@@ -11,30 +10,23 @@ interface Props {
 }
 
 export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
-  const { authHeaders } = useAdminAuth();
-  const [categories, setCategories] = useState<any[]>([]);
+  const { data: categoriesData } = useApiQuery<any>(
+    ["categories"],
+    "/api/categories"
+  );
 
-  useEffect(() => {
-    fetchCategories();
-  }, [authHeaders]);
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch("/api/categories", { headers: authHeaders as any });
-      const data = await res.json();
-      if (data.success) {
-        const flat: any[] = [];
-        const flatten = (cats: any[], depth = 0) => {
-          cats.forEach((c: any) => {
-            flat.push({ ...c, depth });
-            if (c.children?.length) flatten(c.children, depth + 1);
-          });
-        };
-        flatten(data.categories);
-        setCategories(flat);
-      }
-    } catch {}
-  };
+  const categories: any[] = (() => {
+    if (!categoriesData?.success) return [];
+    const flat: any[] = [];
+    const flatten = (cats: any[], depth = 0) => {
+      cats.forEach((c: any) => {
+        flat.push({ ...c, depth });
+        if (c.children?.length) flatten(c.children, depth + 1);
+      });
+    };
+    flatten(categoriesData.categories);
+    return flat;
+  })();
 
   const generateSlug = (title: string) => {
     return title

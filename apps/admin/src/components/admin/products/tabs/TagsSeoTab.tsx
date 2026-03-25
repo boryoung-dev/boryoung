@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery } from "@/hooks/useApi";
 
 interface Props {
   formData: any;
@@ -9,20 +8,8 @@ interface Props {
 }
 
 export function TagsSeoTab({ formData, updateField }: Props) {
-  const { authHeaders } = useAdminAuth();
-  const [tags, setTags] = useState<any[]>([]);
-
-  useEffect(() => {
-    fetchTags();
-  }, [authHeaders]);
-
-  const fetchTags = async () => {
-    try {
-      const res = await fetch("/api/tags", { headers: authHeaders as any });
-      const data = await res.json();
-      if (data.success) setTags(data.tags);
-    } catch {}
-  };
+  const { data: tagsData } = useApiQuery<any>(["tags"], "/api/tags");
+  const tags: any[] = tagsData?.success ? tagsData.tags : [];
 
   const toggleTag = (tagId: string) => {
     const current = formData.tagIds || [];

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery } from "@/hooks/useApi";
 import { Eye, CalendarCheck } from "lucide-react";
 import FilterTabs from "@/components/ui/FilterTabs";
 
@@ -22,32 +23,26 @@ interface Booking {
   createdAt: string;
 }
 
+interface BookingsResponse {
+  success: boolean;
+  bookings: Booking[];
+}
+
 export default function AdminBookingsPage() {
-  const { authHeaders } = useAdminAuth();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const { token } = useAdminAuth();
   const [filter, setFilter] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      fetchBookings();
-    }
-  }, [filter, authHeaders]);
+  const url = filter
+    ? `/api/bookings?status=${filter}&limit=100`
+    : `/api/bookings?limit=100`;
 
-  const fetchBookings = async () => {
-    try {
-      const url = filter
-        ? `/api/bookings?status=${filter}&limit=100`
-        : `/api/bookings?limit=100`;
-      const response = await fetch(url, { headers: authHeaders as any });
-      const data = await response.json();
-      if (data.success) setBookings(data.bookings);
-    } catch (error) {
-      console.error("Bookings fetch error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data, isLoading } = useApiQuery<BookingsResponse>(
+    ["bookings", "list", filter],
+    url,
+    { enabled: !!token }
+  );
+
+  const bookings = data?.success ? data.bookings : [];
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {

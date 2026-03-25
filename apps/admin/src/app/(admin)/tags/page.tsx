@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import Select from "@/components/ui/Select";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
@@ -22,41 +24,96 @@ interface Tag {
   };
 }
 
+interface TagsResponse {
+  success: boolean;
+  tags: Tag[];
+}
+
+interface TagFormData {
+  name: string;
+  slug: string;
+  type: Tag["type"];
+  sortOrder: number;
+  isActive: boolean;
+}
+
 export default function AdminTagsPage() {
-  const { authHeaders } = useAdminAuth();
+  const { token } = useAdminAuth();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editTag, setEditTag] = useState<Tag | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TagFormData>({
     name: "",
     slug: "",
-    type: "FEATURE" as Tag["type"],
+    type: "FEATURE",
     sortOrder: 0,
     isActive: true,
   });
 
-  const fetchTags = async () => {
-    try {
-      const res = await fetch("/api/tags", {
-        headers: authHeaders as any,
-      });
-      const data = await res.json();
-      if (data.success) setTags(data.tags);
-    } catch (error) {
-      console.error("태그 조회 오류:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data, isLoading } = useApiQuery<TagsResponse>(
+    ["tags"],
+    "/api/tags"
+  );
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      fetchTags();
+  const tags = data?.tags ?? [];
+
+  const saveMutation = useApiMutation<any, { id?: string; body: TagFormData }>(
+    (variables, token) => {
+      const url = variables.id ? `/api/tags/${variables.id}` : "/api/tags";
+      const method = variables.id ? "PUT" : "POST";
+      return fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(variables.body),
+      });
+    },
+    {
+      invalidateKeys: [["tags"]],
+      onSuccess: () => {
+        setShowModal(false);
+      },
+      onError: () => {
+        toast("저장 중 오류가 발생했습니다", "error");
+      },
     }
-  }, [authHeaders]);
+  );
+
+  const deleteMutation = useApiMutation<any, string>(
+    (id, token) =>
+      fetch(`/api/tags/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    {
+      invalidateKeys: [["tags"]],
+      onError: () => {
+        toast("삭제 중 오류가 발생했습니다", "error");
+      },
+    }
+  );
+
+  const toggleMutation = useApiMutation<any, { id: string; isActive: boolean }>(
+    (variables, token) =>
+      fetch(`/api/tags/${variables.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isActive: variables.isActive }),
+      }),
+    {
+      invalidateKeys: [["tags"]],
+      onError: () => {
+        toast("상태 변경 중 오류가 발생했습니다", "error");
+      },
+    }
+  );
 
   const handleAdd = () => {
     setEditTag(null);
@@ -84,59 +141,31 @@ export default function AdminTagsPage() {
 
   const handleDelete = async (id: string, name: string) => {
     if (!(await confirm({ message: `"${name}" 태그를 삭제하시겠습니까?`, variant: "danger", confirmText: "삭제" }))) return;
-    try {
-      const res = await fetch(`/api/tags/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any,
-      });
-      const data = await res.json();
-      if (data.success) {
-        fetchTags();
-      } else {
-        toast(data.error || "삭제 실패", "error");
-      }
-    } catch {
-      toast("삭제 중 오류가 발생했습니다", "error");
-    }
+    deleteMutation.mutate(id, {
+      onSuccess: (data: any) => {
+        if (data && !data.success) {
+          toast(data.error || "삭제 실패", "error");
+        }
+      },
+    });
   };
 
-  const handleToggleActive = async (id: string, isActive: boolean) => {
-    try {
-      const res = await fetch(`/api/tags/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeaders } as any,
-        body: JSON.stringify({ isActive }),
-      });
-      const data = await res.json();
-      if (data.success) fetchTags();
-    } catch {
-      toast("상태 변경 중 오류가 발생했습니다", "error");
-    }
+  const handleToggleActive = (id: string, isActive: boolean) => {
+    toggleMutation.mutate({ id, isActive });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const url = editTag ? `/api/tags/${editTag.id}` : "/api/tags";
-      const method = editTag ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders,
-        } as any,
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setShowModal(false);
-        fetchTags();
-      } else {
-        toast(data.error || "저장 실패", "error");
+    saveMutation.mutate(
+      { id: editTag?.id, body: formData },
+      {
+        onSuccess: (data: any) => {
+          if (data && !data.success) {
+            toast(data.error || "저장 실패", "error");
+          }
+        },
       }
-    } catch {
-      toast("저장 중 오류가 발생했습니다", "error");
-    }
+    );
   };
 
   const handleNameChange = (name: string) => {

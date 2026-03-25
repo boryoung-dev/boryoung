@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { Plus, Pencil, Trash2, Plane, Flag, Tag, Star, Users, Clock, MapPin, Globe } from "lucide-react";
 import Select from "@/components/ui/Select";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
@@ -43,11 +44,10 @@ const getIconComponent = (name: string) => {
 };
 
 export default function QuickIconsPage() {
-  const { authHeaders, isLoading } = useAdminAuth();
+  const { token, isLoading } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [quickIcons, setQuickIcons] = useState<QuickIcon[]>([]);
-  const [loading, setLoading] = useState(true);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingIcon, setEditingIcon] = useState<QuickIcon | null>(null);
   const [formData, setFormData] = useState<QuickIconFormData>({
@@ -58,27 +58,43 @@ export default function QuickIconsPage() {
     isActive: true
   });
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0 && !isLoading) {
-      fetchQuickIcons();
-    }
-  }, [authHeaders, isLoading]);
+  const { data, isLoading: loading } = useApiQuery<{ success: boolean; quickIcons: QuickIcon[] }>(
+    ["quick-icons"],
+    "/api/quick-icons"
+  );
+  const quickIcons = data?.quickIcons ?? [];
 
-  const fetchQuickIcons = async () => {
-    try {
-      const res = await fetch("/api/quick-icons", {
-        headers: authHeaders as any
+  const saveMutation = useApiMutation<any, { id?: string; body: any }>(
+    async ({ id, body }, token) => {
+      const url = id ? `/api/quick-icons/${id}` : "/api/quick-icons";
+      const method = id ? "PUT" : "POST";
+      return fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
       });
-      const data = await res.json();
-      if (data.success) {
-        setQuickIcons(data.quickIcons);
-      }
-    } catch (error) {
-      console.error("빠른아이콘 목록 조회 실패:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    { invalidateKeys: [["quick-icons"]] }
+  );
+
+  const toggleMutation = useApiMutation<any, { id: string; isActive: boolean }>(
+    async ({ id, isActive }, token) =>
+      fetch(`/api/quick-icons/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isActive }),
+      }),
+    { invalidateKeys: [["quick-icons"]] }
+  );
+
+  const deleteMutation = useApiMutation<any, string>(
+    async (id, token) =>
+      fetch(`/api/quick-icons/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    { invalidateKeys: [["quick-icons"]] }
+  );
 
   const openCreateModal = () => {
     setEditingIcon(null);
@@ -112,65 +128,37 @@ export default function QuickIconsPage() {
       return;
     }
 
-    try {
-      const url = editingIcon ? `/api/quick-icons/${editingIcon.id}` : "/api/quick-icons";
-      const method = editingIcon ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders
-        } as any,
-        body: JSON.stringify(formData)
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setModalOpen(false);
-        fetchQuickIcons();
-      } else {
-        toast(data.error || "저장에 실패했습니다", "error");
+    saveMutation.mutate(
+      { id: editingIcon?.id, body: formData },
+      {
+        onSuccess: (data) => {
+          if (data.success) {
+            setModalOpen(false);
+          } else {
+            toast(data.error || "저장에 실패했습니다", "error");
+          }
+        },
+        onError: () => toast("빠른아이콘 저장 중 오류가 발생했습니다", "error"),
       }
-    } catch (error) {
-      console.error("빠른아이콘 저장 실패:", error);
-      toast("빠른아이콘 저장 중 오류가 발생했습니다", "error");
-    }
+    );
   };
 
-  const handleToggleActive = async (id: string, isActive: boolean) => {
-    try {
-      const res = await fetch(`/api/quick-icons/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeaders } as any,
-        body: JSON.stringify({ isActive }),
-      });
-      const data = await res.json();
-      if (data.success) fetchQuickIcons();
-    } catch {
-      toast("상태 변경 중 오류가 발생했습니다", "error");
-    }
+  const handleToggleActive = (id: string, isActive: boolean) => {
+    toggleMutation.mutate(
+      { id, isActive },
+      { onError: () => toast("상태 변경 중 오류가 발생했습니다", "error") }
+    );
   };
 
   const handleDelete = async (id: string) => {
     if (!(await confirm({ message: "정말 이 빠른아이콘을 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
 
-    try {
-      const res = await fetch(`/api/quick-icons/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        fetchQuickIcons();
-      } else {
-        toast(data.error || "삭제에 실패했습니다", "error");
-      }
-    } catch (error) {
-      console.error("빠른아이콘 삭제 실패:", error);
-      toast("빠른아이콘 삭제 중 오류가 발생했습니다", "error");
-    }
+    deleteMutation.mutate(id, {
+      onSuccess: (data) => {
+        if (!data.success) toast(data.error || "삭제에 실패했습니다", "error");
+      },
+      onError: () => toast("빠른아이콘 삭제 중 오류가 발생했습니다", "error"),
+    });
   };
 
   if (isLoading || loading) {

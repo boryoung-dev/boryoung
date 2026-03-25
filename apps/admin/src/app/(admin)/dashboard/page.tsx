@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery } from "@/hooks/useApi";
 import {
   CalendarCheck,
   CalendarDays,
@@ -60,6 +60,18 @@ interface ProductByCategory {
   count: number;
 }
 
+interface StatsResponse {
+  success: boolean;
+  stats: DashboardStats;
+  recentInquiries: RecentInquiry[];
+  productsByCategory: ProductByCategory[];
+}
+
+interface BookingsResponse {
+  success: boolean;
+  bookings: RecentBooking[];
+}
+
 const statusConfig: Record<string, { label: string; color: string }> = {
   PENDING: { label: "접수", color: "bg-amber-500" },
   CONFIRMED: { label: "확정", color: "bg-blue-600" },
@@ -85,41 +97,26 @@ const destinationLabels: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
-  const { authHeaders } = useAdminAuth();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
-  const [recentInquiries, setRecentInquiries] = useState<RecentInquiry[]>([]);
-  const [productsByCategory, setProductsByCategory] = useState<ProductByCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { token } = useAdminAuth();
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      fetchDashboardData();
-    }
-  }, [authHeaders]);
+  const { data: statsData, isLoading: statsLoading } =
+    useApiQuery<StatsResponse>(["dashboard", "stats"], "/api/stats", {
+      enabled: !!token,
+    });
 
-  const fetchDashboardData = async () => {
-    try {
-      const [statsRes, bookingsRes] = await Promise.all([
-        fetch("/api/stats", { headers: authHeaders as any }),
-        fetch("/api/bookings?limit=5", { headers: authHeaders as any }),
-      ]);
+  const { data: bookingsData, isLoading: bookingsLoading } =
+    useApiQuery<BookingsResponse>(
+      ["dashboard", "recentBookings"],
+      "/api/bookings?limit=5",
+      { enabled: !!token }
+    );
 
-      const statsData = await statsRes.json();
-      const bookingsData = await bookingsRes.json();
+  const isLoading = statsLoading || bookingsLoading;
 
-      if (statsData.success) {
-        setStats(statsData.stats);
-        setRecentInquiries(statsData.recentInquiries || []);
-        setProductsByCategory(statsData.productsByCategory || []);
-      }
-      if (bookingsData.success) setRecentBookings(bookingsData.bookings);
-    } catch (error) {
-      console.error("Dashboard data fetch error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const stats = statsData?.success ? statsData.stats : null;
+  const recentInquiries = statsData?.success ? (statsData.recentInquiries ?? []) : [];
+  const productsByCategory = statsData?.success ? (statsData.productsByCategory ?? []) : [];
+  const recentBookings = bookingsData?.success ? bookingsData.bookings : [];
 
   if (isLoading) {
     return (

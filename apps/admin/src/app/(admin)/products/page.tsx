@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Edit2, Trash2, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import Select from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
@@ -33,93 +35,99 @@ interface Pagination {
   totalPages: number;
 }
 
+interface ProductsResponse {
+  success: boolean;
+  products: Product[];
+  pagination: Pagination;
+}
+
+interface CategoriesResponse {
+  success: boolean;
+  categories: { id: string; name: string }[];
+}
+
 export default function AdminProductsPage() {
-  const { authHeaders } = useAdminAuth();
+  const { token } = useAdminAuth();
   const router = useRouter();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [pagination, setPagination] = useState<Pagination>({
-    page: 1, limit: 20, total: 0, totalPages: 0,
-  });
+  const queryClient = useQueryClient();
+
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [categories, setCategories] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchProducts = useCallback(async (page = 1) => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({ page: String(page), limit: "20" });
-      if (search) params.set("search", search);
-      if (statusFilter !== "all") params.set("status", statusFilter);
-      if (categoryFilter) params.set("categoryId", categoryFilter);
+  // 상품 목록 조회
+  const productsParams = new URLSearchParams({ page: String(page), limit: "20" });
+  if (search) productsParams.set("search", search);
+  if (statusFilter !== "all") productsParams.set("status", statusFilter);
+  if (categoryFilter) productsParams.set("categoryId", categoryFilter);
 
-      const res = await fetch(`/api/products?${params}`, {
-        headers: authHeaders as any,
-      });
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.products);
-        setPagination(data.pagination);
-      }
-    } catch (error) {
-      console.error("상품 목록 조회 오류:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [search, statusFilter, categoryFilter, authHeaders]);
+  const { data: productsData, isLoading } = useApiQuery<ProductsResponse>(
+    ["products", String(page), search, statusFilter, categoryFilter],
+    `/api/products?${productsParams}`
+  );
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      fetchProducts();
-      fetchCategories();
-    }
-  }, [authHeaders]);
+  // 카테고리 목록 조회
+  const { data: categoriesData } = useApiQuery<CategoriesResponse>(
+    ["categories"],
+    "/api/categories"
+  );
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      fetchProducts(1);
-    }
-  }, [search, statusFilter, categoryFilter]);
+  const products = productsData?.products ?? [];
+  const pagination = productsData?.pagination ?? { page: 1, limit: 20, total: 0, totalPages: 0 };
+  const categories = categoriesData?.categories ?? [];
 
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch("/api/categories", { headers: authHeaders as any });
-      const data = await res.json();
-      if (data.success) setCategories(data.categories);
-    } catch {}
-  };
-
-  const handleToggle = async (id: string, field: "isActive" | "isFeatured", current: boolean) => {
-    try {
-      const res = await fetch(`/api/products/${id}`, {
+  // 활성/추천 토글 mutation
+  const toggleMutation = useApiMutation<any, { id: string; field: "isActive" | "isFeatured"; value: boolean }>(
+    async ({ id, field, value }, token) =>
+      fetch(`/api/products/${id}`, {
         method: "PUT",
-        headers: { ...authHeaders as any, "Content-Type": "application/json" },
-        body: JSON.stringify({ [field]: !current }),
-      });
-      if (res.ok) {
-        setProducts((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, [field]: !current } : p))
-        );
-      }
-    } catch {
-      toast("변경 실패", "error");
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: value }),
+      }),
+    {
+      invalidateKeys: [["products", String(page), search, statusFilter, categoryFilter]],
+      onError: () => toast("변경 실패", "error"),
     }
+  );
+
+  // 삭제 mutation
+  const deleteMutation = useApiMutation<any, { id: string }>(
+    async ({ id }, token) =>
+      fetch(`/api/products/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    {
+      invalidateKeys: [["products", String(page), search, statusFilter, categoryFilter]],
+      onError: () => toast("삭제 실패", "error"),
+    }
+  );
+
+  const handleToggle = (id: string, field: "isActive" | "isFeatured", current: boolean) => {
+    toggleMutation.mutate({ id, field, value: !current });
   };
 
   const handleDelete = async (id: string, title: string) => {
     if (!(await confirm({ message: `"${title}" 상품을 삭제하시겠습니까?`, variant: "danger", confirmText: "삭제" }))) return;
-    try {
-      const res = await fetch(`/api/products/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any,
-      });
-      if (res.ok) fetchProducts(pagination.page);
-    } catch {
-      toast("삭제 실패", "error");
-    }
+    deleteMutation.mutate({ id });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setPage(1);
+  };
+
+  const handleCategoryFilterChange = (value: string) => {
+    setCategoryFilter(value);
+    setPage(1);
   };
 
   return (
@@ -145,14 +153,14 @@ export default function AdminProductsPage() {
                 type="text"
                 placeholder="상품명 검색..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
           <Select
             value={statusFilter}
-            onChange={setStatusFilter}
+            onChange={handleStatusFilterChange}
             options={[
               { value: "all", label: "전체 상태" },
               { value: "active", label: "활성" },
@@ -162,10 +170,10 @@ export default function AdminProductsPage() {
           />
           <Select
             value={categoryFilter}
-            onChange={setCategoryFilter}
+            onChange={handleCategoryFilterChange}
             options={[
               { value: "", label: "전체 카테고리" },
-              ...categories.map((cat: any) => ({ value: cat.id, label: cat.name })),
+              ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
             ]}
             className="w-40"
           />
@@ -295,14 +303,14 @@ export default function AdminProductsPage() {
             </span>
             <div className="flex gap-2">
               <button
-                onClick={() => fetchProducts(pagination.page - 1)}
+                onClick={() => setPage((p) => p - 1)}
                 disabled={pagination.page <= 1}
                 className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
-                onClick={() => fetchProducts(pagination.page + 1)}
+                onClick={() => setPage((p) => p + 1)}
                 disabled={pagination.page >= pagination.totalPages}
                 className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
               >

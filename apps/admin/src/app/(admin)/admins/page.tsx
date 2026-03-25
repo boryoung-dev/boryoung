@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { Plus, Pencil, Trash2, Shield } from "lucide-react";
 import Select from "@/components/ui/Select";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
@@ -19,11 +20,10 @@ interface Admin {
 }
 
 export default function AdminsPage() {
-  const { authHeaders, admin } = useAdminAuth();
+  const { token, admin } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [admins, setAdmins] = useState<Admin[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editTarget, setEditTarget] = useState<Admin | null>(null);
@@ -42,83 +42,89 @@ export default function AdminsPage() {
     password: "",
   });
 
-  const fetchAdmins = async () => {
-    try {
-      const res = await fetch("/api/admins", {
-        headers: authHeaders as any,
-      });
-      const data = await res.json();
-      if (data.success) {
-        setAdmins(data.admins);
-      }
-    } catch (error) {
-      console.error("관리자 목록 조회 오류:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data, isLoading } = useApiQuery<{ success: boolean; admins: Admin[] }>(
+    ["admins"],
+    "/api/admins"
+  );
+  const admins = data?.admins ?? [];
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      fetchAdmins();
-    }
-  }, [authHeaders]);
+  const addMutation = useApiMutation<any, typeof formData>(
+    async (body, token) =>
+      fetch("/api/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      }),
+    { invalidateKeys: [["admins"]] }
+  );
 
-  const handleAdd = async () => {
+  const editMutation = useApiMutation<any, { id: string; body: typeof editFormData }>(
+    async ({ id, body }, token) =>
+      fetch(`/api/admins/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      }),
+    { invalidateKeys: [["admins"]] }
+  );
+
+  const deleteMutation = useApiMutation<any, string>(
+    async (id, token) =>
+      fetch(`/api/admins/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    { invalidateKeys: [["admins"]] }
+  );
+
+  const toggleMutation = useApiMutation<any, { id: string; isActive: boolean }>(
+    async ({ id, isActive }, token) =>
+      fetch(`/api/admins/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isActive }),
+      }),
+    { invalidateKeys: [["admins"]] }
+  );
+
+  const handleAdd = () => {
     if (!formData.email || !formData.password || !formData.name) {
       toast("필수 항목을 모두 입력해주세요", "error");
       return;
     }
 
-    try {
-      const res = await fetch("/api/admins", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders,
-        } as any,
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast("관리자가 추가되었습니다", "success");
-        setShowAddModal(false);
-        setFormData({ email: "", password: "", name: "", role: "STAFF" });
-        fetchAdmins();
-      } else {
-        toast(data.error || "추가 실패", "error");
-      }
-    } catch {
-      toast("추가 중 오류가 발생했습니다", "error");
-    }
+    addMutation.mutate(formData, {
+      onSuccess: (data) => {
+        if (data.success) {
+          toast("관리자가 추가되었습니다", "success");
+          setShowAddModal(false);
+          setFormData({ email: "", password: "", name: "", role: "STAFF" });
+        } else {
+          toast(data.error || "추가 실패", "error");
+        }
+      },
+      onError: () => toast("추가 중 오류가 발생했습니다", "error"),
+    });
   };
 
-  const handleEdit = async () => {
+  const handleEdit = () => {
     if (!editTarget) return;
 
-    try {
-      const res = await fetch(`/api/admins/${editTarget.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders,
-        } as any,
-        body: JSON.stringify(editFormData),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast("관리자 정보가 수정되었습니다", "success");
-        setShowEditModal(false);
-        setEditTarget(null);
-        fetchAdmins();
-      } else {
-        toast(data.error || "수정 실패", "error");
+    editMutation.mutate(
+      { id: editTarget.id, body: editFormData },
+      {
+        onSuccess: (data) => {
+          if (data.success) {
+            toast("관리자 정보가 수정되었습니다", "success");
+            setShowEditModal(false);
+            setEditTarget(null);
+          } else {
+            toast(data.error || "수정 실패", "error");
+          }
+        },
+        onError: () => toast("수정 중 오류가 발생했습니다", "error"),
       }
-    } catch {
-      toast("수정 중 오류가 발생했습니다", "error");
-    }
+    );
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -129,40 +135,27 @@ export default function AdminsPage() {
 
     if (!(await confirm({ message: `"${name}" 관리자를 삭제하시겠습니까?`, variant: "danger", confirmText: "삭제" }))) return;
 
-    try {
-      const res = await fetch(`/api/admins/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any,
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast("관리자가 삭제되었습니다", "success");
-        fetchAdmins();
-      } else {
-        toast(data.error || "삭제 실패", "error");
-      }
-    } catch {
-      toast("삭제 중 오류가 발생했습니다", "error");
-    }
+    deleteMutation.mutate(id, {
+      onSuccess: (data) => {
+        if (data.success) {
+          toast("관리자가 삭제되었습니다", "success");
+        } else {
+          toast(data.error || "삭제 실패", "error");
+        }
+      },
+      onError: () => toast("삭제 중 오류가 발생했습니다", "error"),
+    });
   };
 
-  const handleToggleActive = async (id: string, isActive: boolean) => {
+  const handleToggleActive = (id: string, isActive: boolean) => {
     if (admin?.id === id) {
       toast("자기 자신의 상태는 변경할 수 없습니다", "error");
       return;
     }
-    try {
-      const res = await fetch(`/api/admins/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeaders } as any,
-        body: JSON.stringify({ isActive }),
-      });
-      const data = await res.json();
-      if (data.success) fetchAdmins();
-    } catch {
-      toast("상태 변경 중 오류가 발생했습니다", "error");
-    }
+    toggleMutation.mutate(
+      { id, isActive },
+      { onError: () => toast("상태 변경 중 오류가 발생했습니다", "error") }
+    );
   };
 
   const openEditModal = (adminData: Admin) => {

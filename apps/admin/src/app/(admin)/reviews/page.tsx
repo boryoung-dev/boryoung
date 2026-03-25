@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Pencil, Trash2, Eye, EyeOff, MessageSquare } from "lucide-react";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
+import { Pencil, Trash2, MessageSquare } from "lucide-react";
 import FilterTabs from "@/components/ui/FilterTabs";
 import Select from "@/components/ui/Select";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
@@ -40,13 +42,16 @@ interface EditFormData {
   isPublished: boolean;
 }
 
+interface ReviewsResponse {
+  success: boolean;
+  reviews: Review[];
+}
+
 export default function ReviewsPage() {
-  const { authHeaders } = useAdminAuth();
+  const { token } = useAdminAuth();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [filteredReviews, setFilteredReviews] = useState<Review[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "unpublished">("all");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
@@ -60,48 +65,51 @@ export default function ReviewsPage() {
     isPublished: false,
   });
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      fetchReviews();
+  const { data, isLoading } = useApiQuery<ReviewsResponse>(
+    ["reviews"],
+    "/api/reviews?limit=100&offset=0"
+  );
+
+  const reviews = data?.reviews ?? [];
+
+  const filteredReviews =
+    statusFilter === "all"
+      ? reviews
+      : statusFilter === "published"
+      ? reviews.filter((r) => r.isPublished)
+      : reviews.filter((r) => !r.isPublished);
+
+  const updateMutation = useApiMutation<any, { id: string; body: Partial<EditFormData> }>(
+    (variables, token) =>
+      fetch(`/api/reviews/${variables.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(variables.body),
+      }),
+    {
+      invalidateKeys: [["reviews"]],
     }
-  }, [authHeaders]);
+  );
 
-  useEffect(() => {
-    applyFilter();
-  }, [statusFilter, reviews]);
-
-  const fetchReviews = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/reviews?limit=100&offset=0", {
-        headers: authHeaders as any,
-      });
-
-      if (!res.ok) {
-        throw new Error("리뷰 목록 조회 실패");
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        setReviews(data.reviews);
-      }
-    } catch (error) {
-      console.error("리뷰 조회 실패:", error);
-      toast("리뷰 목록을 불러오는데 실패했습니다.", "error");
-    } finally {
-      setIsLoading(false);
+  const deleteMutation = useApiMutation<any, string>(
+    (id, token) =>
+      fetch(`/api/reviews/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    {
+      invalidateKeys: [["reviews"]],
+      onSuccess: () => {
+        toast("리뷰가 삭제되었습니다.", "success");
+      },
+      onError: () => {
+        toast("리뷰 삭제에 실패했습니다.", "error");
+      },
     }
-  };
-
-  const applyFilter = () => {
-    if (statusFilter === "all") {
-      setFilteredReviews(reviews);
-    } else if (statusFilter === "published") {
-      setFilteredReviews(reviews.filter((r) => r.isPublished));
-    } else {
-      setFilteredReviews(reviews.filter((r) => !r.isPublished));
-    }
-  };
+  );
 
   const handleEdit = (review: Review) => {
     setEditingReview(review);
@@ -121,91 +129,46 @@ export default function ReviewsPage() {
 
   const handleSaveEdit = async () => {
     if (!editingReview) return;
-
-    try {
-      const res = await fetch(`/api/reviews/${editingReview.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authHeaders as any),
-        },
-        body: JSON.stringify({
+    updateMutation.mutate(
+      {
+        id: editingReview.id,
+        body: {
           authorName: editFormData.authorName,
           rating: editFormData.rating,
-          title: editFormData.title || null,
+          title: editFormData.title || undefined,
           content: editFormData.content,
-          travelDate: editFormData.travelDate || null,
+          travelDate: editFormData.travelDate || undefined,
           isVerified: editFormData.isVerified,
           isPublished: editFormData.isPublished,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("리뷰 수정 실패");
+        },
+      },
+      {
+        onSuccess: () => {
+          toast("리뷰가 수정되었습니다.", "success");
+          setIsEditModalOpen(false);
+          setEditingReview(null);
+        },
+        onError: () => {
+          toast("리뷰 수정에 실패했습니다.", "error");
+        },
       }
-
-      const data = await res.json();
-      if (data.success) {
-        toast("리뷰가 수정되었습니다.", "success");
-        setIsEditModalOpen(false);
-        setEditingReview(null);
-        fetchReviews();
-      }
-    } catch (error) {
-      console.error("리뷰 수정 실패:", error);
-      toast("리뷰 수정에 실패했습니다.", "error");
-    }
+    );
   };
 
   const handleDelete = async (id: string) => {
     if (!(await confirm({ message: "정말 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
-
-    try {
-      const res = await fetch(`/api/reviews/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any,
-      });
-
-      if (!res.ok) {
-        throw new Error("리뷰 삭제 실패");
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        toast("리뷰가 삭제되었습니다.", "success");
-        fetchReviews();
-      }
-    } catch (error) {
-      console.error("리뷰 삭제 실패:", error);
-      toast("리뷰 삭제에 실패했습니다.", "error");
-    }
+    deleteMutation.mutate(id);
   };
 
-  const handleTogglePublish = async (review: Review) => {
-    try {
-      const res = await fetch(`/api/reviews/${review.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authHeaders as any),
+  const handleTogglePublish = (review: Review) => {
+    updateMutation.mutate(
+      { id: review.id, body: { isPublished: !review.isPublished } },
+      {
+        onError: () => {
+          toast("공개 상태 변경에 실패했습니다.", "error");
         },
-        body: JSON.stringify({
-          isPublished: !review.isPublished,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("공개 상태 변경 실패");
       }
-
-      const data = await res.json();
-      if (data.success) {
-        fetchReviews();
-      }
-    } catch (error) {
-      console.error("공개 상태 변경 실패:", error);
-      toast("공개 상태 변경에 실패했습니다.", "error");
-    }
+    );
   };
 
   const renderStars = (rating: number) => {

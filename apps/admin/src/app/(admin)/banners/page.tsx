@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Pencil, Trash2, Image as ImageIcon, Eye, EyeOff } from "lucide-react";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
+import { Plus, Pencil, Trash2, Image as ImageIcon } from "lucide-react";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
@@ -31,11 +33,11 @@ interface BannerFormData {
 }
 
 export default function BannersPage() {
-  const { authHeaders, isLoading } = useAdminAuth();
+  const { token, isLoading } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [formData, setFormData] = useState<BannerFormData>({
@@ -49,27 +51,33 @@ export default function BannersPage() {
   });
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0 && !isLoading) {
-      fetchBanners();
-    }
-  }, [authHeaders, isLoading]);
+  const { data, isLoading: loading } = useApiQuery<{ success: boolean; banners: Banner[] }>(
+    ["banners"],
+    "/api/banners"
+  );
+  const banners = data?.banners ?? [];
 
-  const fetchBanners = async () => {
-    try {
-      const res = await fetch("/api/banners", {
-        headers: authHeaders as any
+  const saveMutation = useApiMutation<any, { id?: string; body: any }>(
+    async ({ id, body }, token) => {
+      const url = id ? `/api/banners/${id}` : "/api/banners";
+      const method = id ? "PUT" : "POST";
+      return fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
       });
-      const data = await res.json();
-      if (data.success) {
-        setBanners(data.banners);
-      }
-    } catch (error) {
-      console.error("배너 목록 조회 실패:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    { invalidateKeys: [["banners"]] }
+  );
+
+  const deleteMutation = useApiMutation<any, string>(
+    async (id, token) =>
+      fetch(`/api/banners/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    { invalidateKeys: [["banners"]] }
+  );
 
   const openCreateModal = () => {
     setEditingBanner(null);
@@ -114,56 +122,37 @@ export default function BannersPage() {
       return;
     }
 
-    try {
-      const url = editingBanner ? `/api/banners/${editingBanner.id}` : "/api/banners";
-      const method = editingBanner ? "PUT" : "POST";
+    const body = {
+      ...formData,
+      subtitle: formData.subtitle || null,
+      linkUrl: formData.linkUrl || null,
+      ctaText: formData.ctaText || null,
+    };
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders
-        } as any,
-        body: JSON.stringify({
-          ...formData,
-          subtitle: formData.subtitle || null,
-          linkUrl: formData.linkUrl || null,
-          ctaText: formData.ctaText || null
-        })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setModalOpen(false);
-        fetchBanners();
-      } else {
-        toast(data.error || "저장에 실패했습니다", "error");
+    saveMutation.mutate(
+      { id: editingBanner?.id, body },
+      {
+        onSuccess: (data) => {
+          if (data.success) {
+            setModalOpen(false);
+          } else {
+            toast(data.error || "저장에 실패했습니다", "error");
+          }
+        },
+        onError: () => toast("배너 저장 중 오류가 발생했습니다", "error"),
       }
-    } catch (error) {
-      console.error("배너 저장 실패:", error);
-      toast("배너 저장 중 오류가 발생했습니다", "error");
-    }
+    );
   };
 
   const handleDelete = async (id: string) => {
     if (!(await confirm({ message: "정말 이 배너를 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
 
-    try {
-      const res = await fetch(`/api/banners/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        fetchBanners();
-      } else {
-        toast(data.error || "삭제에 실패했습니다", "error");
-      }
-    } catch (error) {
-      console.error("배너 삭제 실패:", error);
-      toast("배너 삭제 중 오류가 발생했습니다", "error");
-    }
+    deleteMutation.mutate(id, {
+      onSuccess: (data) => {
+        if (!data.success) toast(data.error || "삭제에 실패했습니다", "error");
+      },
+      onError: () => toast("배너 삭제 중 오류가 발생했습니다", "error"),
+    });
   };
 
   if (isLoading || loading) {

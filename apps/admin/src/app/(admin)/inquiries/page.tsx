@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { MessageSquare, Reply, Trash2 } from "lucide-react";
 import FilterTabs from "@/components/ui/FilterTabs";
 import Select from "@/components/ui/Select";
@@ -22,53 +24,75 @@ interface Inquiry {
   createdAt: string;
 }
 
+interface InquiriesResponse {
+  success: boolean;
+  inquiries: Inquiry[];
+}
+
 export default function InquiriesPage() {
-  const { authHeaders } = useAdminAuth();
+  const { token } = useAdminAuth();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
-  const [filteredInquiries, setFilteredInquiries] = useState<Inquiry[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [adminReply, setAdminReply] = useState("");
   const [newStatus, setNewStatus] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      loadInquiries();
-    }
-  }, [authHeaders]);
+  const { data, isLoading } = useApiQuery<InquiriesResponse>(
+    ["inquiries"],
+    "/api/inquiries"
+  );
 
-  useEffect(() => {
-    if (selectedStatus === "all") {
-      setFilteredInquiries(inquiries);
-    } else {
-      setFilteredInquiries(
-        inquiries.filter((inq) => inq.status === selectedStatus)
-      );
-    }
-  }, [selectedStatus, inquiries]);
+  const inquiries = data?.inquiries ?? [];
 
-  async function loadInquiries() {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/inquiries", {
-        headers: authHeaders as any,
-      });
-      const data = await res.json();
-      if (data.success) {
-        setInquiries(data.inquiries);
-      }
-    } catch (error) {
-      console.error("문의 목록 로드 실패:", error);
-      toast("문의 목록을 불러오는 데 실패했습니다.", "error");
-    } finally {
-      setIsLoading(false);
+  const filteredInquiries =
+    selectedStatus === "all"
+      ? inquiries
+      : inquiries.filter((inq) => inq.status === selectedStatus);
+
+  const updateMutation = useApiMutation<any, { id: string; status: string; adminReply?: string }>(
+    (variables, token) =>
+      fetch(`/api/inquiries/${variables.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: variables.status,
+          adminReply: variables.adminReply,
+        }),
+      }),
+    {
+      invalidateKeys: [["inquiries"]],
+      onSuccess: () => {
+        toast("문의가 업데이트되었습니다.", "success");
+        closeModal();
+      },
+      onError: () => {
+        toast("업데이트 중 오류가 발생했습니다.", "error");
+      },
     }
-  }
+  );
+
+  const deleteMutation = useApiMutation<any, string>(
+    (id, token) =>
+      fetch(`/api/inquiries/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    {
+      invalidateKeys: [["inquiries"]],
+      onSuccess: () => {
+        toast("문의가 삭제되었습니다.", "success");
+      },
+      onError: () => {
+        toast("삭제 중 오류가 발생했습니다.", "error");
+      },
+    }
+  );
 
   function openModal(inquiry: Inquiry) {
     setSelectedInquiry(inquiry);
@@ -86,57 +110,16 @@ export default function InquiriesPage() {
 
   async function handleUpdate() {
     if (!selectedInquiry) return;
-
-    try {
-      setIsSubmitting(true);
-      const res = await fetch(`/api/inquiries/${selectedInquiry.id}`, {
-        method: "PUT",
-        headers: {
-          ...authHeaders,
-          "Content-Type": "application/json",
-        } as any,
-        body: JSON.stringify({
-          status: newStatus,
-          adminReply: adminReply || undefined,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast("문의가 업데이트되었습니다.", "success");
-        closeModal();
-        loadInquiries();
-      } else {
-        toast(data.error || "업데이트 실패", "error");
-      }
-    } catch (error) {
-      console.error("문의 업데이트 실패:", error);
-      toast("업데이트 중 오류가 발생했습니다.", "error");
-    } finally {
-      setIsSubmitting(false);
-    }
+    updateMutation.mutate({
+      id: selectedInquiry.id,
+      status: newStatus,
+      adminReply: adminReply || undefined,
+    });
   }
 
   async function handleDelete(id: string) {
     if (!(await confirm({ message: "정말 이 문의를 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
-
-    try {
-      const res = await fetch(`/api/inquiries/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any,
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast("문의가 삭제되었습니다.", "success");
-        loadInquiries();
-      } else {
-        toast(data.error || "삭제 실패", "error");
-      }
-    } catch (error) {
-      console.error("문의 삭제 실패:", error);
-      toast("삭제 중 오류가 발생했습니다.", "error");
-    }
+    deleteMutation.mutate(id);
   }
 
   function getStatusBadge(status: string) {
@@ -267,8 +250,8 @@ export default function InquiriesPage() {
         footer={
           <>
             <ModalCancelButton onClick={closeModal} />
-            <ModalConfirmButton onClick={handleUpdate} disabled={isSubmitting}>
-              {isSubmitting ? "처리 중..." : "저장"}
+            <ModalConfirmButton onClick={handleUpdate} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? "처리 중..." : "저장"}
             </ModalConfirmButton>
           </>
         }

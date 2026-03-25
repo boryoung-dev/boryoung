@@ -1,42 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { CategoryTree } from "@/components/admin/categories/CategoryTree";
 import { CategoryForm } from "@/components/admin/categories/CategoryForm";
 import { Plus } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 
+interface CategoriesResponse {
+  success: boolean;
+  categories: any[];
+}
+
 export default function AdminCategoriesPage() {
-  const { authHeaders } = useAdminAuth();
+  const { token } = useAdminAuth();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [categories, setCategories] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editCategory, setEditCategory] = useState<any>(null);
   const [parentForNew, setParentForNew] = useState<any>(null);
 
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch("/api/categories", {
-        headers: authHeaders as any,
-      });
-      const data = await res.json();
-      if (data.success) setCategories(data.categories);
-    } catch (error) {
-      console.error("카테고리 조회 오류:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data, isLoading } = useApiQuery<CategoriesResponse>(
+    ["categories"],
+    "/api/categories"
+  );
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      fetchCategories();
+  const categories = data?.categories ?? [];
+
+  const deleteMutation = useApiMutation<any, string>(
+    (id, token) =>
+      fetch(`/api/categories/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    {
+      invalidateKeys: [["categories"]],
+      onError: () => {
+        toast("삭제 중 오류가 발생했습니다", "error");
+      },
     }
-  }, [authHeaders]);
+  );
 
   const handleAdd = (parent?: any) => {
     setEditCategory(null);
@@ -52,20 +59,13 @@ export default function AdminCategoriesPage() {
 
   const handleDelete = async (id: string, name: string) => {
     if (!(await confirm({ message: `"${name}" 카테고리를 삭제하시겠습니까?`, variant: "danger", confirmText: "삭제" }))) return;
-    try {
-      const res = await fetch(`/api/categories/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any,
-      });
-      const data = await res.json();
-      if (data.success) {
-        fetchCategories();
-      } else {
-        toast(data.error || "삭제 실패", "error");
-      }
-    } catch {
-      toast("삭제 중 오류가 발생했습니다", "error");
-    }
+    deleteMutation.mutate(id, {
+      onSuccess: (data: any) => {
+        if (data && !data.success) {
+          toast(data.error || "삭제 실패", "error");
+        }
+      },
+    });
   };
 
   const handleFormClose = () => {
@@ -76,7 +76,7 @@ export default function AdminCategoriesPage() {
 
   const handleFormSaved = () => {
     handleFormClose();
-    fetchCategories();
+    queryClient.invalidateQueries({ queryKey: ["categories"] });
   };
 
   if (isLoading) {

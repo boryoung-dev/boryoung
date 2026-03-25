@@ -13,6 +13,7 @@
     "@repo/database": "workspace:*",
     "@repo/ui": "workspace:*",
     "@supabase/supabase-js": "^2.94.0",
+    "@tanstack/react-query": "^5.95.2",
     "@tiptap/extension-color": "^3.19.0",
     "@tiptap/extension-highlight": "^3.19.0",
     "@tiptap/extension-image": "^3.19.0",
@@ -47,8 +48,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "prisma": "^5.22.0",
     "eslint-config-next": "16.1.4",
+    "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
