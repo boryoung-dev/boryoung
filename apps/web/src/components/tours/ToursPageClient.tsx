@@ -130,10 +130,16 @@ export function ToursPageClient({
       );
     }
 
-    // 여행지 필터
+    // 여행지 필터 (사이드바 체크박스)
     if (selectedDestinations.length > 0) {
       result = result.filter((p) =>
         selectedDestinations.includes(p.destination)
+      );
+    } else if (initialFilters.destination) {
+      // URL destination 파라미터가 있지만 정확히 매칭되는 여행지가 없을 때 부분 매칭
+      const keyword = initialFilters.destination;
+      result = result.filter((p) =>
+        p.destination?.includes(keyword)
       );
     }
 
