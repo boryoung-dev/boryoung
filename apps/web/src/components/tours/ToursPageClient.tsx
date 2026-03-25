@@ -40,12 +40,22 @@ export function ToursPageClient({
     category?: string;
     tag?: string;
     search?: string;
+    destination?: string;
   };
 }) {
   const [searchQuery] = useState(initialFilters.search || "");
   const [selectedCategory, setSelectedCategory] = useState(initialFilters.category);
   const [selectedTag] = useState(initialFilters.tag);
-  const [selectedDestinations, setSelectedDestinations] = useState<string[]>([]);
+  // URL의 destination 파라미터로 여행지 자동 선택 (부분 매칭)
+  const initialDestinations = useMemo(() => {
+    if (!initialFilters.destination) return [];
+    const keyword = initialFilters.destination;
+    return initialProducts
+      .map((p) => p.destination)
+      .filter((d): d is string => !!d && d.includes(keyword))
+      .filter((v, i, a) => a.indexOf(v) === i);
+  }, [initialFilters.destination, initialProducts]);
+  const [selectedDestinations, setSelectedDestinations] = useState<string[]>(initialDestinations);
   const [sortKey, setSortKey] = useState<SortKey>("recommended");
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);

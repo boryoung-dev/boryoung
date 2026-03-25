@@ -40,9 +40,19 @@ function HeroSearchForm() {
 
 export const revalidate = 60;
 
-export default async function ToursPage() {
+export default async function ToursPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const search = typeof params.search === "string" ? params.search : undefined;
+  const category = typeof params.category === "string" ? params.category : undefined;
+  const tag = typeof params.tag === "string" ? params.tag : undefined;
+  const destination = typeof params.destination === "string" ? params.destination : undefined;
+
   const [products, categories, tags] = await Promise.all([
-    getTourProducts({}),
+    getTourProducts({ categorySlug: category, tagSlug: tag, search }),
     getCategories(),
     getTags(),
   ]);
@@ -68,7 +78,7 @@ export default async function ToursPage() {
             initialProducts={products}
             categories={categories}
             tags={tags}
-            initialFilters={{}}
+            initialFilters={{ category, tag, search, destination }}
           />
         </Suspense>
       </main>

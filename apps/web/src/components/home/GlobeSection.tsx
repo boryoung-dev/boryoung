@@ -17,12 +17,12 @@ interface GlobeSectionProps {
 }
 
 const DESTINATIONS = [
-  { name: "한국", key: "domestic-jeju", lat: 36.5, lng: 127.0, emoji: "🇰🇷", desc: "제주·강원·경기 명문 코스", href: "/tours?country=domestic-jeju" },
-  { name: "일본", key: "japan", lat: 36.2, lng: 138.2, emoji: "🇯🇵", desc: "규슈·오키나와·홋카이도", href: "/tours?country=japan" },
-  { name: "태국", key: "thailand", lat: 15.87, lng: 100.99, emoji: "🇹🇭", desc: "방콕·치앙마이·파타야", href: "/tours?country=thailand" },
-  { name: "베트남", key: "vietnam", lat: 16.05, lng: 108.22, emoji: "🇻🇳", desc: "다낭·호치민·하노이", href: "/tours?country=vietnam" },
-  { name: "대만", key: "taiwan", lat: 25.03, lng: 121.56, emoji: "🇹🇼", desc: "타이베이 근교 명문 코스", href: "/tours?country=taiwan" },
-  { name: "괌·사이판", key: "guam-saipan", lat: 13.44, lng: 144.79, emoji: "🇬🇺", desc: "오션뷰 리조트 골프", href: "/tours?country=guam-saipan" },
+  { name: "한국", key: "domestic-jeju", lat: 36.5, lng: 127.0, emoji: "🇰🇷", desc: "제주·강원·경기 명문 코스", href: "/tours?destination=제주" },
+  { name: "일본", key: "japan", lat: 36.2, lng: 138.2, emoji: "🇯🇵", desc: "규슈·오키나와·홋카이도", href: "/tours?destination=일본" },
+  { name: "태국", key: "thailand", lat: 15.87, lng: 100.99, emoji: "🇹🇭", desc: "방콕·치앙마이·파타야", href: "/tours?destination=태국" },
+  { name: "베트남", key: "vietnam", lat: 16.05, lng: 108.22, emoji: "🇻🇳", desc: "다낭·호치민·하노이", href: "/tours?destination=베트남" },
+  { name: "대만", key: "taiwan", lat: 25.03, lng: 121.56, emoji: "🇹🇼", desc: "타이베이 근교 명문 코스", href: "/tours?destination=대만" },
+  { name: "괌·사이판", key: "guam-saipan", lat: 13.44, lng: 144.79, emoji: "🇬🇺", desc: "오션뷰 리조트 골프", href: "/tours?destination=괌" },
 ];
 
 const DEFAULT_SELECTED = 0; // 한국 디폴트 선택

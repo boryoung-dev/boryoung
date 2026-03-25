@@ -47,7 +47,7 @@ export function PopularDestinationsCarousel({
             {destinations.map((dest) => (
               <Link
                 key={dest.name}
-                href={href}
+                href={`/tours?destination=${encodeURIComponent(dest.name)}`}
                 className="group flex-shrink-0 w-[140px] sm:w-[160px] md:w-[176px]"
               >
                 <div className="aspect-square rounded-2xl overflow-hidden bg-[color:var(--surface)] mb-2">
