@@ -19,7 +19,6 @@ import {
   FileText,
   LayoutGrid,
   Zap,
-  FileUp,
   Sparkles,
 } from "lucide-react";
 
@@ -35,18 +34,22 @@ const navGroups = [
     label: "상품",
     items: [
       { href: "/products", label: "상품 관리", icon: Package },
-      { href: "/products/import", label: "엑셀 일괄등록", icon: FileUp },
-      { href: "/categories", label: "카테고리", icon: FolderTree },
+      { href: "/categories", label: "카테고리 (국가/지역)", icon: FolderTree },
       { href: "/tags", label: "태그 관리", icon: Tags },
+    ],
+  },
+  {
+    label: "홈페이지 관리",
+    items: [
+      { href: "/curations", label: "메인 섹션", icon: LayoutGrid },
+      { href: "/banners", label: "배너 관리", icon: Image },
+      { href: "/quick-icons", label: "빠른아이콘", icon: Zap },
     ],
   },
   {
     label: "콘텐츠",
     items: [
-      { href: "/banners", label: "배너 관리", icon: Image },
       { href: "/blog-posts", label: "매거진 관리", icon: FileText },
-      { href: "/curations", label: "큐레이션 관리", icon: LayoutGrid },
-      { href: "/quick-icons", label: "빠른아이콘 관리", icon: Zap },
     ],
   },
   {
