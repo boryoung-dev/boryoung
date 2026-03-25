@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown, Clock } from "lucide-react";
+import { Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown, Clock, ImageIcon } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 interface Activity {
@@ -15,6 +15,7 @@ interface ItineraryItem {
   day: number;
   title: string;
   description: string;
+  imageUrl: string;
   meals: string;
   accommodation: string;
   golfCourse: string;
@@ -33,6 +34,7 @@ const emptyDay = (day: number): ItineraryItem => ({
   day,
   title: "",
   description: "",
+  imageUrl: "",
   meals: "",
   accommodation: "",
   golfCourse: "",
@@ -51,6 +53,7 @@ export function ItineraryTab({ productId, itineraries: initial, onPendingChange 
           day: it.day,
           title: it.title || "",
           description: it.description || "",
+          imageUrl: it.imageUrl || "",
           meals: it.meals || "",
           accommodation: it.accommodation || "",
           golfCourse: it.golfCourse || "",
@@ -154,6 +157,7 @@ export function ItineraryTab({ productId, itineraries: initial, onPendingChange 
             day: item.day,
             title: item.title,
             description: item.description,
+            imageUrl: item.imageUrl || null,
             meals: item.meals,
             accommodation: item.accommodation,
             golfCourse: item.golfCourse,
@@ -171,6 +175,7 @@ export function ItineraryTab({ productId, itineraries: initial, onPendingChange 
             day: it.day,
             title: it.title || "",
             description: it.description || "",
+            imageUrl: it.imageUrl || "",
             meals: it.meals || "",
             accommodation: it.accommodation || "",
             golfCourse: it.golfCourse || "",
@@ -231,6 +236,17 @@ export function ItineraryTab({ productId, itineraries: initial, onPendingChange 
             <div className="lg:col-span-2">
               <label className="block text-xs font-medium text-gray-600 mb-1">상세 설명</label>
               <textarea value={item.description} onChange={(e) => updateDay(idx, "description", e.target.value)} rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+            </div>
+            <div className="lg:col-span-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                <span className="flex items-center gap-1"><ImageIcon className="w-3.5 h-3.5" /> 일정 이미지</span>
+              </label>
+              <div className="flex gap-3 items-start">
+                <input type="text" value={item.imageUrl} onChange={(e) => updateDay(idx, "imageUrl", e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="이미지 URL (선택사항)" />
+                {item.imageUrl && (
+                  <img src={item.imageUrl} alt={`${item.day}일차`} referrerPolicy="no-referrer" className="w-20 h-14 object-cover rounded-lg border border-gray-200 flex-shrink-0" />
+                )}
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">식사</label>

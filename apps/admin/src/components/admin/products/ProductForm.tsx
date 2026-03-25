@@ -118,6 +118,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
               day: item.day,
               title: item.title,
               description: item.description,
+              imageUrl: item.imageUrl || null,
               meals: item.meals,
               accommodation: item.accommodation,
               golfCourse: item.golfCourse,

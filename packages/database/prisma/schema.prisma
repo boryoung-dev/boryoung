@@ -177,6 +177,7 @@ model Itinerary {
   day           Int
   title         String
   description   String?     @db.Text
+  imageUrl      String?     // 일정별 대표 이미지
   activities    Json        @default("[]") // [{time: "08:00", activity: "호텔 출발"}]
   meals         String?     // "조식: 호텔식 / 중식: 현지식 / 석식: 자유식"
   accommodation String?

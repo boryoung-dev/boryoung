@@ -81,7 +81,30 @@ export function TagsSeoTab({ formData, updateField }: Props) {
 
       {/* SEO */}
       <div>
-        <h3 className="text-sm font-medium text-gray-700 mb-4">SEO 설정</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium text-gray-700">SEO 설정</h3>
+          <button
+            type="button"
+            onClick={() => {
+              const title = formData.title || "";
+              const dest = formData.destination || "";
+              const duration = formData.durationText || "";
+              const price = formData.basePrice ? `${Number(formData.basePrice).toLocaleString()}원~` : "";
+
+              const metaTitle = `${title} | 보령항공여행`;
+              const parts = [dest, duration, "골프투어"].filter(Boolean);
+              const metaDesc = price
+                ? `${parts.join(" ")} ${price}. 왕복 항공권, 숙박, 그린피 포함 패키지. 보령항공여행에서 예약하세요.`
+                : `${parts.join(" ")} 패키지. 왕복 항공권, 숙박, 그린피 포함. 보령항공여행에서 예약하세요.`;
+
+              updateField("metaTitle", metaTitle);
+              updateField("metaDescription", metaDesc);
+            }}
+            className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors"
+          >
+            자동 생성
+          </button>
+        </div>
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Meta Title</label>
@@ -90,8 +113,11 @@ export function TagsSeoTab({ formData, updateField }: Props) {
               value={formData.metaTitle || ""}
               onChange={(e) => updateField("metaTitle", e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-              placeholder="검색 엔진에 표시될 제목"
+              placeholder="검색 엔진에 표시될 제목 (자동 생성 버튼을 눌러보세요)"
             />
+            {formData.metaTitle && (
+              <p className="mt-1 text-xs text-gray-400">{formData.metaTitle.length}/60자</p>
+            )}
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Meta Description</label>
@@ -100,8 +126,11 @@ export function TagsSeoTab({ formData, updateField }: Props) {
               onChange={(e) => updateField("metaDescription", e.target.value)}
               rows={3}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-              placeholder="검색 결과에 표시될 설명"
+              placeholder="검색 결과에 표시될 설명 (자동 생성 버튼을 눌러보세요)"
             />
+            {formData.metaDescription && (
+              <p className="mt-1 text-xs text-gray-400">{formData.metaDescription.length}/160자</p>
+            )}
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">네이버 블로그 URL</label>

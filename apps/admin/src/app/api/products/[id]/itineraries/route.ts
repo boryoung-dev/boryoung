@@ -32,6 +32,7 @@ export async function PUT(
             day: it.day || idx + 1,
             title: it.title || `${idx + 1}일차`,
             description: it.description || null,
+            imageUrl: it.imageUrl || null,
             activities: it.activities || [],
             meals: it.meals || null,
             accommodation: it.accommodation || null,
