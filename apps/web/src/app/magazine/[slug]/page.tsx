@@ -116,7 +116,7 @@ export default async function MagazineDetailPage({ params }: Props) {
       name: SITE_NAME,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/logo.png`,
+        url: `${SITE_URL}/og-image.png`,
       },
     },
     mainEntityOfPage: {

@@ -69,11 +69,20 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: `${SITE_NAME} - 해외골프투어 전문 여행사`,
     description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: `${SITE_URL}/og-image.png`,
+        width: 1200,
+        height: 634,
+        alt: "(주)보령항공여행사 - 22년 전통 해외골프투어 전문",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_NAME} - 해외골프투어 전문 여행사`,
     description: SITE_DESCRIPTION,
+    images: [`${SITE_URL}/og-image.png`],
   },
   robots: {
     index: true,
@@ -99,12 +108,12 @@ const organizationJsonLd = {
   logo: {
     "@type": "ImageObject",
     "@id": `${SITE_URL}/#logo`,
-    url: `${SITE_URL}/opengraph-image`,
+    url: `${SITE_URL}/og-image.png`,
     width: 1200,
-    height: 630,
+    height: 634,
     caption: SITE_NAME,
   },
-  image: `${SITE_URL}/opengraph-image`,
+  image: `${SITE_URL}/og-image.png`,
   description: SITE_DESCRIPTION,
   telephone: "1588-0320",
   email: "admin@boryoung.com",
