@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     default: `${SITE_NAME} - 해외골프투어 전문 여행사`,
     template: `%s | ${SITE_NAME}`,
   },
-  description: SITE_DESCRIPTION,
+  description: "보령항공여행사 - 22년 전통의 해외골프투어 전문 여행사. 일본, 태국, 베트남, 대만 등 다양한 골프여행 상품을 만나보세요. 1588-0320",
   keywords: [
     // 핵심 키워드
     "골프여행", "골프투어", "해외골프여행", "해외골프투어", "골프패키지", "골프여행사", "골프투어전문",
@@ -54,6 +54,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   verification: {
+    google: "ovkwXBV92MwDd5_5-qUDbkzdUV_ja0S2ttd3yoZn0Vg",
     other: {
       "naver-site-verification": ["f74847ba2e75788aa94473429118a4e479da3066"],
     },
@@ -88,23 +89,34 @@ export const metadata: Metadata = {
 };
 
 // JSON-LD 구조화 데이터: Organization + TravelAgency
-const jsonLd = {
+const organizationJsonLd = {
   "@context": "https://schema.org",
-  "@type": "TravelAgency",
+  "@type": ["TravelAgency", "Organization"],
+  "@id": `${SITE_URL}/#organization`,
   name: SITE_NAME,
-  alternateName: "보령항공여행",
+  alternateName: ["보령항공여행사", "보령항공여행", "보령골프투어", "보령여행사"],
   url: SITE_URL,
-  logo: `${SITE_URL}/opengraph-image`,
+  logo: {
+    "@type": "ImageObject",
+    "@id": `${SITE_URL}/#logo`,
+    url: `${SITE_URL}/opengraph-image`,
+    width: 1200,
+    height: 630,
+    caption: SITE_NAME,
+  },
   image: `${SITE_URL}/opengraph-image`,
   description: SITE_DESCRIPTION,
   telephone: "1588-0320",
   email: "admin@boryoung.com",
   foundingDate: "2004",
+  legalName: "(주)보령항공여행사",
+  taxID: "117-81-52746",
   address: {
     "@type": "PostalAddress",
     streetAddress: "태장로 795번길 23, 537호(장기동)",
     addressLocality: "김포시",
     addressRegion: "경기도",
+    postalCode: "10124",
     addressCountry: "KR",
   },
   geo: {
@@ -132,6 +144,29 @@ const jsonLd = {
     },
     geoRadius: "50000",
   },
+  knowsAbout: ["골프여행", "해외골프투어", "골프패키지여행", "일본골프", "태국골프", "베트남골프", "대만골프"],
+};
+
+// JSON-LD: WebSite 스키마 — 검색엔진 사이트링크 및 검색창 표시용
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
+  name: SITE_NAME,
+  alternateName: ["보령항공여행사", "보령항공여행", "보령골프투어"],
+  url: SITE_URL,
+  publisher: {
+    "@id": `${SITE_URL}/#organization`,
+  },
+  inLanguage: "ko-KR",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${SITE_URL}/tours?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
 };
 
 export default function RootLayout({
@@ -144,7 +179,11 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         {/* Google Analytics */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-8KCME6XCXK" />
