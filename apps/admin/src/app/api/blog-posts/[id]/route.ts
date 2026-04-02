@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@repo/database";
 import { verifyAdminToken } from "@/lib/auth";
+import { slugifyWithSuffix } from "@/lib/slugify";
 
-// slug 생성 함수
 function generateSlug(title: string): string {
-  const randomSuffix = Math.random().toString(36).substring(2, 8);
-  const slug = title
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w\-가-힣]/g, "")
-    .toLowerCase();
-  return `${slug}-${randomSuffix}`;
+  return slugifyWithSuffix(title);
 }
 
 // GET: 블로그 글 상세 조회 (인증 필요) - content 포함

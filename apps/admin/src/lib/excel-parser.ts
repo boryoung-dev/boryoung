@@ -87,19 +87,7 @@ export function extractDbValue(cellValue: string): string {
   return match ? match[1] : str;
 }
 
-/**
- * 상품명 → URL slug 변환
- * 한글은 음절 단위로 유지하되, 공백/특수문자를 하이픈으로 대체
- */
-export function slugify(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s가-힣-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .substring(0, 100);
-}
+export { slugify } from "@/lib/slugify";
 
 /** 셀 값을 문자열로 안전하게 변환 */
 function cellToString(val: unknown): string {

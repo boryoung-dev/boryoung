@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import {
   Plus,
   Pencil,
@@ -112,13 +113,11 @@ function ProviderIcon({ provider }: { provider: string }) {
 // === 컴포넌트 ===
 
 export default function AISettingsPage() {
-  const { authHeaders } = useAdminAuth();
+  const { token } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const searchParams = useSearchParams();
 
-  const [providers, setProviders] = useState<AIProviderItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editTarget, setEditTarget] = useState<AIProviderItem | null>(null);
@@ -126,7 +125,6 @@ export default function AISettingsPage() {
   const [oauthLoading, setOauthLoading] = useState(false);
   const [testingId, setTestingId] = useState<string | null>(null);
 
-  // 폼 상태
   const [formData, setFormData] = useState({
     name: "",
     provider: "openai",
@@ -138,6 +136,61 @@ export default function AISettingsPage() {
     oauthClientSecret: "",
   });
 
+  const { data, isLoading } = useApiQuery<{ success: boolean; providers: AIProviderItem[] }>(
+    ["ai-providers"],
+    "/api/ai-providers"
+  );
+  const providers = data?.providers ?? [];
+
+  const addMutation = useApiMutation<any, typeof formData>(
+    async (body, token) =>
+      fetch("/api/ai-providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      }),
+    { invalidateKeys: [["ai-providers"]] }
+  );
+
+  const editMutation = useApiMutation<any, { id: string; body: any }>(
+    async ({ id, body }, token) =>
+      fetch(`/api/ai-providers/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      }),
+    { invalidateKeys: [["ai-providers"]] }
+  );
+
+  const deleteMutation = useApiMutation<any, string>(
+    async (id, token) =>
+      fetch(`/api/ai-providers/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    { invalidateKeys: [["ai-providers"]] }
+  );
+
+  const toggleMutation = useApiMutation<any, { id: string; isActive: boolean }>(
+    async ({ id, isActive }, token) =>
+      fetch(`/api/ai-providers/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isActive }),
+      }),
+    { invalidateKeys: [["ai-providers"]] }
+  );
+
+  const setDefaultMutation = useApiMutation<any, string>(
+    async (id, token) =>
+      fetch(`/api/ai-providers/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isDefault: true }),
+      }),
+    { invalidateKeys: [["ai-providers"]] }
+  );
+
   // OAuth 콜백 메시지 처리
   useEffect(() => {
     const error = searchParams.get("error");
@@ -147,47 +200,20 @@ export default function AISettingsPage() {
     }
     if (success) {
       toast(decodeURIComponent(success), "success");
-      fetchProviders();
     }
   }, [searchParams]);
 
-  // 제공자 목록 조회
-  const fetchProviders = async () => {
-    try {
-      const res = await fetch("/api/ai-providers", {
-        headers: authHeaders as any,
-      });
-      const data = await res.json();
-      if (data.success) {
-        setProviders(data.providers);
-      }
-    } catch (error) {
-      console.error("AI 제공자 목록 조회 오류:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0) {
-      fetchProviders();
-    }
-  }, [authHeaders]);
-
-  // 제공자 변경 시 모델 기본값 설정
   const handleProviderChange = (provider: string) => {
     const models = MODEL_OPTIONS[provider];
     setFormData({
       ...formData,
       provider,
       model: models?.[0]?.value || "",
-      // Google, ZHIPU만 OAuth 지원
       authType: formData.authType === "oauth" && provider !== "google" ? "apikey" : formData.authType,
     });
   };
 
-  // 추가
-  const handleAdd = async () => {
+  const handleAdd = () => {
     if (!formData.name.trim()) {
       toast("이름을 입력해주세요", "error");
       return;
@@ -206,73 +232,56 @@ export default function AISettingsPage() {
     }
 
     setSaving(true);
-    try {
-      const res = await fetch("/api/ai-providers", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders,
-        } as any,
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast("AI 제공자가 추가되었습니다", "success");
-        setShowAddModal(false);
-        resetForm();
-        fetchProviders();
-
-        // OAuth인 경우 바로 OAuth 플로우 시작
-        if (formData.authType === "oauth" && formData.provider === "google") {
-          startGoogleOAuth(data.provider.id);
+    addMutation.mutate(formData, {
+      onSuccess: (data) => {
+        if (data.success) {
+          toast("AI 제공자가 추가되었습니다", "success");
+          setShowAddModal(false);
+          resetForm();
+          if (formData.authType === "oauth" && formData.provider === "google") {
+            startGoogleOAuth(data.provider.id);
+          }
+          if (formData.authType === "oauth" && formData.provider === "zhipu") {
+            startZhipuOAuth(data.provider.id);
+          }
+        } else {
+          toast(data.error || "추가 실패", "error");
         }
-        if (formData.authType === "oauth" && formData.provider === "zhipu") {
-          startZhipuOAuth(data.provider.id);
-        }
-      } else {
-        toast(data.error || "추가 실패", "error");
-      }
-    } catch {
-      toast("추가 중 오류가 발생했습니다", "error");
-    } finally {
-      setSaving(false);
-    }
+        setSaving(false);
+      },
+      onError: () => {
+        toast("추가 중 오류가 발생했습니다", "error");
+        setSaving(false);
+      },
+    });
   };
 
-  // 수정
-  const handleEdit = async () => {
+  const handleEdit = () => {
     if (!editTarget) return;
 
     setSaving(true);
-    try {
-      const res = await fetch(`/api/ai-providers/${editTarget.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders,
-        } as any,
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast("AI 제공자가 수정되었습니다", "success");
-        setShowEditModal(false);
-        setEditTarget(null);
-        resetForm();
-        fetchProviders();
-      } else {
-        toast(data.error || "수정 실패", "error");
+    editMutation.mutate(
+      { id: editTarget.id, body: formData },
+      {
+        onSuccess: (data) => {
+          if (data.success) {
+            toast("AI 제공자가 수정되었습니다", "success");
+            setShowEditModal(false);
+            setEditTarget(null);
+            resetForm();
+          } else {
+            toast(data.error || "수정 실패", "error");
+          }
+          setSaving(false);
+        },
+        onError: () => {
+          toast("수정 중 오류가 발생했습니다", "error");
+          setSaving(false);
+        },
       }
-    } catch {
-      toast("수정 중 오류가 발생했습니다", "error");
-    } finally {
-      setSaving(false);
-    }
+    );
   };
 
-  // 삭제
   const handleDelete = async (id: string, name: string) => {
     if (
       !(await confirm({
@@ -280,67 +289,42 @@ export default function AISettingsPage() {
         variant: "danger",
         confirmText: "삭제",
       }))
-    )
-      return;
+    ) return;
 
-    try {
-      const res = await fetch(`/api/ai-providers/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any,
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast("AI 제공자가 삭제되었습니다", "success");
-        fetchProviders();
-      } else {
-        toast(data.error || "삭제 실패", "error");
-      }
-    } catch {
-      toast("삭제 중 오류가 발생했습니다", "error");
-    }
+    deleteMutation.mutate(id, {
+      onSuccess: (data) => {
+        if (data.success) {
+          toast("AI 제공자가 삭제되었습니다", "success");
+        } else {
+          toast(data.error || "삭제 실패", "error");
+        }
+      },
+      onError: () => toast("삭제 중 오류가 발생했습니다", "error"),
+    });
   };
 
-  // 활성/비활성 토글
-  const handleToggleActive = async (id: string, isActive: boolean) => {
-    try {
-      const res = await fetch(`/api/ai-providers/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeaders } as any,
-        body: JSON.stringify({ isActive }),
-      });
-      const data = await res.json();
-      if (data.success) fetchProviders();
-    } catch {
-      toast("상태 변경 중 오류가 발생했습니다", "error");
-    }
+  const handleToggleActive = (id: string, isActive: boolean) => {
+    toggleMutation.mutate(
+      { id, isActive },
+      { onError: () => toast("상태 변경 중 오류가 발생했습니다", "error") }
+    );
   };
 
-  // 기본 제공자 설정
-  const handleSetDefault = async (id: string) => {
-    try {
-      const res = await fetch(`/api/ai-providers/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeaders } as any,
-        body: JSON.stringify({ isDefault: true }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast("기본 제공자가 변경되었습니다", "success");
-        fetchProviders();
-      }
-    } catch {
-      toast("기본 제공자 변경 중 오류가 발생했습니다", "error");
-    }
+  const handleSetDefault = (id: string) => {
+    setDefaultMutation.mutate(id, {
+      onSuccess: (data) => {
+        if (data.success) toast("기본 제공자가 변경되었습니다", "success");
+      },
+      onError: () => toast("기본 제공자 변경 중 오류가 발생했습니다", "error"),
+    });
   };
 
-  // 연결 테스트
   const handleTestConnection = async (id: string) => {
     setTestingId(id);
     try {
       const res = await fetch("/api/ai-providers/test", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders } as any,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ providerId: id }),
       });
       const data = await res.json();
@@ -356,13 +340,12 @@ export default function AISettingsPage() {
     }
   };
 
-  // Google OAuth 시작
   const startGoogleOAuth = async (providerId: string) => {
     setOauthLoading(true);
     try {
       const res = await fetch(
         `/api/ai-providers/oauth/google?providerId=${providerId}`,
-        { headers: authHeaders as any }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
       if (data.success && data.authUrl) {
@@ -377,13 +360,12 @@ export default function AISettingsPage() {
     }
   };
 
-  // ZHIPU OAuth 시작
   const startZhipuOAuth = async (providerId: string) => {
     setOauthLoading(true);
     try {
       const res = await fetch(
         `/api/ai-providers/oauth/zhipu?providerId=${providerId}`,
-        { headers: authHeaders as any }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
       if (data.success && data.authUrl) {
@@ -398,7 +380,6 @@ export default function AISettingsPage() {
     }
   };
 
-  // 수정 모달 열기
   const openEditModal = (provider: AIProviderItem) => {
     setEditTarget(provider);
     setFormData({
@@ -414,7 +395,6 @@ export default function AISettingsPage() {
     setShowEditModal(true);
   };
 
-  // 폼 초기화
   const resetForm = () => {
     setFormData({
       name: "",
@@ -428,7 +408,6 @@ export default function AISettingsPage() {
     });
   };
 
-  // 제공자 레이블
   const getProviderLabel = (provider: string) => {
     return PROVIDER_OPTIONS.find((p) => p.value === provider)?.label || provider;
   };
@@ -488,7 +467,6 @@ export default function AISettingsPage() {
                   : "border-gray-200"
               } ${!p.isActive ? "opacity-60" : ""}`}
             >
-              {/* 상단: 아이콘 + 이름 + 제공자 뱃지 + 상태 뱃지 */}
               <div className="flex items-center gap-3 mb-4">
                 <ProviderIcon provider={p.provider} />
                 <div className="flex-1 min-w-0">
@@ -517,7 +495,6 @@ export default function AISettingsPage() {
                 </div>
               </div>
 
-              {/* 바디: 모델, 인증, API 키 정보 */}
               <div className="space-y-1.5 mb-4">
                 {p.model && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -545,9 +522,7 @@ export default function AISettingsPage() {
                 )}
               </div>
 
-              {/* 푸터: 구분선 + 액션 버튼들 (아이콘만) */}
               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                {/* 활성/비활성 토글 */}
                 <button
                   onClick={() => handleToggleActive(p.id, !p.isActive)}
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${
@@ -557,15 +532,12 @@ export default function AISettingsPage() {
                 >
                   <span
                     className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                      p.isActive
-                        ? "translate-x-[18px]"
-                        : "translate-x-[2px]"
+                      p.isActive ? "translate-x-[18px]" : "translate-x-[2px]"
                     }`}
                   />
                 </button>
 
                 <div className="flex items-center gap-1">
-                  {/* 기본 설정 */}
                   {!p.isDefault && (
                     <button
                       onClick={() => handleSetDefault(p.id)}
@@ -575,7 +547,6 @@ export default function AISettingsPage() {
                       <Star className="w-4 h-4" />
                     </button>
                   )}
-                  {/* 연결 테스트 */}
                   <button
                     onClick={() => handleTestConnection(p.id)}
                     disabled={testingId === p.id}
@@ -588,7 +559,6 @@ export default function AISettingsPage() {
                       <Zap className="w-4 h-4" />
                     )}
                   </button>
-                  {/* OAuth 재연결 */}
                   {p.provider === "google" && p.authType === "oauth" && (
                     <button
                       onClick={() =>
@@ -603,7 +573,6 @@ export default function AISettingsPage() {
                       <Link className="w-4 h-4" />
                     </button>
                   )}
-                  {/* 수정 */}
                   <button
                     onClick={() => openEditModal(p)}
                     className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
@@ -611,7 +580,6 @@ export default function AISettingsPage() {
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
-                  {/* 삭제 */}
                   <button
                     onClick={() => handleDelete(p.id, p.name)}
                     className="p-2 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors"
@@ -859,7 +827,6 @@ function ProviderForm({
               : "z.ai에서 발급받은 OAuth Client ID/Secret을 입력하세요."}
           </p>
 
-          {/* OAuth 연결 버튼 (수정 모달에서만 표시) */}
           {onStartOAuth && (
             <button
               type="button"
@@ -868,22 +835,10 @@ function ProviderForm({
             >
               {formData.provider === "google" ? (
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
               ) : (
                 <span className="w-5 h-5 flex items-center justify-center rounded bg-cyan-100 text-cyan-700 text-xs font-bold">智</span>

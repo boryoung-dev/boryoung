@@ -66,8 +66,8 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
               {activeTab === "intro" && (
                 <div className="space-y-6">
                   <OverviewSection product={product} />
-                  {product.scheduleDates && Array.isArray(product.scheduleDates) && (
-                    <ScheduleDates dates={product.scheduleDates as unknown as ScheduleDate[]} />
+                  {((product as any).scheduleType === "always" || (product.scheduleDates && Array.isArray(product.scheduleDates) && product.scheduleDates.length > 0)) && (
+                    <ScheduleDates dates={product.scheduleDates as unknown as ScheduleDate[]} scheduleType={(product as any).scheduleType} />
                   )}
                 </div>
               )}

@@ -89,13 +89,15 @@ model TourProduct {
   originalPrice Int?      // 정가 (할인 전)
 
   // 내용
-  content       String?   @db.Text
-  contentHtml   String?   @db.Text
+  content         String?   @db.Text
+  contentHtml     String?   @db.Text
+  contentSections Json?     // 섹션 기반 페이지 빌더 데이터
   inclusions    Json?     // ["항공료", "숙박", "그린피"] 포함사항
   exclusions    Json?     // ["여행자보험", "개인경비"] 불포함사항
 
   // 일정
   scheduleDates Json?     // [{date: "2026-03-15", status: "available"}, ...]
+  scheduleType  String?  @default("dates") // "dates" | "always"
 
   // SEO
   metaTitle       String?
@@ -174,6 +176,8 @@ model Itinerary {
   day           Int
   title         String
   description   String?     @db.Text
+  imageUrl      String?     // 일정별 대표 이미지 (deprecated - imageUrls 사용 권장)
+  imageUrls     Json        @default("[]") // 일정별 여러 이미지 URL 배열
   activities    Json        @default("[]") // [{time: "08:00", activity: "호텔 출발"}]
   meals         String?     // "조식: 호텔식 / 중식: 현지식 / 석식: 자유식"
   accommodation String?

@@ -89,6 +89,12 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
+    if (error.code === "P2003") {
+      return NextResponse.json(
+        { error: "상위 카테고리가 존재하지 않습니다. 페이지를 새로고침 후 다시 시도해주세요." },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
       { error: "카테고리 생성 중 오류가 발생했습니다" },
       { status: 500 }

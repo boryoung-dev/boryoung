@@ -15,7 +15,8 @@ import { TemplateEditorTab } from "./tabs/TemplateEditorTab";
 import { Save, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
-const tabs = [
+// 신규 등록 시 페이지 편집 탭 제외 (등록 후 편집에서만 표시)
+const baseTabs = [
   { id: "basic", label: "기본 정보" },
   { id: "content", label: "상품 소개" },
   { id: "images", label: "이미지" },
@@ -24,6 +25,8 @@ const tabs = [
   { id: "schedule", label: "출발일정" },
   { id: "tags", label: "태그/SEO" },
   { id: "settings", label: "설정" },
+];
+const editOnlyTabs = [
   { id: "template", label: "✏️ 페이지 편집" },
 ];
 
@@ -63,6 +66,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     basePrice: initialData?.basePrice || null,
     originalPrice: initialData?.originalPrice || null,
     content: initialData?.content || "",
+    contentSections: Array.isArray(initialData?.contentSections) ? initialData.contentSections : [],
     inclusions: Array.isArray(initialData?.inclusions) ? initialData.inclusions : [],
     exclusions: Array.isArray(initialData?.exclusions) ? initialData.exclusions : [],
     metaTitle: initialData?.metaTitle || "",
@@ -77,6 +81,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     tagIds: initialData?.tagList?.map((t: any) => t.id) || [],
     contentHtml: initialData?.contentHtml || "",
     scheduleDates: Array.isArray(initialData?.scheduleDates) ? initialData.scheduleDates : [],
+    scheduleType: initialData?.scheduleType || "dates",
   });
 
   const updateField = (field: string, value: any) => {
@@ -119,6 +124,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
               title: item.title,
               description: item.description,
               imageUrl: item.imageUrl || null,
+              imageUrls: Array.isArray(item.imageUrls) ? item.imageUrls : [],
               meals: item.meals,
               accommodation: item.accommodation,
               golfCourse: item.golfCourse,
@@ -161,6 +167,18 @@ export function ProductForm({ initialData }: ProductFormProps) {
       toast("제목, slug, 카테고리, 목적지는 필수입니다", "error");
       setActiveTab("basic");
       return;
+    }
+
+    // SEO 자동 생성 (비어있을 때)
+    if (!formData.metaTitle) {
+      formData.metaTitle = `${formData.title} | 보령항공여행`;
+    }
+    if (!formData.metaDescription) {
+      const parts = [formData.destination, formData.durationText || `${formData.nights || 0}박${formData.days || 0}일`, "골프투어"].filter(Boolean);
+      const price = formData.basePrice ? `${Number(formData.basePrice).toLocaleString()}원~` : "";
+      formData.metaDescription = price
+        ? `${parts.join(" ")} ${price}. 왕복 항공권, 숙박, 그린피 포함 패키지. 보령항공여행에서 예약하세요.`
+        : `${parts.join(" ")} 패키지. 왕복 항공권, 숙박, 그린피 포함. 보령항공여행에서 예약하세요.`;
     }
 
     setIsSaving(true);
@@ -217,6 +235,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
   };
 
   const isNewMode = !initialData;
+  const tabs = isNewMode ? baseTabs : [...baseTabs, ...editOnlyTabs];
 
   return (
     <div>

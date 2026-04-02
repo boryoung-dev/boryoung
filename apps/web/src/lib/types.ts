@@ -42,6 +42,8 @@ export interface Itinerary {
   golfCourse?: string | null;
   golfHoles?: number | null;
   transport?: string | null;
+  imageUrl?: string | null;
+  imageUrls?: string[] | JsonValue; // 여러 이미지 URL 배열 (DB에서 JsonValue로 반환)
 }
 
 // 리뷰
@@ -105,6 +107,7 @@ export interface TourProductDetail extends TourProductSummary {
   excerpt?: string | null;
   content?: string | null;
   contentHtml?: string | null;
+  contentSections?: any;
   nights?: number | null;
   days?: number | null;
   departure?: string | null;

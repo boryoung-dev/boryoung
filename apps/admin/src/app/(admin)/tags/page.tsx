@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { Plus, Pencil, Trash2 } from "lucide-react";
@@ -39,7 +38,6 @@ interface TagFormData {
 
 export default function AdminTagsPage() {
   const { token } = useAdminAuth();
-  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const [showModal, setShowModal] = useState(false);

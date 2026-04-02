@@ -137,12 +137,21 @@ export async function getCategoryTree() {
 }
 
 export async function getCategories() {
+  // 상품이 1개 이상 있는 카테고리만 반환
   return prisma.category.findMany({
-    where: { isActive: true },
+    where: {
+      isActive: true,
+      OR: [
+        // 직접 상품이 연결된 카테고리
+        { products: { some: { isActive: true } } },
+        // 하위 카테고리에 상품이 있는 부모 카테고리
+        { children: { some: { isActive: true, products: { some: { isActive: true } } } } },
+      ],
+    },
     include: {
       parent: true,
       children: {
-        where: { isActive: true },
+        where: { isActive: true, products: { some: { isActive: true } } },
         orderBy: { sortOrder: "asc" },
       },
     },

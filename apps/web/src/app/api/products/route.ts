@@ -14,6 +14,13 @@ export async function GET(request: NextRequest) {
         ...(destination && destination !== '전체' && { destination }),
         ...(featured && { isFeatured: true }),
       },
+      include: {
+        images: {
+          where: { isThumbnail: true },
+          take: 1,
+        },
+        category: true,
+      },
       orderBy: {
         sortOrder: 'asc',
       },

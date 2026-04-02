@@ -5,6 +5,7 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Loader2 } from "lucide-react";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { slugify } from "@/lib/slugify";
 
 interface CategoryFormProps {
   category?: any;
@@ -34,13 +35,7 @@ export function CategoryForm({
     parentId: category?.parentId || parentCategory?.id || null,
   });
 
-  const toSlug = (text: string) =>
-    text
-      .toLowerCase()
-      .replace(/[^a-z0-9가-힣\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .trim();
+  const toSlug = (text: string) => slugify(text);
 
   const handleNameChange = (name: string) => {
     if (isEdit) {

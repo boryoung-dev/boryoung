@@ -95,12 +95,14 @@ export function ProductShowcase({ title, products, tabs, showMoreHref }: Product
                   >
                     {/* 이미지 */}
                     <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-3">
-                      <img
-                        src={product.imageUrl}
-                        alt={product.title}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover group-hover/card:scale-[1.03] transition-transform duration-500"
-                      />
+                      {product.imageUrl && (
+                        <img
+                          src={product.imageUrl}
+                          alt={product.title}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover group-hover/card:scale-[1.03] transition-transform duration-500"
+                        />
+                      )}
                       {product.badge && (
                         <span className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-red-500 text-white text-[11px] font-bold rounded">
                           {product.badge}

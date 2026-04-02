@@ -33,6 +33,7 @@ export async function PUT(
             title: it.title || `${idx + 1}일차`,
             description: it.description || null,
             imageUrl: it.imageUrl || null,
+            imageUrls: Array.isArray(it.imageUrls) ? it.imageUrls : [], // 여러 이미지 URL 배열
             activities: it.activities || [],
             meals: it.meals || null,
             accommodation: it.accommodation || null,

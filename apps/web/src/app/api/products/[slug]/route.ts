@@ -13,6 +13,13 @@ export async function GET(
         slug,
         isActive: true,
       },
+      include: {
+        images: { orderBy: { sortOrder: 'asc' } },
+        itineraries: { orderBy: { sortOrder: 'asc' } },
+        priceOptions: { orderBy: { sortOrder: 'asc' } },
+        tags: { include: { tag: true } },
+        category: true,
+      },
     });
 
     if (!product) {

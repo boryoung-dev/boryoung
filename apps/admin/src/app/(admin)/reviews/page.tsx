@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { Pencil, Trash2, MessageSquare } from "lucide-react";
@@ -49,7 +48,6 @@ interface ReviewsResponse {
 
 export default function ReviewsPage() {
   const { token } = useAdminAuth();
-  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "unpublished">("all");

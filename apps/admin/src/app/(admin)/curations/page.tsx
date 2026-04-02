@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { Plus, Pencil, Trash2, Package, Search, GripVertical, X, Upload, Loader2 } from "lucide-react";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
+import { Plus, Pencil, Trash2, Package, Search, GripVertical, X } from "lucide-react";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
@@ -38,7 +39,6 @@ const SECTION_TYPE_COLORS: Record<string, string> = {
   trust_cta: "bg-violet-100 text-violet-800",
 };
 
-// 섹션별 설명
 const SECTION_DESCRIPTIONS: Record<string, string> = {
   globe: "상품의 목적지(국가)별로 자동 분류됩니다. 국가 목록과 설명을 관리하세요.",
   destinations_carousel: "여행지 이름과 이미지를 추가하세요. 클릭 시 해당 여행지 페이지로 이동합니다.",
@@ -76,14 +76,12 @@ interface CurationProduct {
   product: Product;
 }
 
-// 여행지 아이템
 interface DestinationItem {
   name: string;
   image: string;
   link: string;
 }
 
-// 국가 아이템
 interface CountryItem {
   name: string;
   code: string;
@@ -93,51 +91,69 @@ interface CountryItem {
 }
 
 export default function CurationsPage() {
-  const { authHeaders, isLoading } = useAdminAuth();
+  const { token, isLoading } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [curations, setCurations] = useState<Curation[]>([]);
-  const [loading, setLoading] = useState(true);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [productsModalOpen, setProductsModalOpen] = useState(false);
   const [editingCuration, setEditingCuration] = useState<Curation | null>(null);
   const [managingCuration, setManagingCuration] = useState<Curation | null>(null);
 
-  // 기본 폼 데이터
   const [formTitle, setFormTitle] = useState("");
   const [formSubtitle, setFormSubtitle] = useState("");
   const [formSectionType, setFormSectionType] = useState("");
   const [formSortOrder, setFormSortOrder] = useState(0);
   const [formIsActive, setFormIsActive] = useState(true);
 
-  // 섹션 타입별 설정 데이터
   const [destinations, setDestinations] = useState<DestinationItem[]>([]);
   const [countries, setCountries] = useState<CountryItem[]>([]);
   const [tabs, setTabs] = useState<string[]>([]);
   const [ctaPhone, setCtaPhone] = useState("");
   const [ctaDescription, setCtaDescription] = useState("");
 
-  // 상품 관리 state
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productSearch, setProductSearch] = useState("");
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0 && !isLoading) {
-      fetchCurations();
-    }
-  }, [authHeaders, isLoading]);
+  const { data, isLoading: loading } = useApiQuery<{ success: boolean; curations: Curation[] }>(
+    ["curations"],
+    "/api/curations"
+  );
+  const curations = data?.curations ?? [];
 
-  const fetchCurations = async () => {
-    try {
-      const res = await fetch("/api/curations", { headers: authHeaders as any });
-      const data = await res.json();
-      if (data.success) setCurations(data.curations);
-    } catch {} finally {
-      setLoading(false);
-    }
-  };
+  const saveMutation = useApiMutation<any, { id?: string; body: any }>(
+    async ({ id, body }, token) => {
+      const url = id ? `/api/curations/${id}` : "/api/curations";
+      const method = id ? "PUT" : "POST";
+      return fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+    },
+    { invalidateKeys: [["curations"]] }
+  );
+
+  const deleteMutation = useApiMutation<any, string>(
+    async (id, token) =>
+      fetch(`/api/curations/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    { invalidateKeys: [["curations"]] }
+  );
+
+  const saveProductsMutation = useApiMutation<any, { curationId: string; productIds: string[] }>(
+    async ({ curationId, productIds }, token) =>
+      fetch(`/api/curations/${curationId}/products`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ productIds }),
+      }),
+    { invalidateKeys: [["curations"]] }
+  );
 
   const resetForm = () => {
     setFormTitle("");
@@ -168,7 +184,6 @@ export default function CurationsPage() {
 
     const config = curation.displayConfig || {};
 
-    // 타입별 데이터 로드
     if (curation.sectionType === "destinations_carousel") {
       setDestinations(config.destinations || []);
     } else if (curation.sectionType === "globe") {
@@ -183,7 +198,6 @@ export default function CurationsPage() {
     setModalOpen(true);
   };
 
-  // displayConfig 빌드
   const buildDisplayConfig = () => {
     switch (formSectionType) {
       case "destinations_carousel":
@@ -210,47 +224,41 @@ export default function CurationsPage() {
       return;
     }
 
-    try {
-      const url = editingCuration ? `/api/curations/${editingCuration.id}` : "/api/curations";
-      const method = editingCuration ? "PUT" : "POST";
+    const body = {
+      title: formTitle,
+      subtitle: formSubtitle || null,
+      description: formSectionType === "trust_cta" ? ctaDescription || null : null,
+      sectionType: formSectionType || null,
+      displayConfig: buildDisplayConfig(),
+      sortOrder: formSortOrder,
+      isActive: formIsActive,
+    };
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json", ...authHeaders } as any,
-        body: JSON.stringify({
-          title: formTitle,
-          subtitle: formSubtitle || null,
-          description: formSectionType === "trust_cta" ? ctaDescription || null : null,
-          sectionType: formSectionType || null,
-          displayConfig: buildDisplayConfig(),
-          sortOrder: formSortOrder,
-          isActive: formIsActive,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setModalOpen(false);
-        fetchCurations();
-        toast(editingCuration ? "수정되었습니다" : "추가되었습니다", "success");
-      } else {
-        toast(data.error || "저장 실패", "error");
+    saveMutation.mutate(
+      { id: editingCuration?.id, body },
+      {
+        onSuccess: (data) => {
+          if (data.success) {
+            setModalOpen(false);
+            toast(editingCuration ? "수정되었습니다" : "추가되었습니다", "success");
+          } else {
+            toast(data.error || "저장 실패", "error");
+          }
+        },
+        onError: () => toast("저장 중 오류가 발생했습니다", "error"),
       }
-    } catch {
-      toast("저장 중 오류가 발생했습니다", "error");
-    }
+    );
   };
 
   const handleDelete = async (id: string) => {
     if (!(await confirm({ message: "정말 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
-    try {
-      const res = await fetch(`/api/curations/${id}`, { method: "DELETE", headers: authHeaders as any });
-      const data = await res.json();
-      if (data.success) { fetchCurations(); toast("삭제되었습니다", "success"); }
-    } catch {}
+    deleteMutation.mutate(id, {
+      onSuccess: (data) => {
+        if (data.success) toast("삭제되었습니다", "success");
+      },
+    });
   };
 
-  // 상품 관리 모달
   const openProductsModal = async (curation: Curation) => {
     setManagingCuration(curation);
     setProductsLoading(true);
@@ -259,8 +267,8 @@ export default function CurationsPage() {
 
     try {
       const [productsRes, linkedRes] = await Promise.all([
-        fetch("/api/products", { headers: authHeaders as any }),
-        fetch(`/api/curations/${curation.id}/products`, { headers: authHeaders as any }),
+        fetch("/api/products", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/curations/${curation.id}/products`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       const productsData = await productsRes.json();
       const linkedData = await linkedRes.json();
@@ -297,21 +305,19 @@ export default function CurationsPage() {
     setSelectedProductIds((prev) => prev.filter((id) => id !== productId));
   };
 
-  const handleSaveProducts = async () => {
+  const handleSaveProducts = () => {
     if (!managingCuration) return;
-    try {
-      const res = await fetch(`/api/curations/${managingCuration.id}/products`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeaders } as any,
-        body: JSON.stringify({ productIds: selectedProductIds }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setProductsModalOpen(false);
-        fetchCurations();
-        toast("상품이 업데이트되었습니다", "success");
+    saveProductsMutation.mutate(
+      { curationId: managingCuration.id, productIds: selectedProductIds },
+      {
+        onSuccess: (data) => {
+          if (data.success) {
+            setProductsModalOpen(false);
+            toast("상품이 업데이트되었습니다", "success");
+          }
+        },
       }
-    } catch {}
+    );
   };
 
   const filteredProducts = productSearch
@@ -321,21 +327,18 @@ export default function CurationsPage() {
       )
     : allProducts;
 
-  // 여행지 관리 헬퍼
   const addDestination = () => setDestinations([...destinations, { name: "", image: "", link: "" }]);
   const updateDestination = (idx: number, field: string, value: string) => {
     setDestinations(destinations.map((d, i) => (i === idx ? { ...d, [field]: value } : d)));
   };
   const removeDestination = (idx: number) => setDestinations(destinations.filter((_, i) => i !== idx));
 
-  // 국가 관리 헬퍼
   const addCountry = () => setCountries([...countries, { name: "", code: "", description: "", lat: 0, lng: 0 }]);
   const updateCountry = (idx: number, field: string, value: any) => {
     setCountries(countries.map((c, i) => (i === idx ? { ...c, [field]: value } : c)));
   };
   const removeCountry = (idx: number) => setCountries(countries.filter((_, i) => i !== idx));
 
-  // 탭 관리 헬퍼
   const addTab = () => setTabs([...tabs, ""]);
   const updateTab = (idx: number, value: string) => {
     setTabs(tabs.map((t, i) => (i === idx ? value : t)));
@@ -346,7 +349,6 @@ export default function CurationsPage() {
     return <div className="flex items-center justify-center h-64 text-gray-500">로딩 중...</div>;
   }
 
-  // 섹션 타입에 따라 적절한 라벨
   const getSectionInfo = (c: Curation) => {
     if (c.sectionType === "globe") return "국가별 자동 분류";
     if (c.sectionType === "destinations_carousel") {
@@ -403,7 +405,6 @@ export default function CurationsPage() {
                 </div>
 
                 <div className="flex items-center gap-1 px-3 border-l border-gray-100">
-                  {/* 상품 관리 버튼 (상품 기반 섹션만) */}
                   {["featured_grid", "product_carousel", "product_showcase"].includes(curation.sectionType || "") && (
                     <button onClick={() => openProductsModal(curation)} className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg" title="상품 관리">
                       <Package className="w-4 h-4" />
@@ -427,7 +428,6 @@ export default function CurationsPage() {
         footer={<><ModalCancelButton onClick={() => setModalOpen(false)} /><ModalConfirmButton type="submit" onClick={() => { document.getElementById("curation-form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); }}>{editingCuration ? "수정" : "추가"}</ModalConfirmButton></>}
       >
         <form id="curation-form" onSubmit={handleSubmit} className="space-y-5">
-          {/* 섹션 타입 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">섹션 타입</label>
             <select value={formSectionType} onChange={(e) => { setFormSectionType(e.target.value); setDestinations([]); setCountries([]); setTabs([]); }}
@@ -439,7 +439,6 @@ export default function CurationsPage() {
             )}
           </div>
 
-          {/* 제목 + 부제 */}
           <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">제목 *</label>
@@ -451,9 +450,6 @@ export default function CurationsPage() {
             </div>
           </div>
 
-          {/* ===== 섹션 타입별 설정 UI ===== */}
-
-          {/* 여행지 캐러셀 */}
           {formSectionType === "destinations_carousel" && (
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -479,7 +475,6 @@ export default function CurationsPage() {
             </div>
           )}
 
-          {/* 지구본 국가 */}
           {formSectionType === "globe" && (
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -502,7 +497,6 @@ export default function CurationsPage() {
             </div>
           )}
 
-          {/* 상품 쇼케이스 탭 */}
           {formSectionType === "product_showcase" && (
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -521,7 +515,6 @@ export default function CurationsPage() {
             </div>
           )}
 
-          {/* 신뢰 CTA */}
           {formSectionType === "trust_cta" && (
             <div className="space-y-4">
               <div>
@@ -535,7 +528,6 @@ export default function CurationsPage() {
             </div>
           )}
 
-          {/* 순서 + 활성화 */}
           <div className="grid grid-cols-2 gap-4 pt-2 border-t">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">정렬 순서</label>

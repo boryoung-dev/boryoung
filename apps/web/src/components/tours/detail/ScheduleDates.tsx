@@ -5,9 +5,26 @@ import type { ScheduleDate } from "@/lib/types";
 
 interface ScheduleDatesProps {
   dates: ScheduleDate[];
+  scheduleType?: string;
 }
 
-export function ScheduleDates({ dates }: ScheduleDatesProps) {
+export function ScheduleDates({ dates, scheduleType }: ScheduleDatesProps) {
+  // 상시 출발 가능
+  if (scheduleType === "always") {
+    return (
+      <div className="bg-white rounded-[32px] p-8">
+        <h2 className="text-2xl font-bold text-[color:var(--fg)] mb-6">출발 가능 일정</h2>
+        <div className="flex items-center gap-3 p-6 bg-green-50 border border-green-200 rounded-[20px]">
+          <Calendar className="w-6 h-6 text-green-600" />
+          <div>
+            <p className="text-lg font-bold text-green-800">상시 출발 가능</p>
+            <p className="text-sm text-green-600">원하시는 날짜에 출발 가능합니다. 문의해주세요.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!dates || !Array.isArray(dates) || dates.length === 0) return null;
 
   const statusStyles: Record<string, string> = {

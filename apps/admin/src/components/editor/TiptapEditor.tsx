@@ -42,6 +42,7 @@ export function TiptapEditor({
   const { authHeaders } = useAdminAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadRef = useRef<(file: File) => void>(() => {});
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -82,6 +83,27 @@ export function TiptapEditor({
         class: "tiptap",
         style: `min-height: ${minHeight}`,
       },
+      // 드래그앤드롭 이미지 업로드
+      handleDrop: (_view, event, _slice, moved) => {
+        if (moved || !event.dataTransfer?.files?.length) return false;
+        const file = event.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) {
+          event.preventDefault();
+          uploadRef.current(file);
+          return true;
+        }
+        return false;
+      },
+      // 붙여넣기 이미지 업로드
+      handlePaste: (_view, event) => {
+        const file = event.clipboardData?.files?.[0];
+        if (file && file.type.startsWith("image/")) {
+          event.preventDefault();
+          uploadRef.current(file);
+          return true;
+        }
+        return false;
+      },
     },
   });
 
@@ -110,6 +132,9 @@ export function TiptapEditor({
     },
     [editor, authHeaders]
   );
+
+  // 드래그앤드롭/붙여넣기에서 사용할 ref 업데이트
+  uploadRef.current = handleImageUpload;
 
   const onFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -2,6 +2,7 @@
 
 import { useApiQuery } from "@/hooks/useApi";
 import Select from "@/components/ui/Select";
+import { slugify } from "@/lib/slugify";
 
 interface Props {
   formData: any;
@@ -28,14 +29,7 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
     return flat;
   })();
 
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .trim();
-  };
+  const generateSlug = (title: string) => slugify(title);
 
   const handleTitleChange = (title: string) => {
     updateField("title", title);
@@ -103,19 +97,16 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
         {/* Slug */}
         <div className="lg:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Slug {isEditMode && <span className="text-xs text-amber-600 ml-1">(변경 시 기존 URL이 깨질 수 있습니다)</span>}
+            Slug
           </label>
           <input
             type="text"
             value={formData.slug}
-            onChange={(e) => updateField("slug", e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="자동 생성됩니다"
-            readOnly={!isEditMode && !!formData.slug}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
+            placeholder="상품명 입력 시 자동 생성"
+            readOnly
           />
-          {isEditMode && (
-            <p className="mt-1 text-xs text-gray-400">영문, 숫자, 하이픈만 사용 권장</p>
-          )}
+          <p className="mt-1 text-xs text-gray-400">상품명에서 자동 생성됩니다</p>
         </div>
 
         {/* 카테고리 */}

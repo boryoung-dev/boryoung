@@ -14,12 +14,12 @@ export default defineConfig({
     {
       name: "web",
       use: { baseURL: "http://localhost:3000" },
-      testMatch: /web\/.*.spec\.ts/,
+      testMatch: "**/web/**/*.spec.ts",
     },
     {
       name: "admin",
       use: { baseURL: "http://localhost:3001" },
-      testMatch: /admin\/.*.spec\.ts/,
+      testMatch: "**/admin/**/*.spec.ts",
     },
   ],
 });

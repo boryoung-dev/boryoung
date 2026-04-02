@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { MessageSquare, Reply, Trash2 } from "lucide-react";
@@ -31,7 +30,6 @@ interface InquiriesResponse {
 
 export default function InquiriesPage() {
   const { token } = useAdminAuth();
-  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const [selectedStatus, setSelectedStatus] = useState<string>("all");

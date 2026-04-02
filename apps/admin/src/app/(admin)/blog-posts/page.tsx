@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { Plus, Pencil, Trash2, FileText, Sparkles, Search } from "lucide-react";
 import FilterTabs from "@/components/ui/FilterTabs";
 import Select from "@/components/ui/Select";
@@ -41,11 +42,10 @@ interface BlogPostFormData {
 }
 
 export default function BlogPostsPage() {
-  const { authHeaders, isLoading } = useAdminAuth();
+  const { token, isLoading } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPostDetail | null>(null);
   const [formData, setFormData] = useState<BlogPostFormData>({
@@ -63,34 +63,39 @@ export default function BlogPostsPage() {
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (Object.keys(authHeaders).length > 0 && !isLoading) {
-      fetchPosts();
-    }
-  }, [authHeaders, isLoading, filterPublished]);
+  // 필터 파라미터 계산
+  const queryParams = new URLSearchParams();
+  if (filterPublished === "published") queryParams.append("isPublished", "true");
+  else if (filterPublished === "draft") queryParams.append("isPublished", "false");
+  const queryString = queryParams.toString();
 
-  const fetchPosts = async () => {
-    try {
-      const params = new URLSearchParams();
-      if (filterPublished === "published") {
-        params.append("isPublished", "true");
-      } else if (filterPublished === "draft") {
-        params.append("isPublished", "false");
-      }
+  const { data, isLoading: loading } = useApiQuery<{ success: boolean; posts: BlogPost[] }>(
+    ["blog-posts", filterPublished],
+    `/api/blog-posts${queryString ? `?${queryString}` : ""}`
+  );
+  const posts = data?.posts ?? [];
 
-      const res = await fetch(`/api/blog-posts?${params.toString()}`, {
-        headers: authHeaders as any
+  const saveMutation = useApiMutation<any, { id?: string; body: any }>(
+    async ({ id, body }, token) => {
+      const url = id ? `/api/blog-posts/${id}` : "/api/blog-posts";
+      const method = id ? "PUT" : "POST";
+      return fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
       });
-      const data = await res.json();
-      if (data.success) {
-        setPosts(data.posts);
-      }
-    } catch (error) {
-      console.error("블로그 글 목록 조회 실패:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    { invalidateKeys: [["blog-posts", filterPublished], ["blog-posts", "all"], ["blog-posts", "published"], ["blog-posts", "draft"]] }
+  );
+
+  const deleteMutation = useApiMutation<any, string>(
+    async (id, token) =>
+      fetch(`/api/blog-posts/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    { invalidateKeys: [["blog-posts", filterPublished], ["blog-posts", "all"], ["blog-posts", "published"], ["blog-posts", "draft"]] }
+  );
 
   const openCreateModal = () => {
     setEditingPost(null);
@@ -109,7 +114,7 @@ export default function BlogPostsPage() {
   const openEditModal = async (post: BlogPost) => {
     try {
       const res = await fetch(`/api/blog-posts/${post.id}`, {
-        headers: authHeaders as any
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (data.success) {
@@ -149,60 +154,44 @@ export default function BlogPostsPage() {
     }
 
     setSubmitting(true);
-    try {
-      const url = editingPost ? `/api/blog-posts/${editingPost.id}` : "/api/blog-posts";
-      const method = editingPost ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders
-        } as any,
-        body: JSON.stringify({
-          ...formData,
-          contentHtml: formData.content,
-          category: formData.category || null,
-          excerpt: formData.excerpt || null,
-          thumbnail: formData.thumbnail || null
-        })
-      });
+    const body = {
+      ...formData,
+      contentHtml: formData.content,
+      category: formData.category || null,
+      excerpt: formData.excerpt || null,
+      thumbnail: formData.thumbnail || null,
+    };
 
-      const data = await res.json();
-      if (data.success) {
-        toast(editingPost ? "글이 수정되었습니다" : "글이 작성되었습니다", "success");
-        setModalOpen(false);
-        fetchPosts();
-      } else {
-        toast(data.error || "저장에 실패했습니다", "error");
+    saveMutation.mutate(
+      { id: editingPost?.id, body },
+      {
+        onSuccess: (data) => {
+          if (data.success) {
+            toast(editingPost ? "글이 수정되었습니다" : "글이 작성되었습니다", "success");
+            setModalOpen(false);
+          } else {
+            toast(data.error || "저장에 실패했습니다", "error");
+          }
+          setSubmitting(false);
+        },
+        onError: () => {
+          toast("블로그 글 저장 중 오류가 발생했습니다", "error");
+          setSubmitting(false);
+        },
       }
-    } catch (error) {
-      console.error("블로그 글 저장 실패:", error);
-      toast("블로그 글 저장 중 오류가 발생했습니다", "error");
-    } finally {
-      setSubmitting(false);
-    }
+    );
   };
 
   const handleDelete = async (id: string) => {
     if (!(await confirm({ message: "정말 이 블로그 글을 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
 
-    try {
-      const res = await fetch(`/api/blog-posts/${id}`, {
-        method: "DELETE",
-        headers: authHeaders as any
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        fetchPosts();
-      } else {
-        toast(data.error || "삭제에 실패했습니다", "error");
-      }
-    } catch (error) {
-      console.error("블로그 글 삭제 실패:", error);
-      toast("블로그 글 삭제 중 오류가 발생했습니다", "error");
-    }
+    deleteMutation.mutate(id, {
+      onSuccess: (data) => {
+        if (!data.success) toast(data.error || "삭제에 실패했습니다", "error");
+      },
+      onError: () => toast("블로그 글 삭제 중 오류가 발생했습니다", "error"),
+    });
   };
 
   // 검색어 디바운스 (300ms)
@@ -375,7 +364,6 @@ export default function BlogPostsPage() {
         onClose={() => setAiModalOpen(false)}
         onSendToEditor={(data) => {
           setEditingPost(null);
-          // 구조화된 섹션이 있으면 JSON으로 content 저장
           const contentValue = data.sections
             ? JSON.stringify({ sections: data.sections })
             : data.content;

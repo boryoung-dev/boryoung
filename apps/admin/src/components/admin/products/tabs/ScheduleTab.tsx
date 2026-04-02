@@ -89,8 +89,46 @@ export function ScheduleTab({ formData, updateField }: Props) {
     updateField("scheduleDates", sorted);
   };
 
+  // 상시 가능 여부
+  const isAlwaysAvailable = formData.scheduleType === "always";
+
   return (
     <div className="space-y-6">
+      {/* 상시 가능 / 날짜 지정 선택 */}
+      <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name="scheduleType"
+            checked={!isAlwaysAvailable}
+            onChange={() => updateField("scheduleType", "dates")}
+            className="w-4 h-4 text-blue-600"
+          />
+          <span className="text-sm font-medium text-gray-700">날짜 지정</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name="scheduleType"
+            checked={isAlwaysAvailable}
+            onChange={() => updateField("scheduleType", "always")}
+            className="w-4 h-4 text-blue-600"
+          />
+          <span className="text-sm font-medium text-gray-700">상시 출발 가능</span>
+        </label>
+      </div>
+
+      {isAlwaysAvailable && (
+        <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <Calendar className="w-5 h-5 text-green-600" />
+          <div>
+            <p className="text-sm font-medium text-green-800">상시 출발 가능</p>
+            <p className="text-xs text-green-600">고객이 원하는 날짜에 출발 가능한 상품입니다.</p>
+          </div>
+        </div>
+      )}
+
+      {!isAlwaysAvailable && <>
       {/* 일괄 추가 */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <label className="block text-sm font-medium text-blue-800 mb-2">
@@ -215,6 +253,7 @@ export function ScheduleTab({ formData, updateField }: Props) {
         <span className="flex-shrink-0">!</span>
         <p>출발일정은 메인 저장 버튼(하단)을 눌러야 반영됩니다.</p>
       </div>
+      </>}
     </div>
   );
 }

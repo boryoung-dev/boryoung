@@ -18,9 +18,10 @@ import {
   PanelLeftOpen,
   FileText,
   LayoutGrid,
-  Zap,
   Sparkles,
+  LogOut,
 } from "lucide-react";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 // 메뉴를 그룹으로 묶어 가독성 향상
 const navGroups = [
@@ -43,7 +44,6 @@ const navGroups = [
     items: [
       { href: "/curations", label: "메인 섹션", icon: LayoutGrid },
       { href: "/banners", label: "배너 관리", icon: Image },
-      { href: "/quick-icons", label: "빠른아이콘", icon: Zap },
     ],
   },
   {
@@ -78,6 +78,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ open, onClose, collapsed, onToggleCollapse }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { logout } = useAdminAuth();
 
   return (
     <>
@@ -194,6 +195,23 @@ export function AdminSidebar({ open, onClose, collapsed, onToggleCollapse }: Adm
             >
               <ExternalLink className="w-4 h-4" />
             </Link>
+          )}
+          {!collapsed ? (
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] text-[color:var(--muted)] hover:text-red-500 hover:bg-red-50 transition-colors w-full"
+            >
+              <LogOut className="w-3.5 h-3.5 shrink-0" />
+              로그아웃
+            </button>
+          ) : (
+            <button
+              onClick={logout}
+              title="로그아웃"
+              className="flex items-center justify-center p-2.5 rounded-lg text-[color:var(--muted)] hover:text-red-500 hover:bg-red-50 transition-colors w-full"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           )}
         </div>
       </aside>

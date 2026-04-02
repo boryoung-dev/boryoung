@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import blogPosts from "../fixtures/blog-posts.json";
 
-test.describe("블로그 글 10개 업로드", () => {
+test.describe.skip("블로그 글 10개 업로드 (일회성 시드 테스트)", () => {
   test.beforeEach(async ({ page }) => {
     // 로그인
     await page.goto("/login");
