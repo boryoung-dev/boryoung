@@ -42,7 +42,7 @@ const navGroups = [
   {
     label: "홈페이지 관리",
     items: [
-      { href: "/curations", label: "메인 섹션", icon: LayoutGrid },
+      { href: "/curations", label: "홈페이지 에디터", icon: LayoutGrid },
       { href: "/banners", label: "배너 관리", icon: Image },
     ],
   },
