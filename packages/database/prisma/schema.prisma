@@ -391,7 +391,7 @@ model AIProvider {
 
 model Admin {
   id            String   @id @default(cuid())
-  email         String   @unique
+  username      String   @unique
   passwordHash  String
   name          String
   role          String   @default("ADMIN")
@@ -400,7 +400,7 @@ model Admin {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  @@index([email])
+  @@index([username])
   @@map("admins")
 }
 

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Upload, X, Loader2, Save, ChevronUp, ChevronDown } from "lucide-react";
-import Select from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
 
 const IMAGE_TYPES = [
@@ -31,7 +30,7 @@ export function ImagesTab({ productId, images: initialImages, onPendingChange }:
   const isNewMode = !productId && !!onPendingChange;
 
   useEffect(() => {
-    if (isNewMode) onPendingChange?.(images);
+    onPendingChange?.(images);
   }, [images]);
 
   const markChanged = () => setHasChanges(true);
@@ -209,22 +208,16 @@ export function ImagesTab({ productId, images: initialImages, onPendingChange }:
               </span>
             </div>
             <div className="p-3 bg-white space-y-2">
-              <div className="flex items-center justify-between">
-                <Select
-                  value={img.type || "DETAIL"}
-                  onChange={(val) => updateImage(idx, "type", val)}
-                  options={IMAGE_TYPES.map((t) => ({ value: t.value, label: t.label }))}
-                  className="w-28"
-                />
+              <div className="flex items-center justify-end">
                 <button
                   onClick={() => setThumbnail(idx)}
-                  className={`text-xs px-2 py-0.5 rounded ${
+                  className={`text-xs px-3 py-1 rounded ${
                     img.isThumbnail
                       ? "bg-blue-100 text-blue-700 font-semibold"
                       : "bg-gray-100 text-gray-600 hover:bg-blue-50"
                   }`}
                 >
-                  {img.isThumbnail ? "대표" : "대표설정"}
+                  {img.isThumbnail ? "대표 이미지" : "대표설정"}
                 </button>
               </div>
               <input

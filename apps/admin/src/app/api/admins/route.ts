@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const admins = await prisma.admin.findMany({
       select: {
         id: true,
-        email: true,
+        username: true,
         name: true,
         role: true,
         isActive: true,
@@ -51,9 +51,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { email, password, name, role } = body;
+    const { username, password, name, role } = body;
 
-    if (!email || !password || !name || !role) {
+    if (!username || !password || !name || !role) {
       return NextResponse.json(
         { error: "필수 항목을 모두 입력해주세요" },
         { status: 400 }
@@ -65,14 +65,14 @@ export async function POST(request: NextRequest) {
 
     const newAdmin = await prisma.admin.create({
       data: {
-        email,
+        username,
         passwordHash,
         name,
         role,
       },
       select: {
         id: true,
-        email: true,
+        username: true,
         name: true,
         role: true,
         isActive: true,
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     console.error("관리자 생성 오류:", error);
     if (error.code === "P2002") {
       return NextResponse.json(
-        { error: "이미 존재하는 이메일입니다" },
+        { error: "이미 존재하는 아이디입니다" },
         { status: 409 }
       );
     }

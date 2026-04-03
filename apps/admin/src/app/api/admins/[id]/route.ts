@@ -46,7 +46,7 @@ export async function PUT(
       data: updateData,
       select: {
         id: true,
-        email: true,
+        username: true,
         name: true,
         role: true,
         isActive: true,

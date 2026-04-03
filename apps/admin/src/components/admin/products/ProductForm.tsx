@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { BasicInfoTab } from "./tabs/BasicInfoTab";
@@ -11,12 +11,11 @@ import { PricingTab } from "./tabs/PricingTab";
 import { TagsSeoTab } from "./tabs/TagsSeoTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 import { ScheduleTab } from "./tabs/ScheduleTab";
-import { TemplateEditorTab } from "./tabs/TemplateEditorTab";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, Eye, EyeOff, ChevronUp, Maximize2, X } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+import { ProductPreview } from "./ProductPreview";
 
-// 신규 등록 시 페이지 편집 탭 제외 (등록 후 편집에서만 표시)
-const baseTabs = [
+const sections = [
   { id: "basic", label: "기본 정보" },
   { id: "content", label: "상품 소개" },
   { id: "images", label: "이미지" },
@@ -25,9 +24,6 @@ const baseTabs = [
   { id: "schedule", label: "출발일정" },
   { id: "tags", label: "태그/SEO" },
   { id: "settings", label: "설정" },
-];
-const editOnlyTabs = [
-  { id: "template", label: "✏️ 페이지 편집" },
 ];
 
 interface ProductFormProps {
@@ -38,13 +34,26 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const router = useRouter();
   const { authHeaders } = useAdminAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("basic");
   const [isSaving, setIsSaving] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [fullscreenPreview, setFullscreenPreview] = useState(false);
 
-  // 신규 등록 시 이미지/일정/가격옵션 로컬 상태
-  const pendingImagesRef = useRef<any[]>([]);
-  const pendingItinerariesRef = useRef<any[]>([]);
-  const pendingPriceOptionsRef = useRef<any[]>([]);
+  // 섹션 접기/펼치기 상태
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+
+  const toggleSection = (id: string) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // 신규 등록 시 이미지/일정/가격옵션 로컬 상태 (state로 관리해서 미리보기 실시간 반영)
+  const [pendingImages, setPendingImages] = useState<any[]>([]);
+  const [pendingItineraries, setPendingItineraries] = useState<any[]>([]);
+  const [pendingPriceOptions, setPendingPriceOptions] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
@@ -92,8 +101,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const saveRelatedData = async (productId: string) => {
     const headers = { "Content-Type": "application/json", ...authHeaders } as any;
 
-    // 이미지 저장
-    const images = pendingImagesRef.current;
+    const images = pendingImages;
     if (images.length > 0) {
       try {
         await fetch(`/api/products/${productId}/images`, {
@@ -111,8 +119,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       } catch {}
     }
 
-    // 일정 저장
-    const itineraries = pendingItinerariesRef.current;
+    const itineraries = pendingItineraries;
     if (itineraries.length > 0) {
       try {
         await fetch(`/api/products/${productId}/itineraries`, {
@@ -137,8 +144,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       } catch {}
     }
 
-    // 가격옵션 저장
-    const priceOptions = pendingPriceOptionsRef.current;
+    const priceOptions = pendingPriceOptions;
     if (priceOptions.length > 0) {
       try {
         await fetch(`/api/products/${productId}/price-options`, {
@@ -163,13 +169,23 @@ export function ProductForm({ initialData }: ProductFormProps) {
   };
 
   const handleSave = async () => {
-    if (!formData.title || !formData.slug || !formData.categoryId || !formData.destination) {
-      toast("제목, slug, 카테고리, 목적지는 필수입니다", "error");
-      setActiveTab("basic");
+    // 유효성 검사
+    const errors: string[] = [];
+    if (!formData.title) errors.push("상품명");
+    if (!formData.slug) errors.push("Slug");
+    if (!formData.categoryId) errors.push("카테고리");
+    if (!formData.destination) errors.push("목적지");
+    if (!formData.nights || !formData.days) errors.push("기간(박/일)");
+    if (!formData.basePrice) errors.push("기본 가격");
+
+    const currentImages = pendingImages.length > 0 ? pendingImages : (initialData?.images || []);
+    if (currentImages.length === 0) errors.push("이미지 (최소 1장)");
+
+    if (errors.length > 0) {
+      toast(`필수 항목을 입력해주세요: ${errors.join(", ")}`, "error");
       return;
     }
 
-    // SEO 자동 생성 (비어있을 때)
     if (!formData.metaTitle) {
       formData.metaTitle = `${formData.title} | 보령항공여행`;
     }
@@ -215,7 +231,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
       const data = await res.json();
 
       if (data.success) {
-        // 신규 등록 시 이미지/일정/가격옵션 한번에 저장
         if (!initialData && data.product?.id) {
           await saveRelatedData(data.product.id);
           toast("상품이 등록되었습니다", "success");
@@ -235,96 +250,244 @@ export function ProductForm({ initialData }: ProductFormProps) {
   };
 
   const isNewMode = !initialData;
-  const tabs = isNewMode ? baseTabs : [...baseTabs, ...editOnlyTabs];
 
   return (
-    <div>
-      {/* 탭 네비게이션 */}
-      <div className="bg-white rounded-t-lg border-b border-gray-200">
-        <div className="flex gap-1 overflow-x-auto px-4 pt-3">
-          {tabs.map((tab) => (
+    <div className={`flex gap-6 ${showPreview ? "" : ""}`}>
+      {/* 좌측: 폼 영역 */}
+      <div className={`${showPreview ? "w-1/2" : "w-full"} transition-all duration-300`}>
+        {/* 미리보기 토글 + 저장 버튼 (상단 고정) */}
+        <div className="sticky top-0 z-20 bg-gray-100 pb-3 pt-3 flex items-center justify-between border-b border-gray-200 -mx-1 px-1">
+          <button
+            onClick={() => setShowPreview(!showPreview)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              showPreview
+                ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showPreview ? "미리보기 닫기" : "미리보기"}
+          </button>
+
+          <div className="flex gap-3">
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors ${
-                activeTab === tab.id
-                  ? "bg-blue-50 text-blue-700 border border-gray-200 border-b-white -mb-px"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
+              onClick={() => router.push("/products")}
+              className="px-5 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              {tab.label}
+              취소
             </button>
-          ))}
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            >
+              {isSaving ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> 저장 중...</>
+              ) : (
+                <><Save className="w-4 h-4" /> {initialData ? "수정" : "등록"}</>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* 섹션별 스크롤 폼 (웹 상세페이지 흐름 순서) */}
+        <div className="space-y-4">
+          {/* 1. 기본 정보 (타이틀, 가격 등 - 히어로 영역) */}
+          <SectionCard
+            id="basic"
+            label="기본 정보"
+            collapsed={collapsedSections.has("basic")}
+            onToggle={() => toggleSection("basic")}
+          >
+            <BasicInfoTab formData={formData} updateField={updateField} isEditMode={!!initialData} />
+          </SectionCard>
+
+          {/* 2. 이미지 (히어로 이미지) */}
+          <SectionCard
+            id="images"
+            label="이미지"
+            collapsed={collapsedSections.has("images")}
+            onToggle={() => toggleSection("images")}
+          >
+            <ImagesTab
+              productId={initialData?.id}
+              images={initialData?.images || []}
+              onPendingChange={(imgs: any[]) => setPendingImages(imgs)}
+            />
+          </SectionCard>
+
+          {/* 3. 상품 소개 (소개 탭 콘텐츠) */}
+          <SectionCard
+            id="content"
+            label="상품 소개"
+            collapsed={collapsedSections.has("content")}
+            onToggle={() => toggleSection("content")}
+          >
+            <ContentTab formData={formData} updateField={updateField} />
+          </SectionCard>
+
+          {/* 4. 출발일정 (소개 탭 하단) */}
+          <SectionCard
+            id="schedule"
+            label="출발일정"
+            collapsed={collapsedSections.has("schedule")}
+            onToggle={() => toggleSection("schedule")}
+          >
+            <ScheduleTab formData={formData} updateField={updateField} />
+          </SectionCard>
+
+          {/* 5. 일정 (일정 탭) */}
+          <SectionCard
+            id="itinerary"
+            label="일정"
+            collapsed={collapsedSections.has("itinerary")}
+            onToggle={() => toggleSection("itinerary")}
+          >
+            <ItineraryTab
+              productId={initialData?.id}
+              itineraries={initialData?.itineraries || []}
+              onPendingChange={(items: any[]) => setPendingItineraries(items)}
+            />
+          </SectionCard>
+
+          {/* 6. 가격 옵션 */}
+          <SectionCard
+            id="pricing"
+            label="가격 옵션"
+            collapsed={collapsedSections.has("pricing")}
+            onToggle={() => toggleSection("pricing")}
+          >
+            <PricingTab
+              productId={initialData?.id}
+              priceOptions={initialData?.priceOptions || []}
+              onPendingChange={(opts: any[]) => setPendingPriceOptions(opts)}
+            />
+          </SectionCard>
+
+          {/* 7. 태그/SEO */}
+          <SectionCard
+            id="tags"
+            label="태그/SEO"
+            collapsed={collapsedSections.has("tags")}
+            onToggle={() => toggleSection("tags")}
+          >
+            <TagsSeoTab formData={formData} updateField={updateField} />
+          </SectionCard>
+
+          {/* 8. 설정 */}
+          <SectionCard
+            id="settings"
+            label="설정"
+            collapsed={collapsedSections.has("settings")}
+            onToggle={() => toggleSection("settings")}
+          >
+            <SettingsTab formData={formData} updateField={updateField} />
+          </SectionCard>
+        </div>
+
+        {/* 하단 저장 버튼 */}
+        <div className="mt-6 flex justify-end gap-3 pb-8">
+          <button
+            onClick={() => router.push("/products")}
+            className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            취소
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+          >
+            {isSaving ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> 저장 중...</>
+            ) : (
+              <><Save className="w-4 h-4" /> {initialData ? "수정" : "등록"}</>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* 탭 콘텐츠 */}
-      <div className="bg-white rounded-b-lg shadow p-6">
-        {activeTab === "basic" && (
-          <BasicInfoTab formData={formData} updateField={updateField} isEditMode={!!initialData} />
-        )}
-        {activeTab === "content" && (
-          <ContentTab formData={formData} updateField={updateField} />
-        )}
-        {activeTab === "images" && (
-          <ImagesTab
-            productId={initialData?.id}
-            images={initialData?.images || []}
-            onPendingChange={isNewMode ? (imgs: any[]) => { pendingImagesRef.current = imgs; } : undefined}
-          />
-        )}
-        {activeTab === "itinerary" && (
-          <ItineraryTab
-            productId={initialData?.id}
-            itineraries={initialData?.itineraries || []}
-            onPendingChange={isNewMode ? (items: any[]) => { pendingItinerariesRef.current = items; } : undefined}
-          />
-        )}
-        {activeTab === "pricing" && (
-          <PricingTab
-            productId={initialData?.id}
-            priceOptions={initialData?.priceOptions || []}
-            onPendingChange={isNewMode ? (opts: any[]) => { pendingPriceOptionsRef.current = opts; } : undefined}
-          />
-        )}
-        {activeTab === "schedule" && (
-          <ScheduleTab formData={formData} updateField={updateField} />
-        )}
-        {activeTab === "tags" && (
-          <TagsSeoTab formData={formData} updateField={updateField} />
-        )}
-        {activeTab === "settings" && (
-          <SettingsTab formData={formData} updateField={updateField} />
-        )}
-        {activeTab === "template" && (
-          <TemplateEditorTab
-            formData={formData}
-            updateField={updateField}
-            initialData={initialData}
-          />
-        )}
-      </div>
+      {/* 우측: 미리보기 */}
+      {showPreview && (
+        <div className="w-1/2 sticky top-0 h-screen pt-1">
+          <div className="h-full flex flex-col rounded-lg border border-gray-200 bg-white">
+            <div className="px-4 py-2 bg-gray-100 border-b border-gray-200 rounded-t-lg flex-shrink-0 flex items-center justify-between">
+              <span className="text-xs font-medium text-gray-500">실시간 미리보기</span>
+              <button
+                onClick={() => setFullscreenPreview(true)}
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                전체보기
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto overscroll-contain">
+              <ProductPreview
+                formData={formData}
+                images={pendingImages.length > 0 ? pendingImages : (initialData?.images || [])}
+                itineraries={pendingItineraries.length > 0 ? pendingItineraries : (initialData?.itineraries || [])}
+                priceOptions={pendingPriceOptions.length > 0 ? pendingPriceOptions : (initialData?.priceOptions || [])}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* 저장 버튼 */}
-      <div className="mt-6 flex justify-end gap-3">
-        <button
-          onClick={() => router.push("/products")}
-          className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          취소
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-        >
-          {isSaving ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> 저장 중...</>
-          ) : (
-            <><Save className="w-4 h-4" /> {initialData ? "수정" : "등록"}</>
-          )}
-        </button>
-      </div>
+      {/* 전체보기 팝업 */}
+      {fullscreenPreview && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6">
+          <div className="bg-white rounded-xl w-full max-w-[1200px] h-[90vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-3 bg-gray-100 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+              <span className="text-sm font-medium text-gray-700">데스크탑 미리보기</span>
+              <button
+                onClick={() => setFullscreenPreview(false)}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+                닫기
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <ProductPreview
+                formData={formData}
+                images={pendingImages.length > 0 ? pendingImages : (initialData?.images || [])}
+                itineraries={pendingItineraries.length > 0 ? pendingItineraries : (initialData?.itineraries || [])}
+                priceOptions={pendingPriceOptions.length > 0 ? pendingPriceOptions : (initialData?.priceOptions || [])}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 접기/펼치기 가능한 섹션 카드
+function SectionCard({
+  id,
+  label,
+  collapsed,
+  onToggle,
+  children,
+}: {
+  id: string;
+  label: string;
+  collapsed: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div id={`section-${id}`} className="bg-white rounded-lg shadow">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 rounded-t-lg transition-colors"
+      >
+        <h3 className="text-base font-semibold text-gray-800">{label}</h3>
+        <ChevronUp
+          className={`w-5 h-5 text-gray-400 transition-transform ${collapsed ? "rotate-180" : ""}`}
+        />
+      </button>
+      {!collapsed && <div className="px-6 pb-6">{children}</div>}
     </div>
   );
 }

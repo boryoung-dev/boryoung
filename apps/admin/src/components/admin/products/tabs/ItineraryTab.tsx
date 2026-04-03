@@ -81,7 +81,7 @@ export function ItineraryTab({ productId, itineraries: initial, onPendingChange 
   const isNewMode = !productId && !!onPendingChange;
 
   useEffect(() => {
-    if (isNewMode) onPendingChange?.(items);
+    onPendingChange?.(items);
   }, [items]);
 
   const markChanged = () => setHasChanges(true);

@@ -168,7 +168,7 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
 
         {/* 기간 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">기간 (박)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">기간 (박) <span className="text-red-500">*</span></label>
           <input
             type="number"
             min="0"
@@ -178,7 +178,7 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">기간 (일)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">기간 (일) <span className="text-red-500">*</span></label>
           <input
             type="number"
             min="0"
@@ -190,7 +190,7 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
 
         {/* 가격 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">기본 가격 (원)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">기본 가격 (원) <span className="text-red-500">*</span></label>
           <input
             type="number"
             value={formData.basePrice ?? ""}

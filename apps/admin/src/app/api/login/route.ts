@@ -7,18 +7,18 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
-    
+    const { username, password } = await request.json();
+
     // 관리자 찾기
     const admin = await prisma.admin.findUnique({
-      where: { email },
+      where: { username },
     });
-    
+
     if (!admin || !admin.isActive) {
       return NextResponse.json(
         {
           success: false,
-          error: '이메일 또는 비밀번호가 올바르지 않습니다',
+          error: '아이디 또는 비밀번호가 올바르지 않습니다',
         },
         { status: 401 }
       );
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: '이메일 또는 비밀번호가 올바르지 않습니다',
+          error: '아이디 또는 비밀번호가 올바르지 않습니다',
         },
         { status: 401 }
       );
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const token = jwt.sign(
       {
         adminId: admin.id,
-        email: admin.email,
+        username: admin.username,
         role: admin.role,
       },
       JWT_SECRET,
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       token,
       admin: {
         id: admin.id,
-        email: admin.email,
+        username: admin.username,
         name: admin.name,
         role: admin.role,
       },

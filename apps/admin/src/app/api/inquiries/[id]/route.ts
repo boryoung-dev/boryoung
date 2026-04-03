@@ -26,7 +26,7 @@ export async function PUT(
 
     if (validated.adminReply) {
       updateData.repliedAt = new Date();
-      updateData.repliedBy = admin.email;
+      updateData.repliedBy = admin.username;
       updateData.status = "REPLIED";
     }
 
