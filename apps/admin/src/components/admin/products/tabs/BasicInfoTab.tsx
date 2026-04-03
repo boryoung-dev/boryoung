@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useMemo } from "react";
 import { useApiQuery } from "@/hooks/useApi";
 import Select from "@/components/ui/Select";
 import { slugify } from "@/lib/slugify";
@@ -16,18 +17,77 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
     "/api/categories"
   );
 
-  const categories: any[] = (() => {
+  // 최상위(level 0) 카테고리 목록
+  const topCategories: any[] = useMemo(() => {
     if (!categoriesData?.success) return [];
-    const flat: any[] = [];
-    const flatten = (cats: any[], depth = 0) => {
-      cats.forEach((c: any) => {
-        flat.push({ ...c, depth });
-        if (c.children?.length) flatten(c.children, depth + 1);
-      });
-    };
-    flatten(categoriesData.categories);
-    return flat;
-  })();
+    return categoriesData.categories || [];
+  }, [categoriesData]);
+
+  // 현재 categoryId로부터 국가(selectedCountry) 초기값 결정
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+
+  useEffect(() => {
+    if (!topCategories.length || !formData.categoryId) return;
+    // categoryId가 최상위인지 확인
+    const isTop = topCategories.find((c: any) => c.id === formData.categoryId);
+    if (isTop) {
+      setSelectedCountry(isTop.id);
+      return;
+    }
+    // categoryId가 하위 지역인 경우: 부모를 찾는다
+    for (const country of topCategories) {
+      const region = (country.children || []).find(
+        (r: any) => r.id === formData.categoryId
+      );
+      if (region) {
+        setSelectedCountry(country.id);
+        return;
+      }
+    }
+  }, [topCategories, formData.categoryId]);
+
+  // 선택된 국가의 하위 지역 목록
+  const regions: any[] = useMemo(() => {
+    if (!selectedCountry || !topCategories.length) return [];
+    const country = topCategories.find((c: any) => c.id === selectedCountry);
+    return country?.children || [];
+  }, [selectedCountry, topCategories]);
+
+  // 국가 변경 핸들러
+  const handleCountryChange = (countryId: string) => {
+    setSelectedCountry(countryId);
+    if (!countryId) {
+      updateField("categoryId", "");
+      updateField("destination", "");
+      return;
+    }
+    const country = topCategories.find((c: any) => c.id === countryId);
+    if (!country) return;
+    // 하위 지역이 없으면 바로 국가를 categoryId로 설정
+    if (!country.children?.length) {
+      updateField("categoryId", countryId);
+      updateField("destination", country.name);
+    } else {
+      // 지역 선택 대기
+      updateField("categoryId", "");
+      updateField("destination", "");
+    }
+  };
+
+  // 지역 변경 핸들러
+  const handleRegionChange = (regionId: string) => {
+    if (!regionId) {
+      updateField("categoryId", "");
+      updateField("destination", "");
+      return;
+    }
+    const country = topCategories.find((c: any) => c.id === selectedCountry);
+    const region = regions.find((r: any) => r.id === regionId);
+    if (country && region) {
+      updateField("categoryId", regionId);
+      updateField("destination", `${country.name} ${region.name}`);
+    }
+  };
 
   const generateSlug = (title: string) => slugify(title);
 
@@ -109,37 +169,53 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
           <p className="mt-1 text-xs text-gray-400">상품명에서 자동 생성됩니다</p>
         </div>
 
-        {/* 카테고리 */}
+        {/* 국가 (카테고리 level 0) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            카테고리 <span className="text-red-500">*</span>
+            국가 <span className="text-red-500">*</span>
           </label>
           <Select
-            value={formData.categoryId}
-            onChange={(val) => updateField("categoryId", val)}
+            value={selectedCountry}
+            onChange={handleCountryChange}
             options={[
-              { value: "", label: "카테고리 선택" },
-              ...categories.map((cat) => ({
+              { value: "", label: "국가 선택" },
+              ...topCategories.map((cat: any) => ({
                 value: cat.id,
-                label: `${"  ".repeat(cat.depth)}${cat.depth > 0 ? "└ " : ""}${cat.name}`,
+                label: cat.name,
               })),
             ]}
             className="w-full"
           />
         </div>
 
-        {/* 목적지 */}
+        {/* 지역 (카테고리 level 1) - 하위 지역이 있는 경우에만 표시 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            목적지 <span className="text-red-500">*</span>
+            지역 {regions.length > 0 && <span className="text-red-500">*</span>}
           </label>
-          <input
-            type="text"
-            value={formData.destination}
-            onChange={(e) => updateField("destination", e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="일본"
-          />
+          {regions.length > 0 ? (
+            <Select
+              value={formData.categoryId}
+              onChange={handleRegionChange}
+              options={[
+                { value: "", label: "지역 선택" },
+                ...regions.map((r: any) => ({
+                  value: r.id,
+                  label: r.name,
+                })),
+              ]}
+              className="w-full"
+            />
+          ) : (
+            <p className="px-4 py-2 text-sm text-gray-400 border border-gray-200 rounded-lg bg-gray-50">
+              {selectedCountry ? "하위 지역 없음 (국가가 카테고리로 사용됩니다)" : "국가를 먼저 선택해주세요"}
+            </p>
+          )}
+          {formData.destination && (
+            <p className="mt-1 text-xs text-gray-500">
+              목적지: <span className="font-medium">{formData.destination}</span>
+            </p>
+          )}
         </div>
 
         {/* 출발지 */}

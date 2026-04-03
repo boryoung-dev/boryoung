@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Save, X } from "lucide-react";
-import { useApiMutation } from "@/hooks/useApi";
+import { useApiMutation, useApiQuery } from "@/hooks/useApi";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/components/ui/Toast";
 import { ProductSelector } from "./ProductSelector";
@@ -25,6 +25,14 @@ export function SectionEditPanel({
 }: SectionEditPanelProps) {
   const { toast } = useToast();
   const { token } = useAdminAuth();
+
+  // 카테고리 데이터 (전체 보기 링크 동적 생성용)
+  const { data: categoriesData } = useApiQuery<any>(
+    ["categories"],
+    "/api/categories"
+  );
+  const topCategories: any[] =
+    categoriesData?.success ? categoriesData.categories || [] : [];
 
   const [title, setTitle] = useState(curation.title);
   const [subtitle, setSubtitle] = useState(curation.subtitle || "");
@@ -215,11 +223,11 @@ export function SectionEditPanel({
             >
               <option value="">선택 안함 (전체 보기 숨김)</option>
               <option value="/tours">여행상품 전체</option>
-              <option value="/tours?category=golf">골프투어</option>
-              <option value="/tours?destination=일본">일본 상품</option>
-              <option value="/tours?destination=태국">태국 상품</option>
-              <option value="/tours?destination=베트남">베트남 상품</option>
-              <option value="/tours?destination=대만">대만 상품</option>
+              {topCategories.map((c: any) => (
+                <option key={c.id} value={`/tours?category=${c.slug}`}>
+                  {c.name} 상품
+                </option>
+              ))}
               <option value="/magazine">매거진</option>
               <option value="/about">회사소개</option>
               <option value="/contact">문의하기</option>

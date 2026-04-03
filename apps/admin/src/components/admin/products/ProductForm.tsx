@@ -173,8 +173,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     const errors: string[] = [];
     if (!formData.title) errors.push("상품명");
     if (!formData.slug) errors.push("Slug");
-    if (!formData.categoryId) errors.push("카테고리");
-    if (!formData.destination) errors.push("목적지");
+    if (!formData.categoryId) errors.push("카테고리 (국가/지역)");
     if (!formData.nights || !formData.days) errors.push("기간(박/일)");
     if (!formData.basePrice) errors.push("기본 가격");
 
