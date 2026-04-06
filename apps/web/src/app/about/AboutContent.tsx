@@ -226,7 +226,7 @@ export function AboutContent() {
               </HeroFade>
               <HeroFade delay={400}>
                 <p className="text-lg md:text-xl text-white/70 max-w-lg mx-auto leading-relaxed">
-                  2004년부터 오직 골프여행 하나에 집중해 온
+                  2004년부터 오직 골프여행 하나에 집중해 온<br className="hidden md:block" />
                   대한민국 대표 해외골프투어 전문 여행사
                 </p>
               </HeroFade>
