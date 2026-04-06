@@ -221,13 +221,13 @@ export function AboutContent() {
               <HeroFade delay={200}>
                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] mb-5">
                   골프여행,<br />
-                  <span className="text-emerald-400">22년</span>의 여정
+                  경력 <span className="text-emerald-400">23년</span>차의 여정
                 </h1>
               </HeroFade>
               <HeroFade delay={400}>
                 <p className="text-lg md:text-xl text-white/70 max-w-lg mx-auto leading-relaxed">
-                  2004년부터 오직 골프여행 하나에 집중해 온<br className="hidden md:block" />
-                  대한민국 대표 골프투어 전문 여행사
+                  2004년부터 오직 골프여행 하나에 집중해 온
+                  대한민국 대표 해외골프투어 전문 여행사
                 </p>
               </HeroFade>
               <HeroFade delay={600}>

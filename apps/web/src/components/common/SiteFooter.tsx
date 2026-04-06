@@ -83,30 +83,21 @@ export function SiteFooter() {
             <h3 className="text-white/40 uppercase tracking-widest text-[11px] font-medium">연락처</h3>
             <div className="flex flex-col gap-1.5 leading-relaxed text-white/60">
               <p>
-                대표전화&nbsp;
+                이종양 대표이사&nbsp;
                 <a
-                  href="tel:1588-0320"
+                  href="tel:010-5473-9037"
                   className="text-white font-medium hover:underline"
                 >
-                  1588-0320
+                  010-5473-9037
                 </a>
               </p>
               <p>
-                직통&nbsp;
+                이국호 본부장&nbsp;
                 <a
-                  href="tel:02-730-1220"
+                  href="tel:010-3041-9192"
                   className="text-white font-medium hover:underline"
                 >
-                  02-730-1220
-                </a>
-              </p>
-              <p>
-                야간/휴일&nbsp;
-                <a
-                  href="tel:010-5514-5831"
-                  className="text-white font-medium hover:underline"
-                >
-                  010-5514-5831
+                  010-3041-9192
                 </a>
               </p>
             </div>
