@@ -3,29 +3,11 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import createGlobe from "cobe";
 import Link from "next/link";
-
-interface ProductItem {
-  slug: string;
-  title: string;
-  imageUrl: string;
-  price: string;
-  destination: string;
-}
+import type { GlobeDestination } from "@/lib/home/globe";
 
 interface GlobeSectionProps {
-  productsByCountry: Record<string, ProductItem[]>;
+  destinations: GlobeDestination[];
 }
-
-const DESTINATIONS = [
-  { name: "한국", key: "domestic-jeju", lat: 36.5, lng: 127.0, emoji: "🇰🇷", desc: "제주·강원·경기 명문 코스", href: "/tours?destination=제주", cities: ["제주", "강원", "경기"] },
-  { name: "일본", key: "japan", lat: 36.2, lng: 138.2, emoji: "🇯🇵", desc: "규슈·오키나와·홋카이도", href: "/tours?destination=일본", cities: ["규슈", "오키나와", "홋카이도", "오사카"] },
-  { name: "태국", key: "thailand", lat: 15.87, lng: 100.99, emoji: "🇹🇭", desc: "방콕·치앙마이·파타야", href: "/tours?destination=태국", cities: ["방콕", "치앙마이", "파타야"] },
-  { name: "베트남", key: "vietnam", lat: 16.05, lng: 108.22, emoji: "🇻🇳", desc: "다낭·호치민·하노이", href: "/tours?destination=베트남", cities: ["다낭", "호치민", "하노이"] },
-  { name: "대만", key: "taiwan", lat: 25.03, lng: 121.56, emoji: "🇹🇼", desc: "타이베이 근교 명문 코스", href: "/tours?destination=대만", cities: ["타이베이", "타이중"] },
-  { name: "괌·사이판", key: "guam-saipan", lat: 13.44, lng: 144.79, emoji: "🇬🇺", desc: "오션뷰 리조트 골프", href: "/tours?destination=괌", cities: ["괌", "사이판"] },
-];
-
-const DEFAULT_SELECTED = 0; // 한국 디폴트 선택
 
 /** 지구본 테마 프리셋 */
 const GLOBE_THEMES = {
@@ -128,17 +110,23 @@ function projectMarker(
   return { x: r + x * r, y: r - y2 * r, visible: z2 > 0 };
 }
 
-export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
+export function GlobeSection({ destinations }: GlobeSectionProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerInteracting = useRef<{ x: number; y: number } | null>(null);
-  // 한국 좌표로 초기 포커스
-  const initAngles = locationToAngles(DESTINATIONS[DEFAULT_SELECTED].lat, DESTINATIONS[DEFAULT_SELECTED].lng);
+
+  const firstDest = destinations.length > 0 ? destinations[0] : null;
+  const initAngles = firstDest
+    ? locationToAngles(firstDest.lat, firstDest.lng)
+    : locationToAngles(0, 0);
+
   const phiRef = useRef(initAngles[0]);
   const thetaRef = useRef(initAngles[1]);
   const widthRef = useRef(0);
   const focusRef = useRef<[number, number] | null>(null);
 
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(DEFAULT_SELECTED);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(
+    destinations.length > 0 ? 0 : null
+  );
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [themeKey, setThemeKey] = useState<GlobeThemeKey>("light-blue");
   const globeInstanceRef = useRef<ReturnType<typeof createGlobe> | null>(null);
@@ -148,10 +136,12 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
   const handleDestinationClick = useCallback((index: number) => {
     setSelectedIndex((prev) => (prev === index ? null : index));
     setSelectedCity(null);
-    const dest = DESTINATIONS[index];
-    const [phi, theta] = locationToAngles(dest.lat, dest.lng);
-    focusRef.current = [phi, theta];
-  }, []);
+    const dest = destinations[index];
+    if (dest) {
+      const [phi, theta] = locationToAngles(dest.lat, dest.lng);
+      focusRef.current = [phi, theta];
+    }
+  }, [destinations]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -182,7 +172,7 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
       baseColor: [...theme.baseColor],
       markerColor: [...theme.markerColor],
       glowColor: [...theme.glowColor],
-      markers: DESTINATIONS.map((d, i) => ({
+      markers: destinations.map((d, i) => ({
         location: [d.lat, d.lng] as [number, number],
         size: selectedIndex === i ? 0.12 : 0.06,
       })),
@@ -220,8 +210,8 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
         let closestIdx = -1;
         let closestDist = Infinity;
         const hitThreshold = canvasSize * 0.1;
-        for (let i = 0; i < DESTINATIONS.length; i++) {
-          const proj = projectMarker(DESTINATIONS[i].lat, DESTINATIONS[i].lng, phiRef.current, thetaRef.current, canvasSize);
+        for (let i = 0; i < destinations.length; i++) {
+          const proj = projectMarker(destinations[i].lat, destinations[i].lng, phiRef.current, thetaRef.current, canvasSize);
           if (!proj.visible) continue;
           const dist = Math.sqrt((clickX - proj.x) ** 2 + (clickY - proj.y) ** 2);
           if (dist < hitThreshold && dist < closestDist) {
@@ -272,7 +262,7 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
       canvas.removeEventListener("pointerout", onPointerOut);
       canvas.removeEventListener("pointermove", onPointerMove);
     };
-  }, [themeKey, selectedIndex, handleDestinationClick]);
+  }, [themeKey, selectedIndex, handleDestinationClick, destinations]);
 
   // selectedCity 변경 시 캐러셀 초기화
   useEffect(() => {
@@ -342,12 +332,29 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
     };
   }, [selectedIndex]);
 
-  const selectedDest = selectedIndex !== null ? DESTINATIONS[selectedIndex] : null;
-  const selectedProducts = selectedDest ? (productsByCountry[selectedDest.key] || []) : [];
-  const filteredProducts = selectedCity
-    ? selectedProducts.filter(
-        (p) => p.title.includes(selectedCity) || p.destination.includes(selectedCity)
+  // 목적지가 없을 때 가드
+  if (destinations.length === 0) {
+    return (
+      <section className="py-16 md:py-24 bg-[color:var(--surface)] overflow-hidden">
+        <div className="max-w-[1200px] mx-auto px-4 md:px-6 text-center">
+          <p className="text-[color:var(--muted)] text-sm">준비 중입니다.</p>
+        </div>
+      </section>
+    );
+  }
+
+  const selectedDest = selectedIndex !== null ? destinations[selectedIndex] ?? null : null;
+  const selectedProducts = selectedDest ? selectedDest.products : [];
+
+  // 실제 상품이 있는 도시만 노출 (정확한 이름 매칭)
+  const availableCities = selectedDest
+    ? selectedDest.cities.filter((city) =>
+        selectedProducts.some((p) => p.destination === city.name)
       )
+    : [];
+
+  const filteredProducts = selectedCity
+    ? selectedProducts.filter((p) => p.destination === selectedCity)
     : selectedProducts;
 
   return (
@@ -367,11 +374,11 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
 
         {/* 국가 태그 */}
         <div className="flex flex-wrap justify-center gap-2 mb-10">
-          {DESTINATIONS.map((dest, i) => {
-            const count = (productsByCountry[dest.key] || []).length;
+          {destinations.map((dest, i) => {
+            const count = dest.products.length;
             return (
               <button
-                key={dest.name}
+                key={dest.id}
                 type="button"
                 onClick={() => handleDestinationClick(i)}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
@@ -405,7 +412,7 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
               />
             </div>
 
-            {/* 테마 선택 (로컬 확인용) */}
+            {/* 테마 선택 (로컬 확인용) — 비활성화
             {process.env.NODE_ENV === "development" && (
               <div className="flex flex-wrap justify-center gap-1.5 max-w-[360px]">
                 {(Object.keys(GLOBE_THEMES) as GlobeThemeKey[]).map((key) => {
@@ -432,6 +439,7 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
                 })}
               </div>
             )}
+            */}
           </div>
 
           {/* 우측: 수평 캐러셀 또는 안내 */}
@@ -448,7 +456,7 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
                     </div>
                   </div>
                   <Link
-                    href={selectedDest.href}
+                    href={`/tours?category=${selectedDest.slug}`}
                     className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
                   >
                     전체 보기 →
@@ -456,7 +464,7 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
                 </div>
 
                 {/* 도시 서브 칩 */}
-                {selectedDest.cities.length > 1 && (
+                {availableCities.length > 1 && (
                   <div className="flex flex-wrap gap-1.5 mb-4">
                     <button
                       type="button"
@@ -469,18 +477,18 @@ export function GlobeSection({ productsByCountry }: GlobeSectionProps) {
                     >
                       전체
                     </button>
-                    {selectedDest.cities.map((city) => (
+                    {availableCities.map((city) => (
                       <button
-                        key={city}
+                        key={city.slug}
                         type="button"
-                        onClick={() => setSelectedCity(city)}
+                        onClick={() => setSelectedCity(city.name)}
                         className={`px-2.5 py-1 rounded-full text-[12px] font-medium transition-colors border ${
-                          selectedCity === city
+                          selectedCity === city.name
                             ? "bg-[color:var(--fg)] text-white border-[color:var(--fg)]"
                             : "bg-[color:var(--surface)] text-[color:var(--muted)] border-[color:var(--border)]"
                         }`}
                       >
-                        {city}
+                        {city.name}
                       </button>
                     ))}
                   </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
-import { PackageOpen, ChevronDown, SlidersHorizontal, X } from "lucide-react";
+import { PackageOpen, ChevronDown, SlidersHorizontal, X, ChevronUp } from "lucide-react";
 import { RangeSlider } from "@/components/common/RangeSlider";
 import { Checkbox } from "@/components/common/Checkbox";
 import { ProductCard } from "./ProductCard";
@@ -17,6 +17,36 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 ];
 
 const PRICE_STEP = 100000;
+
+/** 아코디언 섹션 */
+function FilterSection({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="bg-white rounded-[24px] overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-gray-50/50 transition-colors"
+      >
+        <h3 className="text-sm font-semibold text-[color:var(--fg)]">{title}</h3>
+        {open ? (
+          <ChevronUp className="w-4 h-4 text-[color:var(--muted)]" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-[color:var(--muted)]" />
+        )}
+      </button>
+      {open && <div className="px-6 pb-6 pt-0">{children}</div>}
+    </div>
+  );
+}
 
 function formatPrice(value: number): string {
   if (value >= 10000) {
@@ -56,6 +86,8 @@ export function ToursPageClient({
       .filter((v, i, a) => a.indexOf(v) === i);
   }, [initialFilters.destination, initialProducts]);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>(initialDestinations);
+  const [selectedDepartures, setSelectedDepartures] = useState<string[]>([]);
+  const [selectedNights, setSelectedNights] = useState<string[]>([]); // "1-2", "3", "4+"
   const [sortKey, setSortKey] = useState<SortKey>("newest");
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -84,6 +116,15 @@ export function ToursPageClient({
     return Array.from(destSet).sort();
   }, [initialProducts]);
 
+  // 상품 데이터에서 출발지 목록 동적 추출
+  const departures = useMemo(() => {
+    const set = new Set<string>();
+    initialProducts.forEach((p) => {
+      if (p.departure) set.add(p.departure);
+    });
+    return Array.from(set).sort();
+  }, [initialProducts]);
+
   // 정렬 드롭다운 외부 클릭 닫기
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -107,6 +148,8 @@ export function ToursPageClient({
     setMinPrice(priceRange.min);
     setMaxPrice(priceRange.max);
     setSelectedDestinations([]);
+    setSelectedDepartures([]);
+    setSelectedNights([]);
     setSortKey("recommended");
     if (selectedCategory || searchQuery) {
       window.location.href = `/tours`;
@@ -117,6 +160,26 @@ export function ToursPageClient({
     setSelectedDestinations((prev) =>
       prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
     );
+  };
+
+  const toggleDeparture = (id: string) => {
+    setSelectedDepartures((prev) =>
+      prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
+    );
+  };
+
+  const toggleNights = (id: string) => {
+    setSelectedNights((prev) =>
+      prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
+    );
+  };
+
+  const matchesNightsBucket = (nights: number | null | undefined, bucket: string) => {
+    if (nights == null) return false;
+    if (bucket === "1-2") return nights <= 2;
+    if (bucket === "3") return nights === 3;
+    if (bucket === "4+") return nights >= 4;
+    return false;
   };
 
   // 클라이언트 필터링 + 정렬
@@ -143,6 +206,18 @@ export function ToursPageClient({
       );
     }
 
+    // 출발지 필터
+    if (selectedDepartures.length > 0) {
+      result = result.filter((p) => p.departure && selectedDepartures.includes(p.departure));
+    }
+
+    // 여행 기간 필터
+    if (selectedNights.length > 0) {
+      result = result.filter((p) =>
+        selectedNights.some((bucket) => matchesNightsBucket(p.nights, bucket))
+      );
+    }
+
     // 정렬
     switch (sortKey) {
       case "priceLow":
@@ -161,7 +236,7 @@ export function ToursPageClient({
     }
 
     return result;
-  }, [initialProducts, minPrice, maxPrice, priceRange, selectedDestinations, sortKey]);
+  }, [initialProducts, minPrice, maxPrice, priceRange, selectedDestinations, selectedDepartures, selectedNights, sortKey]);
 
   const currentSortLabel =
     SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? "추천순";
@@ -170,8 +245,7 @@ export function ToursPageClient({
   const filterContent = (
     <>
       {/* 가격대 필터 */}
-      <div className="bg-white rounded-[24px] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-[color:var(--fg)]">1인 가격</h3>
+      <FilterSection title="1인 가격">
         <RangeSlider
           min={priceRange.min}
           max={priceRange.max}
@@ -181,11 +255,10 @@ export function ToursPageClient({
           onChange={(newMin, newMax) => { setMinPrice(newMin); setMaxPrice(newMax); }}
           formatLabel={formatPrice}
         />
-      </div>
+      </FilterSection>
 
       {/* 여행지 필터 */}
-      <div className="bg-white rounded-[24px] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-[color:var(--fg)]">여행지</h3>
+      <FilterSection title="여행지">
         <div className="space-y-3">
           {destinations.map((dest) => (
             <Checkbox
@@ -196,46 +269,57 @@ export function ToursPageClient({
             />
           ))}
         </div>
-      </div>
+      </FilterSection>
 
-      {/* 카테고리 필터 */}
-      {categories.length > 0 && (
-        <div className="bg-white rounded-[24px] p-6 space-y-3">
-          <h3 className="text-sm font-semibold text-[color:var(--fg)] mb-4">카테고리</h3>
-          <button
-            type="button"
-            onClick={() => handleCategoryClick(undefined)}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-              !selectedCategory
-                ? "bg-[color:var(--fg)] text-white font-medium"
-                : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
-            }`}
-          >
-            전체
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => handleCategoryClick(cat.slug)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                selectedCategory === cat.slug
-                  ? "bg-[color:var(--fg)] text-white font-medium"
-                  : "text-[color:var(--muted)] hover:bg-[color:var(--surface)]"
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
+      {/* 출발지 필터 */}
+      {departures.length > 0 && (
+        <FilterSection title="출발지">
+          <div className="space-y-3">
+            {departures.map((dep) => (
+              <Checkbox
+                key={dep}
+                checked={selectedDepartures.includes(dep)}
+                onChange={() => toggleDeparture(dep)}
+                label={dep}
+              />
+            ))}
+          </div>
+        </FilterSection>
       )}
+
+      {/* 여행 기간 필터 */}
+      <FilterSection title="여행 기간">
+        <div className="flex flex-wrap gap-2">
+          {[
+            { value: "1-2", label: "1~2박" },
+            { value: "3", label: "3박" },
+            { value: "4+", label: "4박 이상" },
+          ].map((opt) => {
+            const selected = selectedNights.includes(opt.value);
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => toggleNights(opt.value)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  selected
+                    ? "bg-[color:var(--fg)] text-white"
+                    : "bg-[color:var(--surface)] text-[color:var(--muted)] hover:bg-gray-100"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </FilterSection>
     </>
   );
 
   return (
     <div className="flex gap-[40px]">
       {/* 왼쪽: 필터 사이드바 (데스크톱) */}
-      <aside className="w-[309px] flex-shrink-0 space-y-6 hidden lg:block">
+      <aside className="w-[309px] flex-shrink-0 space-y-6 hidden lg:block lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-2">
         {/* 필터 헤더 */}
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[color:var(--muted)]">필터</h2>

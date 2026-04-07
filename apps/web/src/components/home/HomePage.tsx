@@ -1,5 +1,6 @@
 import { getActiveCurations, getFallbackDealProducts, getFallbackNewProducts, getFallbackFeaturedProducts } from "@/lib/home/curations";
 import { getRankingProducts } from "@/lib/home/seed";
+import { getGlobeDestinations } from "@/lib/home/globe";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
@@ -24,7 +25,7 @@ const DEFAULT_PACKAGE_DESTINATIONS = [
 
 export async function HomePage() {
   // 큐레이션 기반 데이터 로드
-  const [curations, allProducts, banners] = await Promise.all([
+  const [curations, allProducts, banners, destinations] = await Promise.all([
     getActiveCurations(),
     prisma.tourProduct.findMany({
       where: { isActive: true },
@@ -39,27 +40,8 @@ export async function HomePage() {
       },
       orderBy: { sortOrder: "asc" },
     }),
+    getGlobeDestinations(),
   ]);
-
-  // 국가별 상품 그룹핑 (지구본용)
-  const DEST_MAP: Record<string, string> = {
-    "일본 후쿠오카": "japan", "일본 오키나와": "japan",
-    "베트남 다낭": "vietnam", "태국 치앙마이": "thailand",
-    "대만 타이베이": "taiwan", "제주도": "domestic-jeju",
-  };
-  const productsByCountry: Record<string, Array<{ slug: string; title: string; imageUrl: string; price: string; destination: string }>> = {};
-  for (const p of allProducts) {
-    const key = Object.entries(DEST_MAP).find(([dest]) => p.destination?.includes(dest.split(" ")[0]))?.[1]
-      || p.destination?.toLowerCase().replace(/\s/g, "-") || "other";
-    if (!productsByCountry[key]) productsByCountry[key] = [];
-    productsByCountry[key].push({
-      slug: p.slug,
-      title: p.title,
-      imageUrl: p.images?.[0]?.url || "",
-      price: p.basePrice ? `${p.basePrice.toLocaleString()}원` : "가격 문의",
-      destination: p.destination || "",
-    });
-  }
 
   // 큐레이션이 있으면 큐레이션 기반, 없으면 기존 하드코딩 폴백
   const hasCurations = curations.length > 0;
@@ -70,7 +52,7 @@ export async function HomePage() {
 
       <main>
         {/* 1. 3D 지구본 — 국가별 투어 탐색 (항상 표시) */}
-        <GlobeSection productsByCountry={productsByCountry} />
+        <GlobeSection destinations={destinations} />
 
         {hasCurations ? (
           /* 큐레이션 기반 동적 섹션 렌더링 */
@@ -306,24 +288,29 @@ function BannerHeroSection({ curation, banners }: { curation: Awaited<ReturnType
 
 /** 신뢰 CTA 섹션 (trust_cta) - 텍스트 중심 */
 function TrustCtaSection({ curation }: { curation: Awaited<ReturnType<typeof getActiveCurations>>[number] }) {
+  // 리터럴 \n과 실제 개행 모두 줄바꿈으로 처리
+  const titleLines = curation.title.replace(/\\n/g, "\n").split("\n");
+  const descLines = curation.description
+    ? curation.description.replace(/\\n/g, "\n").split("\n")
+    : [];
   return (
     <section className="py-20 md:py-28">
       <div className="max-w-3xl mx-auto px-6 text-center">
         <AnimateOnScroll animation="fadeUp">
           <h2 className="text-2xl md:text-[42px] font-semibold tracking-tight leading-[1.15] mb-6">
-            {curation.title.split("\n").map((line, i) => (
+            {titleLines.map((line, i) => (
               <span key={i}>
                 {line}
-                {i < curation.title.split("\n").length - 1 && <br />}
+                {i < titleLines.length - 1 && <br />}
               </span>
             ))}
           </h2>
           {curation.description && (
             <p className="text-base text-[color:var(--muted)] mb-10 max-w-lg mx-auto leading-relaxed">
-              {curation.description.split("\n").map((line, i) => (
+              {descLines.map((line, i) => (
                 <span key={i}>
                   {line}
-                  {i < (curation.description?.split("\n").length ?? 1) - 1 && <br />}
+                  {i < descLines.length - 1 && <br />}
                 </span>
               ))}
             </p>

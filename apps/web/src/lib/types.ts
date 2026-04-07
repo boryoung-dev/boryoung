@@ -100,6 +100,11 @@ export interface TourProductSummary {
   createdAt: string | Date;
   category?: Category | null;
   tagList?: Tag[];
+  // 필터링용 추가 필드
+  departure?: string | null;
+  nights?: number | null;
+  days?: number | null;
+  airline?: string | null;
 }
 
 // 여행 상품 (상세용)
