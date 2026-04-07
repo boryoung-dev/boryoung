@@ -12,6 +12,8 @@ export const createCategorySchema = z.object({
   parentId: z.string().optional().nullable(),
   sortOrder: z.number().int().optional(),
   isActive: z.boolean().optional(),
+  showOnGlobe: z.boolean().optional(),
+  globeSortOrder: z.number().int().optional(),
 });
 
 export const updateCategorySchema = createCategorySchema.partial();

@@ -11,6 +11,7 @@ import Modal, {
 } from "@/components/ui/Modal";
 import { SectionList } from "./SectionList";
 import { SectionEditPanel } from "./panels/SectionEditPanel";
+import { GlobeEditPanel } from "./panels/GlobeEditPanel";
 
 /** 큐레이션 타입 정의 (에디터 전역 공유) */
 export interface Curation {
@@ -71,6 +72,7 @@ export default function HomepageEditor() {
   const { confirm } = useConfirm();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [globeSelected, setGlobeSelected] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newSectionType, setNewSectionType] = useState("");
   const [newTitle, setNewTitle] = useState("");
@@ -135,7 +137,13 @@ export default function HomepageEditor() {
   );
 
   const handleSelect = useCallback((curation: Curation) => {
+    setGlobeSelected(false);
     setSelectedId(curation.id);
+  }, []);
+
+  const handleGlobeSelect = useCallback(() => {
+    setSelectedId(null);
+    setGlobeSelected(true);
   }, []);
 
   const handleDelete = useCallback(
@@ -291,7 +299,9 @@ export default function HomepageEditor() {
             <SectionList
               curations={curations}
               selectedId={selectedId}
+              globeSelected={globeSelected}
               onSelect={handleSelect}
+              onGlobeSelect={handleGlobeSelect}
               onDelete={handleDelete}
               onMoveUp={handleMoveUp}
               onMoveDown={handleMoveDown}
@@ -302,7 +312,11 @@ export default function HomepageEditor() {
         {/* 우측: 편집 패널 (40%) */}
         <div className="flex-[4]">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 sticky top-4 flex flex-col" style={{ height: "calc(100vh - 120px)" }}>
-            {selectedCuration ? (
+            {globeSelected ? (
+              <GlobeEditPanel
+                onClose={() => setGlobeSelected(false)}
+              />
+            ) : selectedCuration ? (
               <SectionEditPanel
                 key={selectedCuration.id}
                 curation={selectedCuration}

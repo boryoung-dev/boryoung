@@ -74,8 +74,30 @@ export function ToursPageClient({
   };
 }) {
   const [searchQuery] = useState(initialFilters.search || "");
-  const [selectedCategory, setSelectedCategory] = useState(initialFilters.category);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(initialFilters.category);
+  const [expandedParentId, setExpandedParentId] = useState<string | null>(null);
   const [selectedTag] = useState(initialFilters.tag);
+
+  // 최상위 카테고리(국가)만 추출 — 자식은 각 항목의 children에 들어 있음
+  const topCategories = useMemo(
+    () => categories.filter((c) => !c.parentId),
+    [categories]
+  );
+
+  // 초기 selectedCategory에 맞춰 부모 자동 펼침
+  useEffect(() => {
+    if (!selectedCategory) return;
+    const parent = topCategories.find(
+      (p) =>
+        p.slug === selectedCategory ||
+        p.children?.some((c) => c.slug === selectedCategory)
+    );
+    if (parent) setExpandedParentId(parent.id);
+  }, [selectedCategory, topCategories]);
+
+  const handleCategorySelect = (slug: string | undefined) => {
+    setSelectedCategory(slug);
+  };
   // URL의 destination 파라미터로 여행지 자동 선택 (부분 매칭)
   const initialDestinations = useMemo(() => {
     if (!initialFilters.destination) return [];
@@ -186,6 +208,22 @@ export function ToursPageClient({
   const filteredProducts = useMemo(() => {
     let result = [...initialProducts];
 
+    // 카테고리 필터 (부모 선택 시 자식 카테고리 상품도 포함)
+    if (selectedCategory) {
+      const parent = topCategories.find((p) => p.slug === selectedCategory);
+      if (parent) {
+        const childSlugs = parent.children?.map((c) => c.slug) ?? [];
+        result = result.filter((p) => {
+          const pSlug = p.category?.slug;
+          if (!pSlug) return false;
+          return pSlug === selectedCategory || childSlugs.includes(pSlug);
+        });
+      } else {
+        // 자식 카테고리 선택
+        result = result.filter((p) => p.category?.slug === selectedCategory);
+      }
+    }
+
     // 가격 필터
     if (minPrice > priceRange.min || maxPrice < priceRange.max) {
       result = result.filter(
@@ -236,7 +274,7 @@ export function ToursPageClient({
     }
 
     return result;
-  }, [initialProducts, minPrice, maxPrice, priceRange, selectedDestinations, selectedDepartures, selectedNights, sortKey]);
+  }, [initialProducts, minPrice, maxPrice, priceRange, selectedCategory, topCategories, selectedDestinations, selectedDepartures, selectedNights, sortKey]);
 
   const currentSortLabel =
     SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? "추천순";
@@ -244,6 +282,74 @@ export function ToursPageClient({
   // 필터 내용 공통 렌더링
   const filterContent = (
     <>
+      {/* 카테고리(국가/지역) 트리 필터 */}
+      {topCategories.length > 0 && (
+        <FilterSection title="카테고리">
+          <div className="space-y-1">
+            <button
+              type="button"
+              onClick={() => handleCategorySelect(undefined)}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                !selectedCategory
+                  ? "bg-[color:var(--fg)] text-white font-medium"
+                  : "text-[color:var(--fg)] hover:bg-gray-50"
+              }`}
+            >
+              전체
+            </button>
+            {topCategories.map((parent) => {
+              const isExpanded = expandedParentId === parent.id;
+              const isParentSelected = selectedCategory === parent.slug;
+              const hasChildren = (parent.children?.length ?? 0) > 0;
+              return (
+                <div key={parent.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCategorySelect(parent.slug);
+                      setExpandedParentId(isExpanded && isParentSelected ? null : parent.id);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                      isParentSelected
+                        ? "bg-[color:var(--fg)] text-white font-medium"
+                        : "text-[color:var(--fg)] hover:bg-gray-50"
+                    }`}
+                  >
+                    <span>{parent.name}</span>
+                    {hasChildren && (
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                      />
+                    )}
+                  </button>
+                  {isExpanded && hasChildren && (
+                    <div className="ml-3 mt-1 space-y-0.5 border-l border-[color:var(--border)] pl-3">
+                      {parent.children!.map((child) => {
+                        const isChildSelected = selectedCategory === child.slug;
+                        return (
+                          <button
+                            key={child.id}
+                            type="button"
+                            onClick={() => handleCategorySelect(child.slug)}
+                            className={`w-full text-left px-3 py-1.5 rounded-md text-[13px] transition-colors ${
+                              isChildSelected
+                                ? "bg-[color:var(--surface)] text-[color:var(--fg)] font-medium"
+                                : "text-[color:var(--muted)] hover:text-[color:var(--fg)] hover:bg-gray-50"
+                            }`}
+                          >
+                            {child.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </FilterSection>
+      )}
+
       {/* 가격대 필터 */}
       <FilterSection title="1인 가격">
         <RangeSlider

@@ -25,9 +25,11 @@ model Category {
   latitude    Float?        // 위도 (지구본 마커 좌표)
   longitude   Float?        // 경도 (지구본 마커 좌표)
   level       Int           @default(0) // 0=대분류, 1=중분류, 2=소분류
-  sortOrder   Int           @default(0)
-  isActive    Boolean       @default(true)
-  createdAt   DateTime      @default(now())
+  sortOrder      Int           @default(0)
+  isActive       Boolean       @default(true)
+  showOnGlobe    Boolean       @default(false)
+  globeSortOrder Int           @default(0)
+  createdAt      DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
   // 셀프 레퍼런싱 (계층형 카테고리)

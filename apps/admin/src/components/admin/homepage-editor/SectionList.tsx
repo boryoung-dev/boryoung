@@ -49,8 +49,8 @@ export function SectionList({
   );
   const topCountries: Array<{ id: string; emoji?: string | null; name: string }> =
     (categoriesData?.success ? categoriesData.categories ?? [] : [])
-      .filter((c: any) => !c.parentId && c.isActive)
-      .sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+      .filter((c: any) => !c.parentId && c.isActive && c.showOnGlobe)
+      .sort((a: any, b: any) => (a.globeSortOrder ?? 0) - (b.globeSortOrder ?? 0));
 
   return (
     <div

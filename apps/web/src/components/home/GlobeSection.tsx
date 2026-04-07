@@ -372,32 +372,34 @@ export function GlobeSection({ destinations }: GlobeSectionProps) {
           </p>
         </div>
 
-        {/* 국가 태그 */}
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
-          {destinations.map((dest, i) => {
-            const count = dest.products.length;
-            return (
-              <button
-                key={dest.id}
-                type="button"
-                onClick={() => handleDestinationClick(i)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
-                  selectedIndex === i
-                    ? "border-[color:var(--fg)] bg-[color:var(--fg)] text-white shadow-md"
-                    : "border-[color:var(--border)] bg-white text-[color:var(--fg)] hover:border-[color:var(--fg)] hover:shadow-sm"
-                }`}
-              >
-                {dest.emoji} {dest.name}
-                {count > 0 && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                    selectedIndex === i ? "bg-white/20" : "bg-[color:var(--surface)]"
-                  }`}>
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        {/* 국가 태그 — 모바일: 가로 스크롤, 데스크톱: 줄바꿈 */}
+        <div className="-mx-4 md:mx-0 mb-10">
+          <div className="flex md:flex-wrap md:justify-center gap-2 overflow-x-auto md:overflow-visible px-4 md:px-0 scrollbar-hide snap-x snap-mandatory">
+            {destinations.map((dest, i) => {
+              const count = dest.products.length;
+              return (
+                <button
+                  key={dest.id}
+                  type="button"
+                  onClick={() => handleDestinationClick(i)}
+                  className={`shrink-0 snap-start inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                    selectedIndex === i
+                      ? "border-[color:var(--fg)] bg-[color:var(--fg)] text-white shadow-md"
+                      : "border-[color:var(--border)] bg-white text-[color:var(--fg)] hover:border-[color:var(--fg)] hover:shadow-sm"
+                  }`}
+                >
+                  {dest.emoji} {dest.name}
+                  {count > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                      selectedIndex === i ? "bg-white/20" : "bg-[color:var(--surface)]"
+                    }`}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* 지구본 + 상세 패널 */}

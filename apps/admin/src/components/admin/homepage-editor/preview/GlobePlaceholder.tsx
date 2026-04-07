@@ -62,7 +62,7 @@ export function GlobePlaceholder({
         {onClick && (
           <div className="mt-3 flex items-center justify-center gap-1 text-xs text-blue-300 opacity-80">
             <Pencil className="w-3 h-3" />
-            <span>클릭하여 국가 편집</span>
+            <span>클릭하여 지구본 노출 국가 편집</span>
           </div>
         )}
       </div>
