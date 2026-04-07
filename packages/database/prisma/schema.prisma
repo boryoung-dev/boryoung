@@ -21,6 +21,9 @@ model Category {
   slug        String        @unique
   description String?
   icon        String?       // 아이콘 이름 (lucide 등)
+  emoji       String?       // 이모지 (지구본 마커 표시용)
+  latitude    Float?        // 위도 (지구본 마커 좌표)
+  longitude   Float?        // 경도 (지구본 마커 좌표)
   level       Int           @default(0) // 0=대분류, 1=중분류, 2=소분류
   sortOrder   Int           @default(0)
   isActive    Boolean       @default(true)

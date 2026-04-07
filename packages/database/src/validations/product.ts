@@ -18,7 +18,7 @@ export const createProductSchema = z.object({
   minPeople: z.number().int().optional(),
   maxPeople: z.number().int().optional(),
   basePrice: z.number().int().optional(),
-  originalPrice: z.number().int().optional(),
+  originalPrice: z.number().int().nullable().optional(),
   content: z.string().optional(),
   contentHtml: z.string().optional(),
   contentSections: z.any().optional(),
