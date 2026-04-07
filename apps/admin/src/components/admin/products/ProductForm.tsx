@@ -209,7 +209,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
         nights: formData.nights != null ? formData.nights : undefined,
         days: formData.days != null ? formData.days : undefined,
         basePrice: formData.basePrice != null ? formData.basePrice : undefined,
-        originalPrice: formData.originalPrice != null ? formData.originalPrice : undefined,
+        originalPrice: formData.originalPrice ?? null,
         minPeople: formData.minPeople != null ? formData.minPeople : undefined,
         maxPeople: formData.maxPeople != null ? formData.maxPeople : undefined,
         totalHoles: formData.totalHoles != null ? formData.totalHoles : undefined,
