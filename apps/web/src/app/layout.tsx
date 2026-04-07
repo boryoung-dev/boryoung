@@ -197,6 +197,7 @@ export default function RootLayout({
         {/* Google Analytics */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-8KCME6XCXK" />
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-8KCME6XCXK');`,
           }}
@@ -204,6 +205,7 @@ export default function RootLayout({
         {/* 네이버 애널리틱스 */}
         <script src="//wcs.pstatic.net/wcslog.js" async />
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `if(!wcs_add) var wcs_add={};wcs_add["wa"]="275b880ad47090";if(window.wcs){wcs_do();}`,
           }}

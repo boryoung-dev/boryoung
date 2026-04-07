@@ -35,12 +35,16 @@ export function FeaturedTourCarousel({ items }: FeaturedTourCarouselProps) {
             href={item.slug ? `/tours/${item.slug}` : "/tours"}
             className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[color:var(--surface)] block"
           >
-            <img
-              src={item.imageUrl}
-              alt={item.title}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
-            />
+            {item.imageUrl ? (
+              <img
+                src={item.imageUrl}
+                alt={item.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
+              />
+            ) : (
+              <div className="w-full h-full bg-[color:var(--surface)]" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-5">
               {item.badges && item.badges.length > 0 && (

@@ -56,7 +56,7 @@ export function ToursPageClient({
       .filter((v, i, a) => a.indexOf(v) === i);
   }, [initialFilters.destination, initialProducts]);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>(initialDestinations);
-  const [sortKey, setSortKey] = useState<SortKey>("recommended");
+  const [sortKey, setSortKey] = useState<SortKey>("newest");
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Edit2, Trash2, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Plus, Search, Trash2, ChevronLeft, ChevronRight, Star, Info, X } from "lucide-react";
 import Select from "@/components/ui/Select";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
@@ -57,6 +57,7 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [infoOpen, setInfoOpen] = useState(false);
 
   // 상품 목록 조회
   const productsParams = new URLSearchParams({ page: String(page), limit: "20" });
@@ -132,9 +133,101 @@ export default function AdminProductsPage() {
 
   return (
     <div>
+      {/* 기능 안내 모달 */}
+      {infoOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setInfoOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
+              <div className="flex items-center gap-2">
+                <Info className="w-5 h-5 text-blue-600" />
+                <h2 className="text-lg font-bold text-gray-900">상품 관리 기능 안내</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInfoOpen(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                aria-label="닫기"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-6 py-5 space-y-5 text-sm text-gray-700">
+              <section>
+                <h3 className="font-semibold text-gray-900 mb-2">📋 목록 / 검색 / 필터</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>상품명으로 실시간 검색</li>
+                  <li>상태(전체/활성/비활성) · 카테고리별 필터</li>
+                  <li>페이지당 20개씩 페이지네이션</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-gray-900 mb-2">🟢 활성 토글</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>웹사이트(<code className="px-1 bg-gray-100 rounded">/tours</code>) 노출 여부를 한 번에 켜고 끔</li>
+                  <li>비활성 시 목록·상세·홈 큐레이션 모두에서 자동 제외</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-gray-900 mb-2">⭐ 추천 토글</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><code className="px-1 bg-gray-100 rounded">/tours</code> 정렬 옵션 "추천순" 선택 시 우선 노출</li>
+                  <li>상품 카드/상세에 별표 마크 표시</li>
+                  <li>홈 큐레이션 자동 채움 시 우선순위 (수동 큐레이션은 별도)</li>
+                  <li className="text-gray-500">※ 홈 메인 노출은 <b>홈페이지 에디터</b>에서 직접 큐레이션</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-gray-900 mb-2">📊 조회 / 예약 카운트</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>조회: 사용자가 상품 상세 페이지를 본 횟수</li>
+                  <li>예약: 해당 상품으로 들어온 예약 신청 건수</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-gray-900 mb-2">✏️ 작업 (수정 / 삭제)</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>연필 아이콘 → 상품 상세 편집 페이지로 이동</li>
+                  <li>휴지통 아이콘 → 확인 후 영구 삭제 (복구 불가)</li>
+                  <li>새 상품은 우측 상단 <b>+ 상품 등록</b> 버튼으로 추가</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-gray-900 mb-2">💡 팁</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>가격 0원/미정 상품은 "-"로 표시됩니다</li>
+                  <li>기본 정렬은 진열 순서(sortOrder) → 최신 등록순</li>
+                </ul>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">상품 관리</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900">상품 관리</h1>
+          <button
+            type="button"
+            onClick={() => setInfoOpen(true)}
+            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+            title="기능 안내"
+            aria-label="기능 안내"
+          >
+            <Info className="w-5 h-5" />
+          </button>
+        </div>
         <Link
           href="/products/new"
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
@@ -211,7 +304,11 @@ export default function AdminProductsPage() {
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                <tr
+                  key={product.id}
+                  onClick={() => router.push(`/products/${product.id}/edit`)}
+                  className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                >
                   {/* 상품 (썸네일 + 제목 + 카테고리 + 지역) */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -241,7 +338,7 @@ export default function AdminProductsPage() {
                   {/* 활성 토글 */}
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => handleToggle(product.id, "isActive", product.isActive)}
+                      onClick={(e) => { e.stopPropagation(); handleToggle(product.id, "isActive", product.isActive); }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         product.isActive ? "bg-green-500" : "bg-gray-300"
                       }`}
@@ -255,7 +352,7 @@ export default function AdminProductsPage() {
                   {/* 추천 토글 */}
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => handleToggle(product.id, "isFeatured", product.isFeatured)}
+                      onClick={(e) => { e.stopPropagation(); handleToggle(product.id, "isFeatured", product.isFeatured); }}
                       className={`p-1.5 rounded-lg transition-colors ${
                         product.isFeatured
                           ? "text-yellow-500 bg-yellow-50 hover:bg-yellow-100"
@@ -273,15 +370,8 @@ export default function AdminProductsPage() {
                   {/* 작업 */}
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
-                      <Link
-                        href={`/products/${product.id}/edit`}
-                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="수정"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Link>
                       <button
-                        onClick={() => handleDelete(product.id, product.title)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(product.id, product.title); }}
                         className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="삭제"
                       >

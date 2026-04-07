@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HeroSection } from "./HeroSection";
 import { TabNavigation } from "./TabNavigation";
 import { OverviewSection } from "./OverviewSection";
@@ -24,6 +24,15 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<TabType>("intro");
+
+  // 조회수 증가 (세션당 1회)
+  useEffect(() => {
+    if (!product.slug) return;
+    const key = `tour-viewed-${product.slug}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    fetch(`/api/tours/${product.slug}/view`, { method: "POST" }).catch(() => {});
+  }, [product.slug]);
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
@@ -51,7 +60,7 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
       </div>
 
       {/* 탭 네비게이션 (밑줄 스타일) */}
-      <div className="bg-[#FAFAFA] sticky top-16 z-30 border-b border-[color:var(--border)]">
+      <div className="bg-[#FAFAFA] sticky top-0 z-30 border-b border-[color:var(--border)]">
         <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-15">
           <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
         </div>

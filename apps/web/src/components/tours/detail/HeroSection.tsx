@@ -10,7 +10,7 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ product, onBooking, onImageClick }: HeroSectionProps) {
-  const allImages = product.images || [];
+  const allImages = (product.images || []).filter((img: any) => img?.url);
   const defaultMain =
     allImages.find((img: any) => img.isThumbnail)?.url ||
     allImages[0]?.url ||
