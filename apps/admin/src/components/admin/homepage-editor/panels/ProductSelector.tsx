@@ -49,6 +49,7 @@ interface ProductSelectorProps {
       basePrice?: number;
     }>
   ) => void;
+  onIdsChange?: (ids: string[]) => void;
 }
 
 /** 드래그 가능한 상품 아이템 */
@@ -75,6 +76,7 @@ export function ProductSelector({
   curationId,
   maxItems,
   onProductsChange,
+  onIdsChange,
 }: ProductSelectorProps) {
   const { token } = useAdminAuth();
   const { toast } = useToast();
@@ -132,6 +134,7 @@ export function ProductSelector({
         }));
       onProductsChange(selected);
     }
+    onIdsChange?.(selectedProductIds);
   }, [selectedProductIds, allProducts]);
 
   const saveProductsMutation = useApiMutation<

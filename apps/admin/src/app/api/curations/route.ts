@@ -14,6 +14,20 @@ export async function GET(request: NextRequest) {
       include: {
         _count: {
           select: { products: true }
+        },
+        products: {
+          orderBy: { sortOrder: "asc" },
+          include: {
+            product: {
+              include: {
+                images: {
+                  where: { isThumbnail: true },
+                  take: 1
+                },
+                category: true
+              }
+            }
+          }
         }
       },
       orderBy: {
@@ -21,7 +35,21 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({ success: true, curations });
+    // 미리보기에서 바로 쓸 수 있도록 products를 평탄화
+    const shaped = curations.map((c) => ({
+      ...c,
+      products: c.products.map((cp) => ({
+        id: cp.product.id,
+        title: cp.product.title,
+        slug: cp.product.slug,
+        imageUrl: cp.product.images[0]?.url ?? undefined,
+        destination: cp.product.destination ?? cp.product.category?.name ?? undefined,
+        duration: cp.product.durationText ?? undefined,
+        basePrice: cp.product.basePrice ?? undefined,
+      })),
+    }));
+
+    return NextResponse.json({ success: true, curations: shaped });
   } catch (error) {
     console.error("큐레이션 목록 조회 실패:", error);
     return NextResponse.json(

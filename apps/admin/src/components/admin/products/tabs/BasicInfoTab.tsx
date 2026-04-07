@@ -264,9 +264,9 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
           />
         </div>
 
-        {/* 가격 */}
+        {/* 판매가 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">기본 가격 (원) <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">판매가 (원) <span className="text-red-500">*</span></label>
           <input
             type="number"
             value={formData.basePrice ?? ""}
@@ -277,19 +277,43 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="1990000"
           />
+          <p className="mt-1 text-xs text-gray-500">실제 판매되는 가격입니다.</p>
         </div>
+        {/* 할인 표시 토글 + 정가 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">정가 (원, 선택)</label>
-          <input
-            type="number"
-            value={formData.originalPrice ?? ""}
-            onChange={(e) => {
-              const val = e.target.value;
-              updateField("originalPrice", val === "" ? null : parseInt(val));
-            }}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="2490000"
-          />
+          <label className="flex items-center gap-2 cursor-pointer mb-2">
+            <input
+              type="checkbox"
+              checked={formData.originalPrice != null && formData.originalPrice > 0}
+              onChange={(e) => {
+                if (!e.target.checked) {
+                  updateField("originalPrice", null);
+                } else {
+                  // 켤 때 기본값은 판매가와 동일
+                  updateField("originalPrice", formData.basePrice || 0);
+                }
+              }}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">할인 표시 사용</span>
+          </label>
+          {formData.originalPrice != null && formData.originalPrice > 0 && (
+            <>
+              <input
+                type="number"
+                value={formData.originalPrice ?? ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  updateField("originalPrice", val === "" ? null : parseInt(val));
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="정가 (예: 2490000)"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                정가가 판매가보다 높을 때만 할인율과 취소선이 표시됩니다.
+              </p>
+            </>
+          )}
         </div>
 
         {/* 인원 */}

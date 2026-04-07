@@ -8,6 +8,7 @@ import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Trash2, ChevronLeft, ChevronRight, Star, Info, X } from "lucide-react";
 import Select from "@/components/ui/Select";
+import DatePicker from "@/components/ui/DatePicker";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 
@@ -54,19 +55,31 @@ export default function AdminProductsPage() {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [featuredFilter, setFeaturedFilter] = useState("all");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [infoOpen, setInfoOpen] = useState(false);
 
   // 상품 목록 조회
-  const productsParams = new URLSearchParams({ page: String(page), limit: "20" });
+  const productsParams = new URLSearchParams({ page: String(page), limit: String(pageSize) });
   if (search) productsParams.set("search", search);
   if (statusFilter !== "all") productsParams.set("status", statusFilter);
   if (categoryFilter) productsParams.set("categoryId", categoryFilter);
+  if (startDate) productsParams.set("startDate", startDate);
+  if (endDate) productsParams.set("endDate", endDate);
+  if (featuredFilter !== "all") productsParams.set("featured", featuredFilter);
+  if (minPrice) productsParams.set("minPrice", minPrice);
+  if (maxPrice) productsParams.set("maxPrice", maxPrice);
 
   const { data: productsData, isLoading } = useApiQuery<ProductsResponse>(
-    ["products", String(page), search, statusFilter, categoryFilter],
+    ["products", String(page), search, statusFilter, categoryFilter, startDate, endDate, featuredFilter, minPrice, maxPrice],
     `/api/products?${productsParams}`
   );
 
@@ -89,10 +102,44 @@ export default function AdminProductsPage() {
         body: JSON.stringify({ [field]: value }),
       }),
     {
-      invalidateKeys: [["products", String(page), search, statusFilter, categoryFilter]],
+      invalidateKeys: [["products", String(page), search, statusFilter, categoryFilter, startDate, endDate, featuredFilter, minPrice, maxPrice]],
       onError: () => toast("변경 실패", "error"),
     }
   );
+
+  // 일괄 작업 mutation
+  const bulkMutation = useApiMutation<any, { action: string; ids: string[] }>(
+    async ({ action, ids }, token) =>
+      fetch(`/api/products/bulk`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ action, ids }),
+      }),
+    {
+      invalidateKeys: [["products", String(page), search, statusFilter, categoryFilter, startDate, endDate, featuredFilter, minPrice, maxPrice]],
+      onSuccess: () => { setSelectedIds([]); toast("일괄 작업 완료", "success"); },
+      onError: () => toast("일괄 작업 실패", "error"),
+    }
+  );
+
+  const handleBulkAction = async (action: string, label: string) => {
+    if (selectedIds.length === 0) return;
+    if (action === "delete") {
+      if (!(await confirm({ message: `선택한 ${selectedIds.length}개 상품을 삭제하시겠습니까?`, variant: "danger", confirmText: "삭제" }))) return;
+    } else {
+      if (!(await confirm({ message: `선택한 ${selectedIds.length}개 상품을 ${label}하시겠습니까?`, confirmText: "확인" }))) return;
+    }
+    bulkMutation.mutate({ action, ids: selectedIds });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === products.length) setSelectedIds([]);
+    else setSelectedIds(products.map((p) => p.id));
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
 
   // 삭제 mutation
   const deleteMutation = useApiMutation<any, { id: string }>(
@@ -102,7 +149,7 @@ export default function AdminProductsPage() {
         headers: { Authorization: `Bearer ${token}` },
       }),
     {
-      invalidateKeys: [["products", String(page), search, statusFilter, categoryFilter]],
+      invalidateKeys: [["products", String(page), search, statusFilter, categoryFilter, startDate, endDate, featuredFilter, minPrice, maxPrice]],
       onError: () => toast("삭제 실패", "error"),
     }
   );
@@ -237,30 +284,9 @@ export default function AdminProductsPage() {
       </div>
 
       {/* 필터 */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="상품명 검색..."
-                value={search}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
-            </div>
-          </div>
-          <Select
-            value={statusFilter}
-            onChange={handleStatusFilterChange}
-            options={[
-              { value: "all", label: "전체 상태" },
-              { value: "active", label: "활성" },
-              { value: "inactive", label: "비활성" },
-            ]}
-            className="w-32"
-          />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+        {/* 1행: 카테고리 + 검색어 */}
+        <div className="flex gap-3 mb-5">
           <Select
             value={categoryFilter}
             onChange={handleCategoryFilterChange}
@@ -268,17 +294,177 @@ export default function AdminProductsPage() {
               { value: "", label: "전체 카테고리" },
               ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
             ]}
-            className="w-40"
+            className="w-44"
           />
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="상품명, 슬러그, 부제 검색..."
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* 필터 그리드 (2열) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
+          {/* 활성 상태 */}
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700 shrink-0 w-20">활성 상태</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              {[
+                { value: "all", label: "전체" },
+                { value: "active", label: "활성" },
+                { value: "inactive", label: "비활성" },
+              ].map((opt) => {
+                const selected = statusFilter === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleStatusFilterChange(opt.value)}
+                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      selected
+                        ? "bg-gray-900 text-white"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {selected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 추천 여부 */}
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700 shrink-0 w-20">추천 여부</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              {[
+                { value: "all", label: "전체" },
+                { value: "featured", label: "추천" },
+                { value: "normal", label: "일반" },
+              ].map((opt) => {
+                const selected = featuredFilter === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setFeaturedFilter(opt.value); setPage(1); }}
+                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      selected
+                        ? "bg-gray-900 text-white"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {selected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 가격 범위 */}
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700 shrink-0 w-20">가격</span>
+            <input
+              type="number"
+              placeholder="최소"
+              value={minPrice}
+              onChange={(e) => { setMinPrice(e.target.value); setPage(1); }}
+              className="w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+            />
+            <span className="text-gray-400">~</span>
+            <input
+              type="number"
+              placeholder="최대"
+              value={maxPrice}
+              onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }}
+              className="w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+            />
+          </div>
+
+          {/* 생성일 범위 (2열 전체) */}
+          <div className="flex items-center gap-4 lg:col-span-2">
+            <span className="text-sm font-medium text-gray-700 shrink-0 w-20">생성일</span>
+            <DatePicker value={startDate} onChange={(v) => { setStartDate(v); setPage(1); }} />
+            <span className="text-gray-400">~</span>
+            <DatePicker value={endDate} onChange={(v) => { setEndDate(v); setPage(1); }} />
+            <button
+              onClick={() => {
+                setSearch("");
+                setStatusFilter("all");
+                setCategoryFilter("");
+                setStartDate("");
+                setEndDate("");
+                setFeaturedFilter("all");
+                setMinPrice("");
+                setMaxPrice("");
+                setPage(1);
+              }}
+              className="ml-auto px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              초기화
+            </button>
+          </div>
         </div>
       </div>
 
       {/* 상품 테이블 */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <span className="text-sm text-gray-500">
-            총 <span className="font-medium text-gray-900">{pagination.total}</span>개 상품
-          </span>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between min-h-[60px]">
+          {selectedIds.length > 0 ? (
+            <>
+              <span className="text-sm text-gray-500">
+                총 <span className="font-medium text-gray-900">{pagination.total}</span>개 ·{" "}
+                <span className="font-medium text-blue-600">{selectedIds.length}개 선택됨</span>
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleBulkAction("activate", "활성화")}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                >
+                  활성화
+                </button>
+                <button
+                  onClick={() => handleBulkAction("deactivate", "비활성화")}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                >
+                  비활성화
+                </button>
+                <button
+                  onClick={() => handleBulkAction("feature", "추천 설정")}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                >
+                  추천 설정
+                </button>
+                <button
+                  onClick={() => handleBulkAction("unfeature", "추천 해제")}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                >
+                  추천 해제
+                </button>
+                <button
+                  onClick={() => handleBulkAction("delete", "삭제")}
+                  className="px-3 py-1.5 text-sm border border-red-300 rounded-lg text-red-600 hover:bg-red-50 font-medium"
+                >
+                  삭제
+                </button>
+                <button
+                  onClick={() => setSelectedIds([])}
+                  className="px-2 py-1.5 text-sm text-gray-500 hover:text-gray-900"
+                >
+                  선택 해제
+                </button>
+              </div>
+            </>
+          ) : (
+            <span className="text-sm text-gray-500">
+              총 <span className="font-medium text-gray-900">{pagination.total}</span>개 상품
+            </span>
+          )}
         </div>
         {isLoading ? (
           <div className="py-16 text-center text-sm text-gray-500">로딩 중...</div>
@@ -293,6 +479,14 @@ export default function AdminProductsPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={products.length > 0 && selectedIds.length === products.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900/10"
+                  />
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">상품</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">가격</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">활성</th>
@@ -309,6 +503,15 @@ export default function AdminProductsPage() {
                   onClick={() => router.push(`/products/${product.id}/edit`)}
                   className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors cursor-pointer"
                 >
+                  {/* 체크박스 */}
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(product.id)}
+                      onChange={() => toggleSelect(product.id)}
+                      className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900/10"
+                    />
+                  </td>
                   {/* 상품 (썸네일 + 제목 + 카테고리 + 지역) */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -387,11 +590,16 @@ export default function AdminProductsPage() {
 
         {/* 페이지네이션 */}
         {pagination.totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-sm text-gray-500">
-              {pagination.page} / {pagination.totalPages} 페이지
-            </span>
-            <div className="flex gap-2">
+          <div className="px-6 py-4 border-t border-gray-100 grid grid-cols-3 items-center">
+            <div className="justify-self-start">
+              <Select
+                value={String(pageSize)}
+                onChange={(v) => { setPageSize(Number(v)); setPage(1); }}
+                options={[10, 15, 20, 30, 50].map((n) => ({ value: String(n), label: `${n}개씩` }))}
+                className="w-28"
+              />
+            </div>
+            <div className="justify-self-center flex items-center gap-1">
               <button
                 onClick={() => setPage((p) => p - 1)}
                 disabled={pagination.page <= 1}
@@ -399,6 +607,41 @@ export default function AdminProductsPage() {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
+              {(() => {
+                const total = pagination.totalPages;
+                const current = pagination.page;
+                const pages: (number | "...")[] = [];
+                // 최대 5개 페이지 버튼만 노출
+                const window = 5;
+                if (total <= window) {
+                  for (let i = 1; i <= total; i++) pages.push(i);
+                } else {
+                  let start = Math.max(1, current - 2);
+                  let end = start + window - 1;
+                  if (end > total) {
+                    end = total;
+                    start = end - window + 1;
+                  }
+                  for (let i = start; i <= end; i++) pages.push(i);
+                }
+                return pages.map((p, idx) =>
+                  p === "..." ? (
+                    <span key={`e${idx}`} className="px-2 text-sm text-gray-400">…</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
+                        p === current
+                          ? "bg-gray-900 text-white"
+                          : "border border-gray-200 text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                );
+              })()}
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={pagination.page >= pagination.totalPages}
@@ -407,6 +650,9 @@ export default function AdminProductsPage() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
+            <span className="justify-self-end text-sm text-gray-500">
+              총 {pagination.total}개 · {pagination.page} / {pagination.totalPages} 페이지
+            </span>
           </div>
         )}
       </div>

@@ -30,6 +30,9 @@ export function CategoryForm({
     slug: category?.slug || "",
     description: category?.description || "",
     icon: category?.icon || "",
+    emoji: category?.emoji || "",
+    latitude: category?.latitude ?? "",
+    longitude: category?.longitude ?? "",
     sortOrder: category?.sortOrder || 0,
     isActive: category?.isActive ?? true,
     parentId: category?.parentId || parentCategory?.id || null,
@@ -59,10 +62,17 @@ export function CategoryForm({
         : "/api/categories";
       const method = isEdit ? "PUT" : "POST";
 
+      const payload = {
+        ...formData,
+        emoji: formData.emoji || null,
+        latitude: formData.latitude !== "" ? parseFloat(String(formData.latitude)) : null,
+        longitude: formData.longitude !== "" ? parseFloat(String(formData.longitude)) : null,
+      };
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json", ...authHeaders } as any,
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -158,6 +168,45 @@ export function CategoryForm({
                 setFormData((p) => ({ ...p, sortOrder: parseInt(e.target.value) || 0 }))
               }
               className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">이모지</label>
+            <input
+              type="text"
+              value={formData.emoji}
+              onChange={(e) => setFormData((p) => ({ ...p, emoji: e.target.value }))}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="🇯🇵"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">위도</label>
+            <input
+              type="number"
+              step="0.01"
+              value={formData.latitude}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, latitude: e.target.value }))
+              }
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="36.2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">경도</label>
+            <input
+              type="number"
+              step="0.01"
+              value={formData.longitude}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, longitude: e.target.value }))
+              }
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="138.2"
             />
           </div>
         </div>

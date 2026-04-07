@@ -25,7 +25,17 @@ export default function Select({
   className = "",
 }: SelectProps) {
   const [open, setOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 열릴 때 뷰포트 공간 측정해 위/아래 방향 결정
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const estimatedHeight = Math.min(options.length * 36 + 8, 240);
+    setDropUp(spaceBelow < estimatedHeight + 16);
+  }, [open, options.length]);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -61,7 +71,7 @@ export default function Select({
 
       {/* 드롭다운 목록 */}
       {open && (
-        <div className="absolute z-50 mt-1 w-full min-w-max bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+        <div className={`absolute z-50 w-full min-w-max bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden ${dropUp ? "bottom-full mb-1" : "top-full mt-1"}`}>
           <ul className="py-1 max-h-60 overflow-y-auto">
             {options.map((option) => (
               <li key={option.value}>

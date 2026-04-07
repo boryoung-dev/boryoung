@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronUp, ChevronDown, Pencil, Trash2, EyeOff } from "lucide-react";
+import { useApiQuery } from "@/hooks/useApi";
 import { GlobePlaceholder } from "./preview/GlobePlaceholder";
 import { FeaturedGridPreview } from "./preview/FeaturedGridPreview";
 import { ProductCarouselPreview } from "./preview/ProductCarouselPreview";
@@ -22,7 +23,9 @@ const SECTION_TYPE_LABELS: Record<string, string> = {
 interface SectionListProps {
   curations: Curation[];
   selectedId: string | null;
+  globeSelected: boolean;
   onSelect: (curation: Curation) => void;
+  onGlobeSelect: () => void;
   onDelete: (id: string) => void;
   onMoveUp: (id: string) => void;
   onMoveDown: (id: string) => void;
@@ -32,11 +35,23 @@ interface SectionListProps {
 export function SectionList({
   curations,
   selectedId,
+  globeSelected,
   onSelect,
+  onGlobeSelect,
   onDelete,
   onMoveUp,
   onMoveDown,
 }: SectionListProps) {
+  // 지구본 요약용 최상위 카테고리 조회
+  const { data: categoriesData } = useApiQuery<{ success: boolean; categories: any[] }>(
+    ["categories", "globe-summary"],
+    "/api/categories"
+  );
+  const topCountries: Array<{ id: string; emoji?: string | null; name: string }> =
+    (categoriesData?.success ? categoriesData.categories ?? [] : [])
+      .filter((c: any) => !c.parentId && c.isActive)
+      .sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+
   return (
     <div
       className="space-y-0"
@@ -50,8 +65,18 @@ export function SectionList({
     >
       {/* 지구본 섹션 (항상 최상단 고정) */}
       <div className="relative group">
-        <div className="border-2 border-dashed border-gray-300 rounded-xl overflow-hidden opacity-80">
-          <GlobePlaceholder />
+        <div
+          className={`border-2 rounded-xl overflow-hidden transition-colors ${
+            globeSelected
+              ? "border-blue-500 shadow-lg shadow-blue-500/10"
+              : "border-dashed border-gray-300 hover:border-blue-300 opacity-80"
+          }`}
+        >
+          <GlobePlaceholder
+            isSelected={globeSelected}
+            onClick={onGlobeSelect}
+            countries={topCountries}
+          />
         </div>
         <div className="absolute top-2 right-2 bg-gray-800/70 text-white text-[10px] px-2 py-0.5 rounded">
           고정 섹션

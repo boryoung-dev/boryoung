@@ -16,6 +16,12 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search") || undefined;
   const categoryId = searchParams.get("categoryId") || undefined;
   const status = searchParams.get("status"); // active, inactive, all
+  const featured = searchParams.get("featured"); // all, featured, normal
+  const startDate = searchParams.get("startDate"); // YYYY-MM-DD
+  const endDate = searchParams.get("endDate"); // YYYY-MM-DD
+  const minPrice = searchParams.get("minPrice");
+  const maxPrice = searchParams.get("maxPrice");
+  const sort = searchParams.get("sort") || "default"; // default, latest, priceAsc, priceDesc, viewsDesc, bookingsDesc
   const skip = (page - 1) * limit;
 
   const where: any = {};
@@ -23,7 +29,26 @@ export async function GET(request: NextRequest) {
   if (status === "active") where.isActive = true;
   else if (status === "inactive") where.isActive = false;
 
+  if (featured === "featured") where.isFeatured = true;
+  else if (featured === "normal") where.isFeatured = false;
+
+  if (minPrice || maxPrice) {
+    where.basePrice = {};
+    if (minPrice) where.basePrice.gte = parseInt(minPrice);
+    if (maxPrice) where.basePrice.lte = parseInt(maxPrice);
+  }
+
   if (categoryId) where.categoryId = categoryId;
+
+  if (startDate || endDate) {
+    where.createdAt = {};
+    if (startDate) where.createdAt.gte = new Date(startDate);
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      where.createdAt.lte = end;
+    }
+  }
 
   if (search) {
     where.OR = [
@@ -45,7 +70,18 @@ export async function GET(request: NextRequest) {
         tags: { include: { tag: true } },
         _count: { select: { bookings: true, reviews: true } },
       },
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      orderBy:
+        sort === "latest"
+          ? [{ createdAt: "desc" }]
+          : sort === "priceAsc"
+            ? [{ basePrice: "asc" }]
+            : sort === "priceDesc"
+              ? [{ basePrice: "desc" }]
+              : sort === "viewsDesc"
+                ? [{ viewCount: "desc" }]
+                : sort === "bookingsDesc"
+                  ? [{ bookings: { _count: "desc" } }]
+                  : [{ sortOrder: "asc" }, { createdAt: "desc" }],
       skip,
       take: limit,
     }),

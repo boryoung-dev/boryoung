@@ -1,12 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Save, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Save, X, GripVertical } from "lucide-react";
 import { useApiMutation, useApiQuery } from "@/hooks/useApi";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/components/ui/Toast";
 import { ProductSelector } from "./ProductSelector";
 import type { Curation } from "../HomepageEditor";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+type DestinationItem = { _uid: string; name: string; image: string };
+const genUid = () => `dest-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const withUid = (list: Array<{ name: string; image: string; _uid?: string }>): DestinationItem[] =>
+  list.map((d) => ({ name: d.name || "", image: d.image || "", _uid: d._uid || genUid() }));
+
+/** 드래그 가능한 여행지 행 래퍼 */
+function SortableDestinationRow({
+  id,
+  children,
+}: {
+  id: string;
+  children: (args: { dragHandleProps: any }) => React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style}>
+      {children({ dragHandleProps: { ...attributes, ...listeners } })}
+    </div>
+  );
+}
 
 interface SectionEditPanelProps {
   curation: Curation;
@@ -41,15 +81,19 @@ export function SectionEditPanel({
   const [description, setDescription] = useState(curation.description || "");
 
   // 타입별 고유 상태
-  const [destinations, setDestinations] = useState<
-    Array<{ name: string; image: string }>
-  >(curation.displayConfig?.destinations || []);
+  const [destinations, setDestinations] = useState<DestinationItem[]>(
+    withUid(curation.displayConfig?.destinations || [])
+  );
+  const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const [tabs, setTabs] = useState<string[]>(
     curation.displayConfig?.tabs || []
   );
   const [ctaPhone, setCtaPhone] = useState(
     curation.displayConfig?.phone || ""
   );
+  // 연결 상품 ID 순서 (드래그 후 순서 저장용)
+  const [productIds, setProductIds] = useState<string[]>([]);
+  const [productIdsDirty, setProductIdsDirty] = useState(false);
 
   // curation 변경시 상태 리셋
   useEffect(() => {
@@ -58,9 +102,11 @@ export function SectionEditPanel({
     setLinkUrl(curation.linkUrl || "");
     setIsActive(curation.isActive);
     setDescription(curation.description || "");
-    setDestinations(curation.displayConfig?.destinations || []);
+    setDestinations(withUid(curation.displayConfig?.destinations || []));
     setTabs(curation.displayConfig?.tabs || []);
     setCtaPhone(curation.displayConfig?.phone || "");
+    setProductIds([]);
+    setProductIdsDirty(false);
   }, [curation.id]);
 
   // 변경시 로컬 미리보기 업데이트
@@ -80,7 +126,12 @@ export function SectionEditPanel({
     const base = curation.displayConfig || {};
     switch (curation.sectionType) {
       case "destinations_carousel":
-        return { ...base, destinations: destinations.filter((d) => d.name) };
+        return {
+          ...base,
+          destinations: destinations
+            .filter((d) => d.name)
+            .map(({ name, image }) => ({ name, image })),
+        };
       case "product_showcase":
         return { ...base, tabs: tabs.filter((t) => t) };
       case "trust_cta":
@@ -89,6 +140,17 @@ export function SectionEditPanel({
         return base;
     }
   };
+
+  // 연결 상품 순서 저장 mutation
+  const saveProductsMutation = useApiMutation<any, { curationId: string; productIds: string[] }>(
+    async ({ curationId, productIds }, token) =>
+      fetch(`/api/curations/${curationId}/products`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ productIds }),
+      }),
+    { invalidateKeys: [["curations"]] }
+  );
 
   const saveMutation = useApiMutation<any, { id: string; body: any }>(
     async ({ id, body }, token) =>
@@ -120,13 +182,26 @@ export function SectionEditPanel({
     saveMutation.mutate(
       { id: curation.id, body },
       {
-        onSuccess: (data) => {
-          if (data.success) {
-            toast("저장되었습니다", "success");
-            onSaved();
-          } else {
+        onSuccess: async (data) => {
+          if (!data.success) {
             toast(data.error || "저장 실패", "error");
+            return;
           }
+          // 연결 상품 순서가 변경되었으면 함께 저장
+          if (productIdsDirty && needsProducts) {
+            try {
+              await saveProductsMutation.mutateAsync({
+                curationId: curation.id,
+                productIds,
+              });
+              setProductIdsDirty(false);
+            } catch {
+              toast("상품 순서 저장 실패", "error");
+              return;
+            }
+          }
+          toast("저장되었습니다", "success");
+          onSaved();
         },
         onError: () => toast("저장 중 오류가 발생했습니다", "error"),
       }
@@ -264,20 +339,47 @@ export function SectionEditPanel({
               <button
                 type="button"
                 onClick={() =>
-                  setDestinations([...destinations, { name: "", image: "" }])
+                  setDestinations([...destinations, { _uid: genUid(), name: "", image: "" }])
                 }
                 className="text-xs text-blue-600 hover:text-blue-700"
               >
                 + 추가
               </button>
             </div>
-            <p className="text-xs text-gray-400 mb-2">클릭 시 해당 여행지 상품 목록으로 이동합니다</p>
-            <div className="space-y-3">
-              {destinations.map((dest, idx) => (
+            <p className="text-xs text-gray-400 mb-2">드래그하여 순서를 변경할 수 있습니다</p>
+            <DndContext
+              sensors={dndSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(event) => {
+                const { active, over } = event;
+                if (over && active.id !== over.id) {
+                  const oldIdx = destinations.findIndex((d) => d._uid === active.id);
+                  const newIdx = destinations.findIndex((d) => d._uid === over.id);
+                  if (oldIdx >= 0 && newIdx >= 0) {
+                    setDestinations(arrayMove(destinations, oldIdx, newIdx));
+                  }
+                }
+              }}
+            >
+              <SortableContext
+                items={destinations.map((d) => d._uid)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-3">
+                  {destinations.map((dest, idx) => (
+                    <SortableDestinationRow key={dest._uid} id={dest._uid}>
+                      {({ dragHandleProps }) => (
                 <div
-                  key={idx}
                   className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg"
                 >
+                  <button
+                    type="button"
+                    {...dragHandleProps}
+                    className="cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 self-center"
+                    title="드래그하여 순서 변경"
+                  >
+                    <GripVertical className="w-4 h-4" />
+                  </button>
                   <div className="flex-shrink-0">
                     {dest.image ? (
                       <div className="relative group">
@@ -372,13 +474,17 @@ export function SectionEditPanel({
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-              ))}
-              {destinations.length === 0 && (
-                <p className="text-xs text-gray-400 text-center py-3">
-                  여행지를 추가해주세요
-                </p>
-              )}
-            </div>
+                      )}
+                    </SortableDestinationRow>
+                  ))}
+                  {destinations.length === 0 && (
+                    <p className="text-xs text-gray-400 text-center py-3">
+                      여행지를 추가해주세요
+                    </p>
+                  )}
+                </div>
+              </SortableContext>
+            </DndContext>
           </div>
         )}
 
@@ -491,6 +597,10 @@ export function SectionEditPanel({
               undefined
             }
             onProductsChange={(products) => onLocalUpdate({ products })}
+            onIdsChange={(ids) => {
+              setProductIds(ids);
+              setProductIdsDirty(true);
+            }}
           />
         )}
       </div>
