@@ -5,3 +5,8 @@ dist
 .env
 .env.*
 .DS_Store
+
+# 툴링/빌드 산출물
+.omc/
+test-results/
+*.tsbuildinfo
