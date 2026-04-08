@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@repo/database";
 import { verifyAdminToken } from "@/lib/auth";
-import { slugifyWithSuffix } from "@/lib/slugify";
-
-function generateSlug(title: string): string {
-  return slugifyWithSuffix(title);
-}
 
 // GET: 블로그 글 상세 조회 (인증 필요) - content 포함
 export async function GET(
@@ -57,6 +52,7 @@ export async function PUT(
 
     const {
       title,
+      slug: slugOverride,
       excerpt,
       content,
       contentHtml,
@@ -78,10 +74,9 @@ export async function PUT(
       );
     }
 
-    // title이 변경되면 slug도 재생성
-    const newSlug = title && title !== existingPost.title
-      ? generateSlug(title)
-      : undefined;
+    // slug는 명시적으로 전달된 경우에만 변경 (URL 안정성 유지)
+    // title 변경만으로는 slug를 바꾸지 않음 — 기존 링크 보호
+    const newSlug = slugOverride || undefined;
 
     // isPublished가 false→true로 변경되면 publishedAt 설정
     let publishedAt = undefined;

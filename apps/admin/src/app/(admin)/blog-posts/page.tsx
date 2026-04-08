@@ -62,6 +62,8 @@ export default function BlogPostsPage() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // AI 섹션 데이터를 별도로 보관 (Tiptap이 JSON을 HTML로 변환하는 것을 방지)
+  const [aiSections, setAiSections] = useState<any[] | null>(null);
 
   // 필터 파라미터 계산
   const queryParams = new URLSearchParams();
@@ -99,6 +101,7 @@ export default function BlogPostsPage() {
 
   const openCreateModal = () => {
     setEditingPost(null);
+    setAiSections(null);
     setFormData({
       title: "",
       category: "",
@@ -120,11 +123,24 @@ export default function BlogPostsPage() {
       if (data.success) {
         const detail = data.post as BlogPostDetail;
         setEditingPost(detail);
+        // 기존 글이 구조화 JSON인 경우 aiSections로 복원 (Tiptap에 넣지 않음)
+        let restoredSections: any[] | null = null;
+        let editorContent = detail.content;
+        try {
+          const parsed = JSON.parse(detail.content);
+          if (parsed.sections && Array.isArray(parsed.sections)) {
+            restoredSections = parsed.sections;
+            editorContent = "";
+          }
+        } catch {
+          // 일반 텍스트 또는 HTML — Tiptap으로 편집
+        }
+        setAiSections(restoredSections);
         setFormData({
           title: detail.title,
           category: detail.category || "",
           excerpt: detail.excerpt || "",
-          content: detail.content,
+          content: editorContent,
           thumbnail: detail.thumbnail || "",
           isPublished: detail.isPublished
         });
@@ -147,7 +163,11 @@ export default function BlogPostsPage() {
 
     if (submitting) return;
 
-    const plainContent = formData.content.replace(/<[^>]*>/g, "").trim();
+    // aiSections가 있으면 구조화 JSON이 본문, 없으면 Tiptap HTML이 본문
+    const hasStructuredContent = aiSections && aiSections.length > 0;
+    const plainContent = hasStructuredContent
+      ? "ok"
+      : formData.content.replace(/<[^>]*>/g, "").trim();
     if (!formData.title.trim() || !plainContent) {
       toast("제목과 본문은 필수입니다", "error");
       return;
@@ -155,9 +175,17 @@ export default function BlogPostsPage() {
 
     setSubmitting(true);
 
+    // 구조화 섹션이 있으면 content = JSON 문자열, contentHtml = null
+    // 일반 편집이면 content = Tiptap HTML (기존 동작 유지), contentHtml = 동일
+    const contentValue = hasStructuredContent
+      ? JSON.stringify({ sections: aiSections })
+      : formData.content;
+    const contentHtmlValue = hasStructuredContent ? null : formData.content;
+
     const body = {
       ...formData,
-      contentHtml: formData.content,
+      content: contentValue,
+      contentHtml: contentHtmlValue,
       category: formData.category || null,
       excerpt: formData.excerpt || null,
       thumbnail: formData.thumbnail || null,
@@ -364,17 +392,29 @@ export default function BlogPostsPage() {
         onClose={() => setAiModalOpen(false)}
         onSendToEditor={(data) => {
           setEditingPost(null);
-          const contentValue = data.sections
-            ? JSON.stringify({ sections: data.sections })
-            : data.content;
-          setFormData({
-            title: data.title,
-            category: data.category || "",
-            excerpt: data.excerpt || "",
-            content: contentValue,
-            thumbnail: data.thumbnail || "",
-            isPublished: false,
-          });
+          if (data.sections && data.sections.length > 0) {
+            // 구조화 섹션: Tiptap에 넣지 않고 별도 보관
+            setAiSections(data.sections);
+            setFormData({
+              title: data.title,
+              category: data.category || "",
+              excerpt: data.excerpt || "",
+              content: "",  // Tiptap은 빈 상태로
+              thumbnail: data.thumbnail || "",
+              isPublished: false,
+            });
+          } else {
+            // 일반 HTML 콘텐츠: Tiptap으로 편집
+            setAiSections(null);
+            setFormData({
+              title: data.title,
+              category: data.category || "",
+              excerpt: data.excerpt || "",
+              content: data.content || "",
+              thumbnail: data.thumbnail || "",
+              isPublished: false,
+            });
+          }
           setThumbnailPreview(data.thumbnail || "");
           setAiModalOpen(false);
           setModalOpen(true);
@@ -384,7 +424,7 @@ export default function BlogPostsPage() {
       {/* 생성/수정 모달 */}
       <Modal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); setAiSections(null); }}
         title={editingPost ? "글 수정" : "글 작성"}
         size="lg"
         footer={
@@ -444,12 +484,26 @@ export default function BlogPostsPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">본문 *</label>
-            <TiptapEditor
-              content={formData.content}
-              onChange={(html) => setFormData({ ...formData, content: html })}
-              placeholder="블로그 본문을 입력하세요..."
-              minHeight="300px"
-            />
+            {aiSections && aiSections.length > 0 ? (
+              <div className="border border-purple-300 rounded-lg bg-purple-50 px-4 py-3 text-sm text-purple-800">
+                <p className="font-semibold mb-1">AI 구조화 콘텐츠 ({aiSections.length}개 섹션)</p>
+                <p className="text-xs text-purple-600">섹션 형식으로 저장됩니다. 저장 후 매거진 페이지에서 확인하세요.</p>
+                <button
+                  type="button"
+                  className="mt-2 text-xs underline text-purple-700 hover:text-purple-900"
+                  onClick={() => setAiSections(null)}
+                >
+                  직접 편집으로 전환 (섹션 데이터 삭제)
+                </button>
+              </div>
+            ) : (
+              <TiptapEditor
+                content={formData.content}
+                onChange={(html) => setFormData({ ...formData, content: html })}
+                placeholder="블로그 본문을 입력하세요..."
+                minHeight="300px"
+              />
+            )}
           </div>
 
           <div>
