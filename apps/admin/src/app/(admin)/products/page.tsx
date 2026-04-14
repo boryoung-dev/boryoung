@@ -477,7 +477,7 @@ export default function AdminProductsPage() {
           </div>
         ) : (
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
               <tr>
                 <th className="px-4 py-3 w-10">
                   <input
@@ -575,14 +575,14 @@ export default function AdminProductsPage() {
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={(e) => { e.stopPropagation(); router.push(`/products/new?from=${product.id}`); }}
-                        className="px-2.5 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="px-2.5 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
                         title="복제"
                       >
                         복제
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(product.id, product.title); }}
-                        className="px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        className="px-2.5 py-1.5 text-xs font-medium text-red-500 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors"
                         title="삭제"
                       >
                         삭제
