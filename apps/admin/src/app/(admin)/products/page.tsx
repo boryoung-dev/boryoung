@@ -575,17 +575,17 @@ export default function AdminProductsPage() {
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={(e) => { e.stopPropagation(); router.push(`/products/new?from=${product.id}`); }}
-                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="px-2.5 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="복제"
                       >
-                        <Copy className="w-4 h-4" />
+                        복제
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(product.id, product.title); }}
-                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                         title="삭제"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        삭제
                       </button>
                     </div>
                   </td>
