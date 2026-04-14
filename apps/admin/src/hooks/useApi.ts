@@ -28,8 +28,8 @@ export function useApiQuery<T = any>(
       if (!res.ok) throw new Error(`API 오류: ${res.status}`);
       return res.json();
     },
-    enabled: !!token,
     ...options,
+    enabled: !!token && (options?.enabled ?? true),
   });
 }
 

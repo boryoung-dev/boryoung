@@ -11,7 +11,7 @@ export default function NewProductPage() {
 
   // 복제 모드: 기존 상품 데이터를 가져와서 프리필
   const { data, isLoading } = useApiQuery<any>(
-    ["product", fromId],
+    ["product-duplicate", fromId || "none"],
     `/api/products/${fromId}`,
     { enabled: !!fromId }
   );
