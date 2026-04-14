@@ -320,7 +320,7 @@ export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
           >
             <ImagesTab
               productId={isEditMode ? initialData?.id : undefined}
-              images={isEditMode ? (initialData?.images || []) : []}
+              images={initialData?.images || []}
               onPendingChange={(imgs: any[]) => setPendingImages(imgs)}
             />
           </SectionCard>
@@ -354,7 +354,7 @@ export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
           >
             <ItineraryTab
               productId={isEditMode ? initialData?.id : undefined}
-              itineraries={isEditMode ? (initialData?.itineraries || []) : []}
+              itineraries={initialData?.itineraries || []}
               onPendingChange={(items: any[]) => setPendingItineraries(items)}
             />
           </SectionCard>
@@ -368,7 +368,7 @@ export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
           >
             <PricingTab
               productId={isEditMode ? initialData?.id : undefined}
-              priceOptions={isEditMode ? (initialData?.priceOptions || []) : []}
+              priceOptions={initialData?.priceOptions || []}
               onPendingChange={(opts: any[]) => setPendingPriceOptions(opts)}
             />
           </SectionCard>
