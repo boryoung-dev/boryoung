@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 // 로그인 헬퍼
 async function login(page: any) {
   await page.goto("/login");
-  await page.locator('input[type="email"]').fill("admin@boryoung.com");
+  await page.locator('input[type="text"]').fill("admin");
   await page.locator('input[type="password"]').fill("qwer1234!!");
   await page.locator('button:has-text("로그인")').click();
   await page.waitForURL("**/dashboard**", { timeout: 10000 });

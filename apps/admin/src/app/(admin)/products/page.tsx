@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Trash2, ChevronLeft, ChevronRight, Star, Info, X } from "lucide-react";
+import { Plus, Search, Trash2, Copy, ChevronLeft, ChevronRight, Star, Info, X } from "lucide-react";
 import Select from "@/components/ui/Select";
 import DatePicker from "@/components/ui/DatePicker";
 import { useToast } from "@/components/ui/Toast";
@@ -573,6 +573,13 @@ export default function AdminProductsPage() {
                   {/* 작업 */}
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); router.push(`/products/new?from=${product.id}`); }}
+                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="복제"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(product.id, product.title); }}
                         className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"

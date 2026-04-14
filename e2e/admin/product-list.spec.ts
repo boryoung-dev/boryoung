@@ -6,7 +6,7 @@ test.describe("상품 목록 관리", () => {
   test.beforeEach(async ({ page }) => {
     // 로그인
     await page.goto("/login");
-    await page.locator('input[type="email"]').fill("admin@boryoung.com");
+    await page.locator('input[type="text"]').fill("admin");
     await page.locator('input[type="password"]').fill("qwer1234!!");
     await page.locator('button:has-text("로그인")').click();
     await page.waitForURL("**/dashboard**", { timeout: 10000 });

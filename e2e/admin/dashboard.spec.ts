@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 // 로그인 헬퍼
 async function login(page: any) {
   await page.goto("/login");
-  await page.locator('input[type="email"]').fill("admin@boryoung.com");
+  await page.locator('input[type="text"]').fill("admin");
   await page.locator('input[type="password"]').fill("qwer1234!!");
   await page.locator('button:has-text("로그인")').click();
   await page.waitForURL("**/dashboard**", { timeout: 10000 });
@@ -38,7 +38,7 @@ test.describe("대시보드", () => {
   test("통계 카드 6개 표시 및 숫자 렌더링", async ({ page, request }) => {
     // API로 실제 stats 데이터 먼저 조회
     const loginRes = await request.post("/api/login", {
-      data: { email: "admin@boryoung.com", password: "qwer1234!!" },
+      data: { username: "admin", password: "qwer1234!!" },
     });
     const loginData = await loginRes.json();
     const token = loginData.token;
@@ -107,7 +107,7 @@ test.describe("대시보드", () => {
   test("최근 예약 목록 표시", async ({ page, request }) => {
     // API로 예약 목록 확인
     const loginRes = await request.post("/api/login", {
-      data: { email: "admin@boryoung.com", password: "qwer1234!!" },
+      data: { username: "admin", password: "qwer1234!!" },
     });
     const loginData = await loginRes.json();
     const token = loginData.token;

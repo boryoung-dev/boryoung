@@ -28,9 +28,10 @@ const sections = [
 
 interface ProductFormProps {
   initialData?: any;
+  isDuplicate?: boolean;
 }
 
-export function ProductForm({ initialData }: ProductFormProps) {
+export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
   const router = useRouter();
   const { authHeaders } = useAdminAuth();
   const { toast } = useToast();
@@ -50,10 +51,19 @@ export function ProductForm({ initialData }: ProductFormProps) {
     });
   };
 
+  // 복제 모드에서는 initialData가 있어도 신규 등록으로 취급
+  const isEditMode = !!initialData && !isDuplicate;
+
   // 신규 등록 시 이미지/일정/가격옵션 로컬 상태 (state로 관리해서 미리보기 실시간 반영)
-  const [pendingImages, setPendingImages] = useState<any[]>([]);
-  const [pendingItineraries, setPendingItineraries] = useState<any[]>([]);
-  const [pendingPriceOptions, setPendingPriceOptions] = useState<any[]>([]);
+  const [pendingImages, setPendingImages] = useState<any[]>(
+    isDuplicate && initialData?.images ? initialData.images : []
+  );
+  const [pendingItineraries, setPendingItineraries] = useState<any[]>(
+    isDuplicate && initialData?.itineraries ? initialData.itineraries : []
+  );
+  const [pendingPriceOptions, setPendingPriceOptions] = useState<any[]>(
+    isDuplicate && initialData?.priceOptions ? initialData.priceOptions : []
+  );
 
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
@@ -198,11 +208,11 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
     setIsSaving(true);
     try {
-      const url = initialData
+      const url = isEditMode
         ? `/api/products/${initialData.id}`
         : "/api/products";
 
-      const method = initialData ? "PUT" : "POST";
+      const method = isEditMode ? "PUT" : "POST";
 
       const body = {
         ...formData,
@@ -230,7 +240,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       const data = await res.json();
 
       if (data.success) {
-        if (!initialData && data.product?.id) {
+        if (!isEditMode && data.product?.id) {
           await saveRelatedData(data.product.id);
           toast("상품이 등록되었습니다", "success");
           router.push(`/products/${data.product.id}/edit`);
@@ -248,7 +258,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     }
   };
 
-  const isNewMode = !initialData;
+  const isNewMode = !isEditMode;
 
   return (
     <div className={`flex gap-6 ${showPreview ? "" : ""}`}>
@@ -283,7 +293,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
               {isSaving ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> 저장 중...</>
               ) : (
-                <><Save className="w-4 h-4" /> {initialData ? "수정" : "등록"}</>
+                <><Save className="w-4 h-4" /> {isEditMode ? "수정" : "등록"}</>
               )}
             </button>
           </div>
@@ -298,7 +308,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
             collapsed={collapsedSections.has("basic")}
             onToggle={() => toggleSection("basic")}
           >
-            <BasicInfoTab formData={formData} updateField={updateField} isEditMode={!!initialData} />
+            <BasicInfoTab formData={formData} updateField={updateField} isEditMode={isEditMode} />
           </SectionCard>
 
           {/* 2. 이미지 (히어로 이미지) */}
@@ -309,8 +319,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
             onToggle={() => toggleSection("images")}
           >
             <ImagesTab
-              productId={initialData?.id}
-              images={initialData?.images || []}
+              productId={isEditMode ? initialData?.id : undefined}
+              images={isEditMode ? (initialData?.images || []) : []}
               onPendingChange={(imgs: any[]) => setPendingImages(imgs)}
             />
           </SectionCard>
@@ -343,8 +353,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
             onToggle={() => toggleSection("itinerary")}
           >
             <ItineraryTab
-              productId={initialData?.id}
-              itineraries={initialData?.itineraries || []}
+              productId={isEditMode ? initialData?.id : undefined}
+              itineraries={isEditMode ? (initialData?.itineraries || []) : []}
               onPendingChange={(items: any[]) => setPendingItineraries(items)}
             />
           </SectionCard>
@@ -357,8 +367,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
             onToggle={() => toggleSection("pricing")}
           >
             <PricingTab
-              productId={initialData?.id}
-              priceOptions={initialData?.priceOptions || []}
+              productId={isEditMode ? initialData?.id : undefined}
+              priceOptions={isEditMode ? (initialData?.priceOptions || []) : []}
               onPendingChange={(opts: any[]) => setPendingPriceOptions(opts)}
             />
           </SectionCard>
@@ -400,7 +410,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
             {isSaving ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> 저장 중...</>
             ) : (
-              <><Save className="w-4 h-4" /> {initialData ? "수정" : "등록"}</>
+              <><Save className="w-4 h-4" /> {isEditMode ? "수정" : "등록"}</>
             )}
           </button>
         </div>

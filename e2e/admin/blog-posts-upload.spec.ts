@@ -5,7 +5,7 @@ test.describe.skip("블로그 글 10개 업로드 (일회성 시드 테스트)",
   test.beforeEach(async ({ page }) => {
     // 로그인
     await page.goto("/login");
-    await page.locator('input[type="email"]').fill("admin@boryoung.com");
+    await page.locator('input[type="text"]').fill("admin");
     await page.locator('input[type="password"]').fill("admin1234");
     await page.locator('button:has-text("로그인")').click();
 
