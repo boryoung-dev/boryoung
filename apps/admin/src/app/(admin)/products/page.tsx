@@ -491,8 +491,11 @@ export default function AdminProductsPage() {
                 <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">가격</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">활성</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">추천</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">정렬</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">조회</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">예약</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">리뷰</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">등록일</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">작업</th>
               </tr>
             </thead>
@@ -566,10 +569,16 @@ export default function AdminProductsPage() {
                       <Star className={`w-4 h-4 ${product.isFeatured ? "fill-current" : ""}`} />
                     </button>
                   </td>
+                  {/* 정렬 */}
+                  <td className="px-4 py-3 text-center text-sm text-gray-500">{product.sortOrder}</td>
                   {/* 조회 */}
                   <td className="px-4 py-3 text-center text-sm text-gray-500">{product.viewCount}</td>
                   {/* 예약 */}
                   <td className="px-4 py-3 text-center text-sm text-gray-500">{product._count.bookings}</td>
+                  {/* 리뷰 */}
+                  <td className="px-4 py-3 text-center text-sm text-gray-500">{product._count.reviews || 0}</td>
+                  {/* 등록일 */}
+                  <td className="px-4 py-3 text-center text-sm text-gray-400 whitespace-nowrap">{new Date(product.createdAt).toLocaleDateString("ko-KR")}</td>
                   {/* 작업 */}
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
