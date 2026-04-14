@@ -176,26 +176,6 @@ export function AdminSidebar({ open, onClose, collapsed, onToggleCollapse }: Adm
 
         {/* 하단 */}
         <div className={`shrink-0 border-t border-[color:var(--border)] ${collapsed ? "px-1.5 py-2" : "px-3 py-3"} space-y-0.5`}>
-          {!collapsed && (
-            <Link
-              href={process.env.NEXT_PUBLIC_WEB_URL || "http://localhost:3000"}
-              target="_blank"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] text-[color:var(--muted)] hover:text-[color:var(--brand)] hover:bg-[color:var(--surface)] transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-              사이트 바로가기
-            </Link>
-          )}
-          {collapsed && (
-            <Link
-              href={process.env.NEXT_PUBLIC_WEB_URL || "http://localhost:3000"}
-              target="_blank"
-              title="사이트 바로가기"
-              className="flex items-center justify-center p-2.5 rounded-lg text-[color:var(--muted)] hover:text-[color:var(--brand)] hover:bg-[color:var(--surface)] transition-colors"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </Link>
-          )}
           {!collapsed ? (
             <button
               onClick={logout}
