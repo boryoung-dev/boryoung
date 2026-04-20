@@ -40,6 +40,17 @@ import { ProductTabsCountryPreview } from "./preview/ProductTabsCountryPreview";
 import { ProductDealGridPreview } from "./preview/ProductDealGridPreview";
 import { ProductPolaroidCarouselPreview } from "./preview/ProductPolaroidCarouselPreview";
 import { ProductOverlapGridPreview } from "./preview/ProductOverlapGridPreview";
+// 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+import { ProductPassportPreview } from "./preview/ProductPassportPreview";
+import { ProductTicketPreview } from "./preview/ProductTicketPreview";
+import { ProductVintagePosterPreview } from "./preview/ProductVintagePosterPreview";
+import { ProductGreenLuxuryPreview } from "./preview/ProductGreenLuxuryPreview";
+import { ProductSunsetPreview } from "./preview/ProductSunsetPreview";
+import { ProductWatercolorPreview } from "./preview/ProductWatercolorPreview";
+import { ProductPostcardPreview } from "./preview/ProductPostcardPreview";
+import { ProductLuxuryBlackPreview } from "./preview/ProductLuxuryBlackPreview";
+import { ProductCinematicPreview } from "./preview/ProductCinematicPreview";
+import { ProductJournalPreview } from "./preview/ProductJournalPreview";
 import type { Curation } from "./HomepageEditor";
 
 const SECTION_TYPE_LABELS: Record<string, string> = {
@@ -80,6 +91,17 @@ const SECTION_TYPE_LABELS: Record<string, string> = {
   product_deal_grid: "특가 그리드",
   product_polaroid_carousel: "폴라로이드 캐러셀",
   product_overlap_grid: "오버랩 그리드",
+  // 신규 상품 섹션 (31~40)
+  product_passport: "여권 스탬프",
+  product_ticket: "항공권 티켓",
+  product_vintage_poster: "빈티지 포스터",
+  product_green_luxury: "그린 럭셔리",
+  product_sunset: "선셋",
+  product_watercolor: "수채화",
+  product_postcard: "엽서",
+  product_luxury_black: "럭셔리 블랙",
+  product_cinematic: "시네마 파노라마",
+  product_journal: "여행 일지",
 };
 
 interface SectionListProps {
@@ -330,6 +352,27 @@ function SectionPreview({ curation }: { curation: Curation }) {
       return <ProductPolaroidCarouselPreview curation={curation} />;
     case "product_overlap_grid":
       return <ProductOverlapGridPreview curation={curation} />;
+    // 신규 상품 섹션 (31~40)
+    case "product_passport":
+      return <ProductPassportPreview curation={curation} />;
+    case "product_ticket":
+      return <ProductTicketPreview curation={curation} />;
+    case "product_vintage_poster":
+      return <ProductVintagePosterPreview curation={curation} />;
+    case "product_green_luxury":
+      return <ProductGreenLuxuryPreview curation={curation} />;
+    case "product_sunset":
+      return <ProductSunsetPreview curation={curation} />;
+    case "product_watercolor":
+      return <ProductWatercolorPreview curation={curation} />;
+    case "product_postcard":
+      return <ProductPostcardPreview curation={curation} />;
+    case "product_luxury_black":
+      return <ProductLuxuryBlackPreview curation={curation} />;
+    case "product_cinematic":
+      return <ProductCinematicPreview curation={curation} />;
+    case "product_journal":
+      return <ProductJournalPreview curation={curation} />;
     default:
       // 타입 미지정 → 상품이 있으면 캐러셀로 표시
       return <ProductCarouselPreview curation={curation} />;

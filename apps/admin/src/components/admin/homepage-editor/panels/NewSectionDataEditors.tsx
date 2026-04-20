@@ -3154,3 +3154,174 @@ export function ProductOverlapGridEditor({
     </div>
   );
 }
+
+// ============================================================================
+// 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+// ============================================================================
+
+/** product_passport — columns(2/3/4) */
+export function ProductPassportEditor({
+  config,
+  onChange,
+}: {
+  config: any;
+  onChange: (next: any) => void;
+}) {
+  const columns = (config.columns || 3) as 2 | 3 | 4;
+  return (
+    <div className="space-y-3">
+      <ColumnsPickerCustom<2 | 3 | 4>
+        value={columns}
+        options={[2, 3, 4]}
+        onChange={(c) => onChange({ ...config, columns: c })}
+      />
+      <p className="text-[10px] text-gray-500 bg-amber-50 px-2 py-1.5 rounded">
+        크래프트 베이지 배경 + 스탬프 오버레이 스타일. 별도 배경을 설정하면 해당 배경이 우선 적용됩니다.
+      </p>
+    </div>
+  );
+}
+
+/** product_vintage_poster — columns(2/3) */
+export function ProductVintagePosterEditor({
+  config,
+  onChange,
+}: {
+  config: any;
+  onChange: (next: any) => void;
+}) {
+  const columns = (config.columns || 3) as 2 | 3;
+  return (
+    <div className="space-y-3">
+      <ColumnsPickerCustom<2 | 3>
+        value={columns}
+        options={[2, 3]}
+        onChange={(c) => onChange({ ...config, columns: c })}
+      />
+      <p className="text-[10px] text-gray-500 bg-amber-50 px-2 py-1.5 rounded">
+        1960년대 여행 포스터 느낌 — 크림색 배경 + sepia + 두꺼운 세리프. destination이 포스터 대형 헤드라인으로 표시됩니다.
+      </p>
+    </div>
+  );
+}
+
+/** product_sunset — columns(2/3/4) */
+export function ProductSunsetEditor({
+  config,
+  onChange,
+}: {
+  config: any;
+  onChange: (next: any) => void;
+}) {
+  const columns = (config.columns || 3) as 2 | 3 | 4;
+  return (
+    <div className="space-y-3">
+      <ColumnsPickerCustom<2 | 3 | 4>
+        value={columns}
+        options={[2, 3, 4]}
+        onChange={(c) => onChange({ ...config, columns: c })}
+      />
+      <p className="text-[10px] text-gray-500 bg-amber-50 px-2 py-1.5 rounded">
+        오렌지 → 핑크 → 퍼플 선셋 그라디언트 배경이 기본입니다.
+      </p>
+    </div>
+  );
+}
+
+/** product_watercolor — columns(2/3/4) */
+export function ProductWatercolorEditor({
+  config,
+  onChange,
+}: {
+  config: any;
+  onChange: (next: any) => void;
+}) {
+  const columns = (config.columns || 3) as 2 | 3 | 4;
+  return (
+    <div className="space-y-3">
+      <ColumnsPickerCustom<2 | 3 | 4>
+        value={columns}
+        options={[2, 3, 4]}
+        onChange={(c) => onChange({ ...config, columns: c })}
+      />
+      <p className="text-[10px] text-gray-500 bg-amber-50 px-2 py-1.5 rounded">
+        파스텔 블롭 + 수채화 마스크 효과. 얇은 light-weight 폰트.
+      </p>
+    </div>
+  );
+}
+
+/** product_cinematic — aspectRatio(16:9 / 21:9) */
+export function ProductCinematicEditor({
+  config,
+  onChange,
+}: {
+  config: any;
+  onChange: (next: any) => void;
+}) {
+  const aspectRatio = (config.aspectRatio || "21:9") as "16:9" | "21:9";
+  return (
+    <div className="space-y-3">
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">화면 비율</label>
+        <div className="grid grid-cols-2 gap-1">
+          {(["16:9", "21:9"] as const).map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => onChange({ ...config, aspectRatio: r })}
+              className={`px-2 py-1.5 text-xs rounded border ${
+                aspectRatio === r
+                  ? "border-blue-500 bg-blue-50 text-blue-700"
+                  : "border-gray-200 text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="text-[10px] text-gray-500 bg-amber-50 px-2 py-1.5 rounded">
+        letterbox 검정 바 + 가로 스냅 스크롤. 6~10개 상품 권장 (최대 10개 표시).
+      </p>
+    </div>
+  );
+}
+
+/** product_journal — columns(2/3) + startDay */
+export function ProductJournalEditor({
+  config,
+  onChange,
+}: {
+  config: any;
+  onChange: (next: any) => void;
+}) {
+  const columns = (config.columns || 3) as 2 | 3;
+  const startDay = typeof config.startDay === "number" ? config.startDay : 1;
+  return (
+    <div className="space-y-3">
+      <ColumnsPickerCustom<2 | 3>
+        value={columns}
+        options={[2, 3]}
+        onChange={(c) => onChange({ ...config, columns: c })}
+      />
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          시작 DAY 번호
+        </label>
+        <input
+          type="number"
+          min={1}
+          value={startDay}
+          onChange={(e) =>
+            onChange({ ...config, startDay: parseInt(e.target.value, 10) || 1 })
+          }
+          className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs"
+        />
+        <p className="text-[10px] text-gray-400 mt-1">
+          각 카드에 DAY 01, DAY 02… 형식 라벨이 자동 표시됩니다
+        </p>
+      </div>
+    </div>
+  );
+}

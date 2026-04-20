@@ -52,6 +52,18 @@ import { ProductDealGrid } from "./sections/ProductDealGrid";
 import { ProductPolaroidCarousel } from "./sections/ProductPolaroidCarousel";
 import { ProductOverlapGrid } from "./sections/ProductOverlapGrid";
 
+// 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+import { ProductPassport } from "./sections/ProductPassport";
+import { ProductTicket } from "./sections/ProductTicket";
+import { ProductVintagePoster } from "./sections/ProductVintagePoster";
+import { ProductGreenLuxury } from "./sections/ProductGreenLuxury";
+import { ProductSunset } from "./sections/ProductSunset";
+import { ProductWatercolor } from "./sections/ProductWatercolor";
+import { ProductPostcard } from "./sections/ProductPostcard";
+import { ProductLuxuryBlack } from "./sections/ProductLuxuryBlack";
+import { ProductCinematic } from "./sections/ProductCinematic";
+import { ProductJournal } from "./sections/ProductJournal";
+
 // 기본 여행지 데이터 (destinations_carousel 폴백용)
 const DEFAULT_PACKAGE_DESTINATIONS = [
   { name: "나트랑", image: "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=800&q=80" },
@@ -219,6 +231,28 @@ async function CurationSectionRenderer({ curation, banners, allProducts }: Curat
       return <ProductPolaroidCarousel curation={curation} />;
     case "product_overlap_grid":
       return <ProductOverlapGrid curation={curation} />;
+
+    // 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+    case "product_passport":
+      return <ProductPassport curation={curation} />;
+    case "product_ticket":
+      return <ProductTicket curation={curation} />;
+    case "product_vintage_poster":
+      return <ProductVintagePoster curation={curation} />;
+    case "product_green_luxury":
+      return <ProductGreenLuxury curation={curation} />;
+    case "product_sunset":
+      return <ProductSunset curation={curation} />;
+    case "product_watercolor":
+      return <ProductWatercolor curation={curation} />;
+    case "product_postcard":
+      return <ProductPostcard curation={curation} />;
+    case "product_luxury_black":
+      return <ProductLuxuryBlack curation={curation} />;
+    case "product_cinematic":
+      return <ProductCinematic curation={curation} />;
+    case "product_journal":
+      return <ProductJournal curation={curation} />;
 
     default:
       // sectionType이 없는 일반 큐레이션은 product_carousel로 폴백

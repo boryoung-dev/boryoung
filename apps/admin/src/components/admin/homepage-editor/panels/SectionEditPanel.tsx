@@ -50,6 +50,13 @@ import {
   ProductTabsCountryEditor,
   ProductDealGridEditor,
   ProductOverlapGridEditor,
+  // 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+  ProductPassportEditor,
+  ProductVintagePosterEditor,
+  ProductSunsetEditor,
+  ProductWatercolorEditor,
+  ProductCinematicEditor,
+  ProductJournalEditor,
 } from "./NewSectionDataEditors";
 
 /** 신규 섹션 타입 — 공용 스타일/헤딩 편집 + 데이터 편집 적용 */
@@ -85,9 +92,20 @@ const NEW_SECTION_TYPES = new Set([
   "product_deal_grid",
   "product_polaroid_carousel",
   "product_overlap_grid",
+  // 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+  "product_passport",
+  "product_ticket",
+  "product_vintage_poster",
+  "product_green_luxury",
+  "product_sunset",
+  "product_watercolor",
+  "product_postcard",
+  "product_luxury_black",
+  "product_cinematic",
+  "product_journal",
 ]);
 
-/** 상품 연결이 필요한 섹션 타입 (기존 3개 + 신규 10개) */
+/** 상품 연결이 필요한 섹션 타입 (기존 3개 + 신규 10개 + 추가 10개) */
 const PRODUCT_SECTION_TYPES = new Set([
   "featured_grid",
   "product_carousel",
@@ -102,6 +120,17 @@ const PRODUCT_SECTION_TYPES = new Set([
   "product_deal_grid",
   "product_polaroid_carousel",
   "product_overlap_grid",
+  // 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+  "product_passport",
+  "product_ticket",
+  "product_vintage_poster",
+  "product_green_luxury",
+  "product_sunset",
+  "product_watercolor",
+  "product_postcard",
+  "product_luxury_black",
+  "product_cinematic",
+  "product_journal",
 ]);
 
 type DestinationItem = { _uid: string; name: string; image: string };
@@ -347,6 +376,17 @@ export function SectionEditPanel({
     product_deal_grid: "특가 그리드 — 원가 대비 할인율이 강조된 그리드 (원가 필수)",
     product_polaroid_carousel: "폴라로이드 캐러셀 — 폴라로이드 스타일 카드 캐러셀",
     product_overlap_grid: "오버랩 그리드 — 카드가 일부 겹치며 호버 시 떠오름",
+    // 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+    product_passport: "여권 스탬프 — 크래프트 베이지 배경 + 스탬프 오버레이 + 세리프 + sepia 이미지",
+    product_ticket: "항공권 티켓 — 좌우 원형 홈 + 점선 절취선 + monospace (Boarding Pass 레이아웃)",
+    product_vintage_poster: "빈티지 포스터 — 1960s 크림색 + 두꺼운 세리프 + sepia 필터",
+    product_green_luxury: "그린 럭셔리 — 딥 그린 배경 + 골드 테두리/텍스트 + 얇은 세리프 (골프 프리미엄)",
+    product_sunset: "선셋 — 오렌지/핑크/퍼플 그라디언트 + 둥근 카드 + 부드러운 섀도우",
+    product_watercolor: "수채화 — 파스텔 블롭 배경 + 이미지 수채화 마스크 + 얇은 폰트",
+    product_postcard: "엽서 — 우표 영역 + 손글씨 폰트 + 절취선 + 회전 (Greetings from...)",
+    product_luxury_black: "럭셔리 블랙 — 검정 배경 + 골드 라인/텍스트 + 이미지 grayscale (호버 시 컬러)",
+    product_cinematic: "시네마 파노라마 — letterbox 검정 바 + 가로 스냅 스크롤 + 헬베티카 오버레이",
+    product_journal: "여행 일지 — 크래프트 페이퍼 + 테이프 조각 + DAY 01 라벨 + 손글씨",
   };
 
   return (
@@ -842,6 +882,45 @@ export function SectionEditPanel({
               {sectionType === "product_overlap_grid" && (
                 <ProductOverlapGridEditor config={newConfig} onChange={setNewConfig} />
               )}
+              {/* 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화 */}
+              {sectionType === "product_passport" && (
+                <ProductPassportEditor config={newConfig} onChange={setNewConfig} />
+              )}
+              {sectionType === "product_ticket" && (
+                <p className="text-xs text-gray-400">
+                  헤딩(타이틀, eyebrow, 설명)과 상품을 선택하세요. 2열 고정 레이아웃이며 별도 옵션은 없습니다.
+                </p>
+              )}
+              {sectionType === "product_vintage_poster" && (
+                <ProductVintagePosterEditor config={newConfig} onChange={setNewConfig} />
+              )}
+              {sectionType === "product_green_luxury" && (
+                <p className="text-xs text-gray-400">
+                  헤딩(타이틀, eyebrow, 설명)과 상품을 선택하세요. 딥 그린 배경 + 골드 포인트가 자동 적용됩니다.
+                </p>
+              )}
+              {sectionType === "product_sunset" && (
+                <ProductSunsetEditor config={newConfig} onChange={setNewConfig} />
+              )}
+              {sectionType === "product_watercolor" && (
+                <ProductWatercolorEditor config={newConfig} onChange={setNewConfig} />
+              )}
+              {sectionType === "product_postcard" && (
+                <p className="text-xs text-gray-400">
+                  헤딩(타이틀, eyebrow, 설명)과 상품을 선택하세요. 2열 고정 엽서 레이아웃 (우표 + 손글씨).
+                </p>
+              )}
+              {sectionType === "product_luxury_black" && (
+                <p className="text-xs text-gray-400">
+                  헤딩(타이틀, eyebrow, 설명)과 상품을 선택하세요. 검정 배경 + 골드 라인이 자동 적용됩니다.
+                </p>
+              )}
+              {sectionType === "product_cinematic" && (
+                <ProductCinematicEditor config={newConfig} onChange={setNewConfig} />
+              )}
+              {sectionType === "product_journal" && (
+                <ProductJournalEditor config={newConfig} onChange={setNewConfig} />
+              )}
             </div>
           </div>
         )}
@@ -859,6 +938,7 @@ export function SectionEditPanel({
               sectionType === "product_spotlight" ? 1 :
               sectionType === "product_hero_banner" ? 1 :
               sectionType === "product_magazine" ? 5 :
+              sectionType === "product_cinematic" ? 10 :
               undefined
             }
             onProductsChange={(products) => onLocalUpdate({ products })}

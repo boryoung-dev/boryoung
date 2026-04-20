@@ -76,6 +76,17 @@ const SECTION_TYPES: SectionTypeMeta[] = [
   { value: "product_deal_grid", label: "특가 그리드", desc: "할인율 강조 그리드", group: "상품" },
   { value: "product_polaroid_carousel", label: "폴라로이드 캐러셀", desc: "폴라로이드 카드 가로 캐러셀", group: "상품" },
   { value: "product_overlap_grid", label: "오버랩 그리드", desc: "카드가 일부 겹치며 호버 시 떠오름", group: "상품" },
+  // 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+  { value: "product_passport", label: "여권 스탬프", desc: "크래프트 + 스탬프", group: "상품" },
+  { value: "product_ticket", label: "항공권 티켓", desc: "티켓 절취선 스타일", group: "상품" },
+  { value: "product_vintage_poster", label: "빈티지 포스터", desc: "1960s 여행 포스터", group: "상품" },
+  { value: "product_green_luxury", label: "그린 럭셔리", desc: "골프 그린 + 골드", group: "상품" },
+  { value: "product_sunset", label: "선셋", desc: "노을 그라디언트", group: "상품" },
+  { value: "product_watercolor", label: "수채화", desc: "파스텔 블롭", group: "상품" },
+  { value: "product_postcard", label: "엽서", desc: "우표 + 손글씨", group: "상품" },
+  { value: "product_luxury_black", label: "럭셔리 블랙", desc: "검정 + 골드 라인", group: "상품" },
+  { value: "product_cinematic", label: "시네마 파노라마", desc: "letterbox + 가로 스크롤", group: "상품" },
+  { value: "product_journal", label: "여행 일지", desc: "테이프 + 크래프트", group: "상품" },
 
   // 히어로 / 배너
   { value: "full_bleed_hero", label: "풀스크린 히어로", desc: "풀화면 배경 + CTA", group: "히어로 / 배너" },

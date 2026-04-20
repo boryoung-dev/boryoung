@@ -333,6 +333,68 @@ export interface ProductOverlapGridConfig {
 }
 
 // ============================================================================
+// 신규 상품 섹션 (31~40) — 여행/골프 CSS 차별화
+// ============================================================================
+
+/** 여권 스탬프 — 크래프트 베이지 + 스탬프 오버레이 + 세리프 */
+export interface ProductPassportConfig {
+  style?: SectionStyleConfig;
+  columns?: 2 | 3 | 4;
+}
+
+/** 항공권 티켓 — 좌우 원형 홈 + 점선 절취선 */
+export interface ProductTicketConfig {
+  style?: SectionStyleConfig;
+}
+
+/** 빈티지 여행 포스터 — 1960s 느낌 크림색 + sepia */
+export interface ProductVintagePosterConfig {
+  style?: SectionStyleConfig;
+  columns?: 2 | 3;
+}
+
+/** 골프 그린 럭셔리 — 딥 그린 + 골드 포인트 */
+export interface ProductGreenLuxuryConfig {
+  style?: SectionStyleConfig;
+}
+
+/** 선셋 — 오렌지/핑크/퍼플 그라디언트 */
+export interface ProductSunsetConfig {
+  style?: SectionStyleConfig;
+  columns?: 2 | 3 | 4;
+}
+
+/** 수채화 소프트 — 파스텔 블롭 + 블러 */
+export interface ProductWatercolorConfig {
+  style?: SectionStyleConfig;
+  columns?: 2 | 3 | 4;
+}
+
+/** 엽서 — 우표 영역 + 손글씨 + 회전 */
+export interface ProductPostcardConfig {
+  style?: SectionStyleConfig;
+}
+
+/** 럭셔리 블랙 — 검정 + 골드 라인 */
+export interface ProductLuxuryBlackConfig {
+  style?: SectionStyleConfig;
+}
+
+/** 시네마 파노라마 — letterbox + 가로 스크롤 */
+export interface ProductCinematicConfig {
+  style?: SectionStyleConfig;
+  aspectRatio?: "16:9" | "21:9";
+}
+
+/** 여행 일지 — 크래프트 페이퍼 + 테이프 + DAY 라벨 */
+export interface ProductJournalConfig {
+  style?: SectionStyleConfig;
+  columns?: 2 | 3;
+  /** 시작 DAY 번호 (기본 1) */
+  startDay?: number;
+}
+
+// ============================================================================
 // 헬퍼 - 텍스트 줄바꿈 처리
 // ============================================================================
 
