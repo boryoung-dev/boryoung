@@ -38,7 +38,7 @@ export function CountrySection({ title, subtitle, tabKey, products, bgColor = "b
             href={`/tours?category=${tabKey.toLowerCase()}`}
             className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors pb-0.5"
           >
-            더보기
+            전체 보기 →
           </Link>
         </div>
 

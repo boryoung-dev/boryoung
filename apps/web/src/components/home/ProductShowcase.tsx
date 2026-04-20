@@ -28,7 +28,7 @@ interface ProductShowcaseProps {
    * 외부(예: SectionContainer)에서 감쌀 때 사용.
    */
   bare?: boolean;
-  /** bare=true일 때 헤딩 슬롯 대체 (없으면 기본 제목/더보기 렌더) */
+  /** bare=true일 때 헤딩 슬롯 대체 (없으면 기본 제목/전체 보기 렌더) */
   headingSlot?: React.ReactNode;
 }
 
@@ -55,9 +55,9 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
       {showMoreHref && (
         <Link
           href={showMoreHref}
-          className="text-[13px] text-[color:var(--brand)] hover:underline font-medium"
+          className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
         >
-          더보기
+          전체 보기 →
         </Link>
       )}
     </div>
