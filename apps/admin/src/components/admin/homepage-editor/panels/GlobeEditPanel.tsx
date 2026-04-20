@@ -1,9 +1,16 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { X, GripVertical, Plus, Minus } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { X, GripVertical, Plus, Minus, Save } from "lucide-react";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { useToast } from "@/components/ui/Toast";
+import type { Curation } from "../HomepageEditor";
+
+const GLOBE_DEFAULTS = {
+  eyebrow: "Destinations",
+  title: "전 세계 명문 골프장으로 안내합니다",
+  description: "국가를 선택하면 해당 골프투어 상품을 바로 확인할 수 있습니다.",
+};
 import {
   DndContext,
   closestCenter,
@@ -57,11 +64,101 @@ function SortableRow({
 
 interface GlobeEditPanelProps {
   onClose: () => void;
+  /** 지구본 섹션 텍스트 저장용 큐레이션 (sectionType="globe_3d") — 없으면 저장 시 자동 생성 */
+  globeConfig?: Curation | null;
 }
 
-/** 3D 지구본 노출 국가 선택 패널 */
-export function GlobeEditPanel({ onClose }: GlobeEditPanelProps) {
+/** 3D 지구본 노출 국가 선택 + 섹션 텍스트(라벨/타이틀/설명) 편집 패널 */
+export function GlobeEditPanel({ onClose, globeConfig }: GlobeEditPanelProps) {
   const { toast } = useToast();
+
+  // ---- 섹션 텍스트 편집 상태 ----
+  const [eyebrow, setEyebrow] = useState(
+    globeConfig?.subtitle ?? GLOBE_DEFAULTS.eyebrow
+  );
+  const [title, setTitle] = useState(
+    globeConfig?.title ?? GLOBE_DEFAULTS.title
+  );
+  const [description, setDescription] = useState(
+    globeConfig?.description ?? GLOBE_DEFAULTS.description
+  );
+
+  // 외부 globeConfig 변경 시 동기화 (저장 후 invalidate되어 새 데이터가 들어왔을 때)
+  useEffect(() => {
+    setEyebrow(globeConfig?.subtitle ?? GLOBE_DEFAULTS.eyebrow);
+    setTitle(globeConfig?.title ?? GLOBE_DEFAULTS.title);
+    setDescription(globeConfig?.description ?? GLOBE_DEFAULTS.description);
+  }, [globeConfig?.id, globeConfig?.title, globeConfig?.subtitle, globeConfig?.description]);
+
+  // 텍스트 저장 (있으면 PUT, 없으면 POST 후 globe_3d 행 생성)
+  const createTextMutation = useApiMutation<any, any>(
+    async (body, token) =>
+      fetch("/api/curations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      }),
+    { invalidateKeys: [["curations"]] }
+  );
+
+  const updateTextMutation = useApiMutation<any, { id: string; body: any }>(
+    async ({ id, body }, token) =>
+      fetch(`/api/curations/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      }),
+    { invalidateKeys: [["curations"]] }
+  );
+
+  const handleSaveText = () => {
+    if (!title.trim()) {
+      toast("타이틀은 필수입니다", "error");
+      return;
+    }
+    const payload = {
+      title: title.trim(),
+      subtitle: eyebrow.trim() || null,
+      description: description.trim() || null,
+    };
+    if (globeConfig) {
+      updateTextMutation.mutate(
+        { id: globeConfig.id, body: payload },
+        {
+          onSuccess: (res) => {
+            if (res.success) toast("저장되었습니다", "success");
+            else toast(res.error || "저장 실패", "error");
+          },
+          onError: () => toast("저장 중 오류가 발생했습니다", "error"),
+        }
+      );
+    } else {
+      // 처음 저장: globe_3d 큐레이션 생성 (sortOrder=-1 — 일반 섹션보다 앞)
+      createTextMutation.mutate(
+        {
+          ...payload,
+          sectionType: "globe_3d",
+          sortOrder: -1,
+          isActive: true,
+        },
+        {
+          onSuccess: (res) => {
+            if (res.success) toast("저장되었습니다", "success");
+            else toast(res.error || "저장 실패", "error");
+          },
+          onError: () => toast("저장 중 오류가 발생했습니다", "error"),
+        }
+      );
+    }
+  };
+
+  const isSavingText = createTextMutation.isPending || updateTextMutation.isPending;
 
   // 로컬 순서 변경 반영
   const [localGlobeList, setLocalGlobeList] = useState<Category[] | null>(null);
@@ -222,6 +319,65 @@ export function GlobeEditPanel({ onClose }: GlobeEditPanelProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
+        {/* 섹션 텍스트 편집 (라벨/타이틀/설명) */}
+        <section className="space-y-3">
+          <p className="text-xs font-semibold text-gray-700">
+            섹션 텍스트
+            <span className="ml-1.5 text-gray-400 font-normal">홈페이지 상단에 표시됩니다</span>
+          </p>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              상단 라벨
+            </label>
+            <input
+              type="text"
+              value={eyebrow}
+              onChange={(e) => setEyebrow(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              placeholder={GLOBE_DEFAULTS.eyebrow}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              타이틀 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              placeholder={GLOBE_DEFAULTS.title}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              설명
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              placeholder={GLOBE_DEFAULTS.description}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSaveText}
+            disabled={isSavingText}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            {isSavingText ? "저장 중..." : "텍스트 저장"}
+          </button>
+        </section>
+
+        <div className="border-t border-gray-200" />
+
         {isLoading ? (
           <div className="flex items-center justify-center py-10 text-gray-400 text-sm">
             로딩 중...

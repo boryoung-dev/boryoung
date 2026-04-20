@@ -12,6 +12,10 @@ interface GlobePlaceholderProps {
   isSelected?: boolean;
   onClick?: () => void;
   countries?: GlobeCountry[];
+  /** 미리보기에 표시할 섹션 타이틀 (기본: "3D 지구본 섹션") */
+  title?: string;
+  /** 미리보기에 표시할 보조 설명 (기본: "국가별 투어 탐색 (항상 최상단 고정)") */
+  subtitle?: string;
 }
 
 /** 지구본 섹션 placeholder (3D 지구본은 미리보기 불가, 정적 표시) */
@@ -19,9 +23,13 @@ export function GlobePlaceholder({
   isSelected = false,
   onClick,
   countries = [],
+  title,
+  subtitle,
 }: GlobePlaceholderProps) {
   const previewEmojis = countries.slice(0, 6);
   const hasMore = countries.length > 6;
+  const headingTitle = title?.trim() || "3D 지구본 섹션";
+  const headingSubtitle = subtitle?.trim() || "국가별 투어 탐색 (항상 최상단 고정)";
 
   return (
     <div
@@ -36,9 +44,9 @@ export function GlobePlaceholder({
     >
       <Globe className="w-16 h-16 opacity-60" />
       <div className="text-center">
-        <p className="text-lg font-semibold opacity-90">3D 지구본 섹션</p>
+        <p className="text-lg font-semibold opacity-90">{headingTitle}</p>
         <p className="text-sm opacity-50 mt-1">
-          국가별 투어 탐색 (항상 최상단 고정)
+          {headingSubtitle}
         </p>
         {/* 국가 요약 */}
         {countries.length > 0 ? (

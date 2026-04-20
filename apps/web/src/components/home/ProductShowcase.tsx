@@ -23,10 +23,17 @@ interface ProductShowcaseProps {
   products: ShowcaseProduct[];
   tabs?: string[];
   showMoreHref?: string;
+  /**
+   * true일 경우 자체 `<section>`/max-width 래퍼 없이 콘텐츠만 렌더.
+   * 외부(예: SectionContainer)에서 감쌀 때 사용.
+   */
+  bare?: boolean;
+  /** bare=true일 때 헤딩 슬롯 대체 (없으면 기본 제목/더보기 렌더) */
+  headingSlot?: React.ReactNode;
 }
 
 /** 상품 카드 캐러셀 섹션 (4카드 + 좌우 화살표) */
-export function ProductShowcase({ title, products, tabs, showMoreHref }: ProductShowcaseProps) {
+export function ProductShowcase({ title, products, tabs, showMoreHref, bare = false, headingSlot }: ProductShowcaseProps) {
   const [activeTab, setActiveTab] = useState("전체");
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
@@ -42,44 +49,47 @@ export function ProductShowcase({ title, products, tabs, showMoreHref }: Product
     ? products
     : products.filter((p) => p.destination.includes(activeTab));
 
-  return (
-    <section className="py-10 md:py-14">
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6">
-        {/* 헤더 */}
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight">{title}</h2>
-          {showMoreHref && (
-            <Link
-              href={showMoreHref}
-              className="text-[13px] text-[color:var(--brand)] hover:underline font-medium"
+  const defaultHeading = (
+    <div className="flex items-center justify-between mb-5">
+      <h2 className="text-xl md:text-2xl font-bold tracking-tight">{title}</h2>
+      {showMoreHref && (
+        <Link
+          href={showMoreHref}
+          className="text-[13px] text-[color:var(--brand)] hover:underline font-medium"
+        >
+          더보기
+        </Link>
+      )}
+    </div>
+  );
+
+  const content = (
+    <>
+      {/* 헤더 */}
+      {headingSlot ?? defaultHeading}
+
+      {/* 탭 */}
+      {tabs && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                activeTab === tab
+                  ? "bg-[color:var(--fg)] text-white border-[color:var(--fg)]"
+                  : "bg-white text-[color:var(--fg)] border-[color:var(--border)] hover:border-[color:var(--fg)]"
+              }`}
             >
-              더보기
-            </Link>
-          )}
+              {tab}
+            </button>
+          ))}
         </div>
+      )}
 
-        {/* 탭 */}
-        {tabs && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
-                  activeTab === tab
-                    ? "bg-[color:var(--fg)] text-white border-[color:var(--fg)]"
-                    : "bg-white text-[color:var(--fg)] border-[color:var(--border)] hover:border-[color:var(--fg)]"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* 캐러셀 */}
-        <div className="relative group/carousel">
+      {/* 캐러셀 */}
+      <div className="relative group/carousel">
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex gap-4">
               {filtered.map((product) => {
@@ -171,7 +181,14 @@ export function ProductShowcase({ title, products, tabs, showMoreHref }: Product
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
-      </div>
+      </>
+  );
+
+  if (bare) return <>{content}</>;
+
+  return (
+    <section className="py-10 md:py-14">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6">{content}</div>
     </section>
   );
 }

@@ -7,7 +7,17 @@ import type { GlobeDestination } from "@/lib/home/globe";
 
 interface GlobeSectionProps {
   destinations: GlobeDestination[];
+  /** 상단 eyebrow 라벨 (기본: "Destinations") */
+  eyebrow?: string;
+  /** 메인 타이틀 (기본: "전 세계 명문 골프장으로 안내합니다") */
+  title?: string;
+  /** 서브 설명 (기본: "국가를 선택하면 ...") */
+  description?: string;
 }
+
+const DEFAULT_EYEBROW = "Destinations";
+const DEFAULT_TITLE = "전 세계 명문 골프장으로 안내합니다";
+const DEFAULT_DESCRIPTION = "국가를 선택하면 해당 골프투어 상품을 바로 확인할 수 있습니다.";
 
 /** 지구본 테마 프리셋 */
 const GLOBE_THEMES = {
@@ -110,7 +120,15 @@ function projectMarker(
   return { x: r + x * r, y: r - y2 * r, visible: z2 > 0 };
 }
 
-export function GlobeSection({ destinations }: GlobeSectionProps) {
+export function GlobeSection({
+  destinations,
+  eyebrow,
+  title,
+  description,
+}: GlobeSectionProps) {
+  const headingEyebrow = eyebrow?.trim() || DEFAULT_EYEBROW;
+  const headingTitle = title?.trim() || DEFAULT_TITLE;
+  const headingDescription = description?.trim() || DEFAULT_DESCRIPTION;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerInteracting = useRef<{ x: number; y: number } | null>(null);
 
@@ -362,13 +380,13 @@ export function GlobeSection({ destinations }: GlobeSectionProps) {
       <div className="max-w-[1200px] mx-auto px-4 md:px-6">
         <div className="text-center mb-10">
           <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">
-            Destinations
+            {headingEyebrow}
           </p>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
-            전 세계 명문 골프장으로 안내합니다
+            {headingTitle}
           </h2>
           <p className="text-[color:var(--muted)] max-w-lg mx-auto">
-            국가를 선택하면 해당 골프투어 상품을 바로 확인할 수 있습니다.
+            {headingDescription}
           </p>
         </div>
 
