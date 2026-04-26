@@ -66,7 +66,7 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
   const content = (
     <>
       {/* 헤더 */}
-      {headingSlot ?? defaultHeading}
+      {headingSlot !== undefined ? headingSlot : defaultHeading}
 
       {/* 탭 */}
       {tabs && (

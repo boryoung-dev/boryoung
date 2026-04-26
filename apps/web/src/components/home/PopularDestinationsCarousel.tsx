@@ -51,7 +51,7 @@ export function PopularDestinationsCarousel({
 
   const content = (
     <>
-      {headingSlot ?? defaultHeading}
+      {headingSlot !== undefined ? headingSlot : defaultHeading}
       {/* 캐러셀 영역 */}
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-4">
