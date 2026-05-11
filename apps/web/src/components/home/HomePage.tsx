@@ -1,4 +1,4 @@
-import { getActiveCurations, getFallbackDealProducts, getFallbackNewProducts, getFallbackFeaturedProducts } from "@/lib/home/curations";
+import { getActiveCurations, getFallbackDealProducts, getFallbackNewProducts } from "@/lib/home/curations";
 import { getRankingProducts } from "@/lib/home/seed";
 import { getGlobeDestinations } from "@/lib/home/globe";
 import { prisma } from "@/lib/prisma";
@@ -287,20 +287,14 @@ function ViewAllLink({ href, textTheme }: { href: string; textTheme?: "light" | 
 
 /** 추천 그리드 섹션 (featured_grid) - 2행 3열 카드 그리드 */
 async function FeaturedGridSection({ curation }: { curation: Awaited<ReturnType<typeof getActiveCurations>>[number] }) {
-  // 큐레이션에 상품이 연결되어 있으면 해당 상품, 없으면 자동 추천
-  let items;
-  if (curation.products.length > 0) {
-    items = curation.products.map((p, i) => ({
-      id: `${curation.id}-${i}`,
-      slug: p.slug,
-      title: p.title,
-      imageUrl: p.imageUrl,
-      price: p.basePrice ? `${p.basePrice.toLocaleString()}원~` : "가격 문의",
-      badges: [p.destination, p.duration].filter(Boolean),
-    }));
-  } else {
-    items = await getFallbackFeaturedProducts();
-  }
+  const items = curation.products.map((p, i) => ({
+    id: `${curation.id}-${i}`,
+    slug: p.slug,
+    title: p.title,
+    imageUrl: p.imageUrl,
+    price: p.basePrice ? `${p.basePrice.toLocaleString()}원~` : "가격 문의",
+    badges: [p.destination, p.duration].filter(Boolean),
+  }));
 
   if (items.length === 0) return null;
 
@@ -332,17 +326,7 @@ async function FeaturedGridSection({ curation }: { curation: Awaited<ReturnType<
 
 /** 상품 캐러셀 섹션 (product_carousel) - 가로 슬라이드 */
 async function ProductCarouselSection({ curation }: { curation: Awaited<ReturnType<typeof getActiveCurations>>[number] }) {
-  let products = curation.products;
-
-  // 상품이 없으면 자동 필터 (특가 또는 신규)
-  if (products.length === 0) {
-    const titleLower = curation.title.toLowerCase();
-    if (titleLower.includes("특가") || titleLower.includes("할인")) {
-      products = await getFallbackDealProducts();
-    } else {
-      products = await getFallbackNewProducts();
-    }
-  }
+  const products = curation.products;
 
   if (products.length === 0) return null;
 
@@ -377,17 +361,7 @@ async function ProductCarouselSection({ curation }: { curation: Awaited<ReturnTy
 
 /** 상품 쇼케이스 섹션 (product_showcase) - 탭 필터 포함 */
 async function ProductShowcaseSection({ curation }: { curation: Awaited<ReturnType<typeof getActiveCurations>>[number] }) {
-  let products = curation.products;
-
-  // 상품이 없으면 자동 필터
-  if (products.length === 0) {
-    const titleLower = curation.title.toLowerCase();
-    if (titleLower.includes("특가") || titleLower.includes("할인")) {
-      products = await getFallbackDealProducts();
-    } else {
-      products = await getFallbackNewProducts();
-    }
-  }
+  const products = curation.products;
 
   if (products.length === 0) return null;
 
