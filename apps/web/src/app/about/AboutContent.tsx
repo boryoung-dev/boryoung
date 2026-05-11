@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SiteHeader } from "@/components/common/SiteHeader";
 import { SiteFooter } from "@/components/common/SiteFooter";
@@ -232,9 +233,9 @@ export function AboutContent() {
               </HeroFade>
               <HeroFade delay={600}>
                 <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-                  <a href="/products" className="inline-flex items-center justify-center h-12 px-8 bg-emerald-500 text-white rounded-full text-sm font-semibold hover:bg-emerald-400 transition-colors">
+                  <Link href="/tours" className="inline-flex items-center justify-center h-12 px-8 bg-emerald-500 text-white rounded-full text-sm font-semibold hover:bg-emerald-400 transition-colors">
                     상품 둘러보기
-                  </a>
+                  </Link>
                   <a href="/contact" className="inline-flex items-center justify-center h-12 px-8 border border-white/30 text-white rounded-full text-sm font-medium hover:bg-white/10 transition-colors">
                     상담 문의하기
                   </a>
