@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { Youtube } from "lucide-react";
+
+const YOUTUBE_URL = "https://www.youtube.com/@%EB%B3%B4%EB%A0%B9%ED%95%AD%EA%B3%B5%EC%97%AC%ED%96%89%EC%82%AC";
 
 export function SiteFooter() {
   return (
@@ -129,6 +132,17 @@ export function SiteFooter() {
                 <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M2 0h16a2 2 0 012 2v16a2 2 0 01-2 2H2a2 2 0 01-2-2V2a2 2 0 012-2zm4.5 14.5V8.25L11 14.5h2.5V5.5h-2v6.25L7 5.5H4.5v9z" />
                 </svg>
+              </a>
+              {/* 유튜브 */}
+              <a
+                href={YOUTUBE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="유튜브 채널"
+                title="유튜브 채널"
+                className="text-white/40 hover:text-white transition-colors"
+              >
+                <Youtube className="h-[18px] w-[18px]" />
               </a>
             </div>
           </div>

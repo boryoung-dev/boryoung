@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Menu, Phone } from "lucide-react";
+import { Phone, Youtube } from "lucide-react";
+
+const YOUTUBE_URL = "https://www.youtube.com/@%EB%B3%B4%EB%A0%B9%ED%95%AD%EA%B3%B5%EC%97%AC%ED%96%89%EC%82%AC";
 
 const NAV_ITEMS = [
   { label: "여행상품", href: "/tours" },
@@ -39,7 +41,6 @@ export function SiteHeader() {
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
-      setHidden(false); // 메뉴 열릴 때 헤더 표시
     } else {
       document.body.style.overflow = "";
     }
@@ -142,6 +143,17 @@ export function SiteHeader() {
                 <path d="M2 0h16a2 2 0 012 2v16a2 2 0 01-2 2H2a2 2 0 01-2-2V2a2 2 0 012-2zm4.5 14.5V8.25L11 14.5h2.5V5.5h-2v6.25L7 5.5H4.5v9z"/>
               </svg>
             </a>
+            {/* 유튜브 */}
+            <a
+              href={YOUTUBE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex h-8 w-8 items-center justify-center rounded-full text-[color:var(--muted)] opacity-50 hover:opacity-100 hover:text-red-600 hover:bg-red-50 transition-all duration-300"
+              aria-label="유튜브 채널"
+              title="유튜브 채널"
+            >
+              <Youtube className="h-[18px] w-[18px]" />
+            </a>
             {/* 전화 */}
             <a
               href="tel:1588-0320"
@@ -163,7 +175,11 @@ export function SiteHeader() {
 
             {/* 모바일 메뉴 토글 */}
             <button
-              onClick={() => setMobileOpen(!mobileOpen)}
+              onClick={() => {
+                const nextOpen = !mobileOpen;
+                setMobileOpen(nextOpen);
+                if (nextOpen) setHidden(false);
+              }}
               className="flex h-10 w-10 items-center justify-center rounded-full text-[color:var(--fg)] hover:bg-[color:var(--surface)] transition-colors md:hidden"
               aria-label={mobileOpen ? "메뉴 닫기" : "메뉴 열기"}
             >
@@ -237,7 +253,7 @@ export function SiteHeader() {
                 href="https://pf.kakao.com/_XaITs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#FEE500] text-[#371D1E] text-xs font-medium"
+                className="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl bg-[#FEE500] text-[#371D1E] text-xs font-medium"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 3C6.48 3 2 6.58 2 10.9c0 2.78 1.86 5.22 4.65 6.6l-.95 3.53c-.08.3.26.54.52.37l4.17-2.74c.53.06 1.06.09 1.61.09 5.52 0 10-3.58 10-7.95C22 6.58 17.52 3 12 3z"/>
@@ -248,12 +264,21 @@ export function SiteHeader() {
                 href="https://blog.naver.com/boryoung2"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#03C75A] text-white text-xs font-medium"
+                className="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl bg-[#03C75A] text-white text-xs font-medium"
               >
                 <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M2 0h16a2 2 0 012 2v16a2 2 0 01-2 2H2a2 2 0 01-2-2V2a2 2 0 012-2zm4.5 14.5V8.25L11 14.5h2.5V5.5h-2v6.25L7 5.5H4.5v9z"/>
                 </svg>
                 블로그
+              </a>
+              <a
+                href={YOUTUBE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl bg-[#FF0000] text-white text-xs font-medium"
+              >
+                <Youtube className="h-3.5 w-3.5" />
+                유튜브
               </a>
             </div>
           </div>
