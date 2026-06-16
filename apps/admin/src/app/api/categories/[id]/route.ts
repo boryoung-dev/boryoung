@@ -58,34 +58,35 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    // 하위 카테고리가 있는지 확인
-    const childCount = await prisma.category.count({
-      where: { parentId: id },
-    });
-
-    if (childCount > 0) {
-      return NextResponse.json(
-        { error: "하위 카테고리가 있어 삭제할 수 없습니다" },
-        { status: 400 }
-      );
-    }
-
-    // 해당 카테고리를 사용하는 상품이 있는지 확인
+    // 상품이 연결된 카테고리는 삭제 시 상품이 고아가 되므로 차단 (상품 카테고리는 필수값)
     const productCount = await prisma.tourProduct.count({
       where: { categoryId: id },
     });
 
     if (productCount > 0) {
       return NextResponse.json(
-        { error: "해당 카테고리를 사용 중인 상품이 있어 삭제할 수 없습니다" },
+        { error: `이 카테고리를 사용 중인 상품이 ${productCount}개 있어 삭제할 수 없습니다. 먼저 상품의 카테고리를 변경해주세요.` },
         { status: 400 }
       );
     }
 
+    // 하위 카테고리는 onDelete: SetNull 로 자동 최상위 승격됨 (삭제를 막지 않음)
     await prisma.category.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error("카테고리 삭제 오류:", error);
+    if (error.code === "P2025") {
+      return NextResponse.json(
+        { error: "카테고리를 찾을 수 없습니다" },
+        { status: 404 }
+      );
+    }
+    if (error.code === "P2003") {
+      return NextResponse.json(
+        { error: "다른 데이터와 연결되어 있어 삭제할 수 없습니다" },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
       { error: "카테고리 삭제 중 오류가 발생했습니다" },
       { status: 500 }

@@ -55,7 +55,13 @@ export function useApiMutation<TData = any, TVariables = any>(
         logout();
         throw new Error("인증 만료");
       }
-      return res.json();
+      // 응답 본문 파싱 (본문이 없거나 JSON이 아니어도 안전하게 처리)
+      const data = await res.json().catch(() => ({}));
+      // 실패 응답(4xx/5xx)은 서버가 내려준 사유를 담아 에러로 던져 onError로 전달
+      if (!res.ok) {
+        throw new Error(data?.error || `요청 실패 (${res.status})`);
+      }
+      return data;
     },
     onSuccess: (data, variables) => {
       // 관련 쿼리 자동 무효화

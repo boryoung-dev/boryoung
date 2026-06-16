@@ -123,10 +123,17 @@ export async function DELETE(
   const { id } = await params;
 
   try {
+    // 연결된 예약/리뷰/이미지/일정/가격옵션/태그/큐레이션은 onDelete: Cascade 로 함께 삭제됨
     await prisma.tourProduct.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error("상품 삭제 오류:", error);
+    if (error.code === "P2025") {
+      return NextResponse.json(
+        { error: "상품을 찾을 수 없습니다" },
+        { status: 404 }
+      );
+    }
     return NextResponse.json(
       { error: "상품 삭제 중 오류가 발생했습니다" },
       { status: 500 }

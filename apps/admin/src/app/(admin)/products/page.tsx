@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Trash2, Copy, ChevronLeft, ChevronRight, Star, Info, X } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Star, Info, X, FileSpreadsheet, AlertCircle, CheckCircle2 } from "lucide-react";
 import Select from "@/components/ui/Select";
 import DatePicker from "@/components/ui/DatePicker";
 import { useToast } from "@/components/ui/Toast";
@@ -118,7 +118,7 @@ export default function AdminProductsPage() {
     {
       invalidateKeys: [["products", String(page), search, statusFilter, categoryFilter, startDate, endDate, featuredFilter, minPrice, maxPrice]],
       onSuccess: () => { setSelectedIds([]); toast("일괄 작업 완료", "success"); },
-      onError: () => toast("일괄 작업 실패", "error"),
+      onError: (e) => toast(e.message || "일괄 작업 실패", "error"),
     }
   );
 
@@ -150,7 +150,8 @@ export default function AdminProductsPage() {
       }),
     {
       invalidateKeys: [["products", String(page), search, statusFilter, categoryFilter, startDate, endDate, featuredFilter, minPrice, maxPrice]],
-      onError: () => toast("삭제 실패", "error"),
+      onSuccess: () => toast("상품이 삭제되었습니다", "success"),
+      onError: (e) => toast(e.message || "삭제 실패", "error"),
     }
   );
 
@@ -171,6 +172,19 @@ export default function AdminProductsPage() {
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
     setPage(1);
+  };
+
+  const getOperationalBadges = (product: Product) => {
+    const badges: { label: string; tone: "green" | "gray" | "yellow" | "blue"; icon?: "check" | "alert" }[] = [];
+    badges.push(
+      product.isActive
+        ? { label: "공개중", tone: "green", icon: "check" }
+        : { label: "비공개", tone: "gray" }
+    );
+    if (product.isFeatured) badges.push({ label: "추천", tone: "blue" });
+    if (!product.thumbnail) badges.push({ label: "이미지 없음", tone: "yellow", icon: "alert" });
+    if (!product.basePrice) badges.push({ label: "가격 없음", tone: "yellow", icon: "alert" });
+    return badges;
   };
 
   const handleCategoryFilterChange = (value: string) => {
@@ -275,12 +289,20 @@ export default function AdminProductsPage() {
             <Info className="w-5 h-5" />
           </button>
         </div>
-        <Link
-          href="/products/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4" /> 상품 등록
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/products/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> 상품 등록
+          </Link>
+          <Link
+            href="/products/import"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold text-sm transition-colors shadow-sm"
+          >
+            <FileSpreadsheet className="w-4 h-4" /> 엑셀 업로드
+          </Link>
+        </div>
       </div>
 
       {/* 필터 */}
@@ -530,6 +552,26 @@ export default function AdminProductsPage() {
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="inline-flex px-1.5 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded">{product.category.name}</span>
                           <span className="text-[11px] text-gray-400">{product.destination}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                          {getOperationalBadges(product).map((badge) => (
+                            <span
+                              key={badge.label}
+                              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                                badge.tone === "green"
+                                  ? "bg-green-50 text-green-700"
+                                  : badge.tone === "blue"
+                                    ? "bg-blue-50 text-blue-700"
+                                    : badge.tone === "yellow"
+                                      ? "bg-amber-50 text-amber-700"
+                                      : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {badge.icon === "check" && <CheckCircle2 className="w-2.5 h-2.5" />}
+                              {badge.icon === "alert" && <AlertCircle className="w-2.5 h-2.5" />}
+                              {badge.label}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     </div>

@@ -33,8 +33,9 @@ model Category {
   updatedAt   DateTime      @updatedAt
 
   // 셀프 레퍼런싱 (계층형 카테고리)
+  // onDelete: SetNull → 부모 삭제 시 하위 카테고리는 삭제되지 않고 최상위로 승격됨
   parentId    String?
-  parent      Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  parent      Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children    Category[]    @relation("CategoryHierarchy")
 
   products    TourProduct[]
@@ -260,7 +261,7 @@ model Booking {
 
   // 상품 정보
   tourProductId String
-  tourProduct   TourProduct @relation(fields: [tourProductId], references: [id])
+  tourProduct   TourProduct @relation(fields: [tourProductId], references: [id], onDelete: Cascade)
 
   // 예약자 정보
   name          String
