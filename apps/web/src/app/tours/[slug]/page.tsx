@@ -13,7 +13,7 @@ interface Props {
 
 // ISR: 첫 요청 시 렌더링 + 60초 캐시 (빌드 시 DB 커넥션 풀 초과 방지)
 export const dynamicParams = true;
-export const revalidate = 60;
+export const revalidate = 0; // 관리자 수정 즉시 반영 (캐시 비활성)
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

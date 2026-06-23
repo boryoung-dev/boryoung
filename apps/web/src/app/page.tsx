@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 // 60초마다 재검증 (ISR)
-export const revalidate = 60;
+export const revalidate = 0; // 관리자 수정 즉시 반영 (캐시 비활성)
 
 export default async function Home() {
   return <HomePage />;

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
-import { Plus, Pencil, Trash2, FileText, Sparkles, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, Sparkles, Search, Upload, Loader2 } from "lucide-react";
 import FilterTabs from "@/components/ui/FilterTabs";
 import Select from "@/components/ui/Select";
 import { TiptapEditor } from "@/components/editor/TiptapEditor";
@@ -42,7 +42,7 @@ interface BlogPostFormData {
 }
 
 export default function BlogPostsPage() {
-  const { token, isLoading } = useAdminAuth();
+  const { token, isLoading, authHeaders } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
 
@@ -57,6 +57,7 @@ export default function BlogPostsPage() {
     isPublished: false
   });
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [filterPublished, setFilterPublished] = useState<"all" | "published" | "draft">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -156,6 +157,38 @@ export default function BlogPostsPage() {
   const handleThumbnailChange = (url: string) => {
     setFormData({ ...formData, thumbnail: url });
     setThumbnailPreview(url);
+  };
+
+  // 썸네일 파일 첨부 업로드 → Supabase Storage 에 올리고 URL 자동 반영
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingThumbnail(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      uploadData.append("folder", "blog");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: authHeaders as any,
+        body: uploadData,
+      });
+      const data = await res.json();
+
+      if (data.success && data.url) {
+        setFormData((prev) => ({ ...prev, thumbnail: data.url }));
+        setThumbnailPreview(data.url);
+      } else {
+        toast(data.error || "이미지 업로드에 실패했습니다", "error");
+      }
+    } catch {
+      toast("이미지 업로드 중 오류가 발생했습니다", "error");
+    } finally {
+      setUploadingThumbnail(false);
+      e.target.value = "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -507,14 +540,33 @@ export default function BlogPostsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">썸네일 URL</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">썸네일</label>
+
+            {/* 파일 첨부 업로드 */}
             <input
-              type="url"
-              value={formData.thumbnail}
-              onChange={(e) => handleThumbnailChange(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
-              placeholder="https://example.com/image.jpg"
+              type="file"
+              accept="image/*"
+              onChange={handleThumbnailUpload}
+              className="hidden"
+              id="blog-thumbnail-upload"
             />
+            <label
+              htmlFor="blog-thumbnail-upload"
+              className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors text-gray-500"
+            >
+              {uploadingThumbnail ? (
+                <span className="flex items-center gap-2 text-sm">
+                  <Loader2 className="w-5 h-5 animate-spin" /> 업로드 중...
+                </span>
+              ) : (
+                <>
+                  <Upload className="w-7 h-7" />
+                  <span className="text-sm">이미지를 선택하거나 드래그하세요</span>
+                  <span className="text-xs text-gray-400">JPG, PNG, WebP, GIF (최대 10MB)</span>
+                </>
+              )}
+            </label>
+
             {thumbnailPreview && (
               <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
                 <img
@@ -525,6 +577,20 @@ export default function BlogPostsPage() {
                 />
               </div>
             )}
+
+            {/* URL 직접 입력 (선택) */}
+            <details className="mt-2">
+              <summary className="text-xs text-gray-400 cursor-pointer select-none hover:text-gray-600">
+                또는 이미지 URL 직접 입력
+              </summary>
+              <input
+                type="url"
+                value={formData.thumbnail}
+                onChange={(e) => handleThumbnailChange(e.target.value)}
+                className="mt-2 w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+                placeholder="https://example.com/image.jpg"
+              />
+            </details>
           </div>
 
           <div className="flex items-center justify-between">

@@ -11,7 +11,7 @@ import BlogPostTemplate from "@/components/magazine/BlogPostTemplate";
 import type { BlogSection } from "@/components/magazine/BlogPostTemplate";
 
 // 60초마다 재검증 (ISR) — 새 글 발행 시 최대 60초 내 반영
-export const revalidate = 60;
+export const revalidate = 0; // 관리자 수정 즉시 반영 (캐시 비활성)
 
 // 빌드 시 모든 매거진 글을 미리 생성
 export async function generateStaticParams() {

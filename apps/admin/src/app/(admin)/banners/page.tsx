@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
-import { Plus, Pencil, Trash2, Image as ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Image as ImageIcon, Upload, Loader2, ChevronUp, ChevronDown } from "lucide-react";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
@@ -33,7 +33,7 @@ interface BannerFormData {
 }
 
 export default function BannersPage() {
-  const { token, isLoading } = useAdminAuth();
+  const { token, isLoading, authHeaders } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const queryClient = useQueryClient();
@@ -50,6 +50,8 @@ export default function BannersPage() {
     isActive: true
   });
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
+  const [reorderingId, setReorderingId] = useState<string | null>(null);
 
   const { data, isLoading: loading } = useApiQuery<{ success: boolean; banners: Banner[] }>(
     ["banners"],
@@ -87,7 +89,7 @@ export default function BannersPage() {
       imageUrl: "",
       linkUrl: "",
       ctaText: "",
-      sortOrder: 0,
+      sortOrder: banners.length, // 새 배너는 맨 뒤 순서로 자동 지정
       isActive: true
     });
     setImagePreview("");
@@ -114,11 +116,76 @@ export default function BannersPage() {
     setImagePreview(url);
   };
 
+  // 파일 첨부 업로드 → Supabase Storage 에 올리고 URL 자동 반영
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      uploadData.append("folder", "banners");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: authHeaders as any,
+        body: uploadData,
+      });
+      const data = await res.json();
+
+      if (data.success && data.url) {
+        setFormData((prev) => ({ ...prev, imageUrl: data.url }));
+        setImagePreview(data.url);
+      } else {
+        toast(data.error || "이미지 업로드에 실패했습니다", "error");
+      }
+    } catch {
+      toast("이미지 업로드 중 오류가 발생했습니다", "error");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  // 위/아래 화살표로 순서 변경 → 이웃 배너와 자리 바꾸고 sortOrder 정규화 후 저장
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= banners.length) return;
+
+    const reordered = [...banners];
+    const temp = reordered[index];
+    reordered[index] = reordered[newIndex];
+    reordered[newIndex] = temp;
+
+    setReorderingId(temp.id);
+    try {
+      await Promise.all(
+        reordered
+          .map((b, i) =>
+            b.sortOrder === i
+              ? null
+              : fetch(`/api/banners/${b.id}`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json", ...authHeaders } as any,
+                  body: JSON.stringify({ sortOrder: i }),
+                })
+          )
+          .filter(Boolean) as Promise<Response>[]
+      );
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
+    } catch {
+      toast("순서 변경 중 오류가 발생했습니다", "error");
+    } finally {
+      setReorderingId(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.title.trim() || !formData.imageUrl.trim()) {
-      toast("제목과 이미지 URL은 필수입니다", "error");
+      toast("제목과 이미지는 필수입니다", "error");
       return;
     }
 
@@ -166,14 +233,24 @@ export default function BannersPage() {
   return (
     <div>
       {/* 페이지 헤더 */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">배너 관리</h1>
+      <div className="flex items-center justify-between mb-3">
+        <h1 className="text-2xl font-bold text-gray-900">투어목록 상단배너</h1>
         <button
           onClick={openCreateModal}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" /> 배너 추가
         </button>
+      </div>
+
+      {/* 노출 위치 안내 — 운영자 혼동 방지 */}
+      <div className="mb-6 flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+        <ImageIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
+        <p>
+          여기서 등록한 배너는 웹사이트 <b>여행상품(투어) 목록 페이지 상단</b>에 노출됩니다.
+          여러 개를 등록하면 <b>순서 1번(맨 위) 배너 1개</b>만 표시되니, 노출할 배너를 카드의 ▲▼ 버튼으로 1번에 올려주세요.
+          (홈 화면 배너는 <b>홈페이지 에디터</b>에서 관리합니다.)
+        </p>
       </div>
 
       {banners.length === 0 ? (
@@ -183,7 +260,7 @@ export default function BannersPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {banners.map((banner) => (
+          {banners.map((banner, idx) => (
             <div key={banner.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative h-[200px] bg-gray-100">
                 <img
@@ -212,9 +289,29 @@ export default function BannersPage() {
                       <p className="text-sm text-gray-600 mb-2">{banner.subtitle}</p>
                     )}
                   </div>
-                  <span className="ml-2 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                    순서: {banner.sortOrder}
-                  </span>
+                  <div className="ml-2 flex items-center gap-1 flex-shrink-0">
+                    <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                      {idx + 1}번
+                    </span>
+                    <div className="flex flex-col">
+                      <button
+                        onClick={() => handleMove(idx, "up")}
+                        disabled={idx === 0 || reorderingId !== null}
+                        title="위로"
+                        className="p-0.5 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <ChevronUp className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleMove(idx, "down")}
+                        disabled={idx === banners.length - 1 || reorderingId !== null}
+                        title="아래로"
+                        className="p-0.5 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {banner.linkUrl && (
@@ -303,15 +400,33 @@ export default function BannersPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">이미지 URL *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">이미지 *</label>
+
+            {/* 파일 첨부 업로드 */}
             <input
-              type="url"
-              value={formData.imageUrl}
-              onChange={(e) => handleImageUrlChange(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
-              placeholder="https://example.com/image.jpg"
-              required
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+              id="banner-image-upload"
             />
+            <label
+              htmlFor="banner-image-upload"
+              className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors text-gray-500"
+            >
+              {uploading ? (
+                <span className="flex items-center gap-2 text-sm">
+                  <Loader2 className="w-5 h-5 animate-spin" /> 업로드 중...
+                </span>
+              ) : (
+                <>
+                  <Upload className="w-7 h-7" />
+                  <span className="text-sm">이미지를 선택하거나 드래그하세요</span>
+                  <span className="text-xs text-gray-400">JPG, PNG, WebP, GIF (최대 10MB)</span>
+                </>
+              )}
+            </label>
+
             {imagePreview && (
               <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
                 <img
@@ -322,6 +437,20 @@ export default function BannersPage() {
                 />
               </div>
             )}
+
+            {/* URL 직접 입력 (선택) */}
+            <details className="mt-2">
+              <summary className="text-xs text-gray-400 cursor-pointer select-none hover:text-gray-600">
+                또는 이미지 URL 직접 입력
+              </summary>
+              <input
+                type="url"
+                value={formData.imageUrl}
+                onChange={(e) => handleImageUrlChange(e.target.value)}
+                className="mt-2 w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+                placeholder="https://example.com/image.jpg"
+              />
+            </details>
           </div>
 
           <div>
@@ -346,16 +475,9 @@ export default function BannersPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">정렬 순서</label>
-            <input
-              type="number"
-              value={formData.sortOrder}
-              onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
-              min="0"
-            />
-          </div>
+          <p className="text-xs text-gray-400">
+            노출 순서는 목록에서 카드의 위/아래 화살표로 변경할 수 있습니다.
+          </p>
 
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">활성화</span>
