@@ -35,7 +35,7 @@ export function CategoryTabsSection(props: {
 
   return (
     <section className="bg-[#111113] py-16 md:py-20">
-      <div className="mx-auto max-w-[1200px] px-4 md:px-6">
+      <div className="mx-auto max-w-[1440px] px-5 md:px-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
             {props.title}

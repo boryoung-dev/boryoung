@@ -14,6 +14,8 @@ import { ScheduleTab } from "./tabs/ScheduleTab";
 import { Save, Loader2, Eye, EyeOff, ChevronUp, Maximize2, X } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { ProductPreview } from "./ProductPreview";
+import { ProductCompletionChecklist } from "./ProductCompletionChecklist";
+import { DuplicateProductGuide } from "./DuplicateProductGuide";
 
 const sections = [
   { id: "basic", label: "기본 정보" },
@@ -258,7 +260,9 @@ export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
     }
   };
 
-  const isNewMode = !isEditMode;
+  const previewImages = pendingImages.length > 0 ? pendingImages : (initialData?.images || []);
+  const previewItineraries = pendingItineraries.length > 0 ? pendingItineraries : (initialData?.itineraries || []);
+  const previewPriceOptions = pendingPriceOptions.length > 0 ? pendingPriceOptions : (initialData?.priceOptions || []);
 
   return (
     <div className={`flex gap-6 ${showPreview ? "" : ""}`}>
@@ -298,6 +302,10 @@ export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
             </button>
           </div>
         </div>
+
+        {isDuplicate && <DuplicateProductGuide />}
+
+        <ProductCompletionChecklist formData={formData} images={previewImages} />
 
         {/* 섹션별 스크롤 폼 (웹 상세페이지 흐름 순서) */}
         <div className="space-y-4">
@@ -433,9 +441,9 @@ export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
             <div className="flex-1 overflow-y-auto overscroll-contain">
               <ProductPreview
                 formData={formData}
-                images={pendingImages.length > 0 ? pendingImages : (initialData?.images || [])}
-                itineraries={pendingItineraries.length > 0 ? pendingItineraries : (initialData?.itineraries || [])}
-                priceOptions={pendingPriceOptions.length > 0 ? pendingPriceOptions : (initialData?.priceOptions || [])}
+                images={previewImages}
+                itineraries={previewItineraries}
+                priceOptions={previewPriceOptions}
               />
             </div>
           </div>
@@ -459,9 +467,9 @@ export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
             <div className="flex-1 overflow-y-auto">
               <ProductPreview
                 formData={formData}
-                images={pendingImages.length > 0 ? pendingImages : (initialData?.images || [])}
-                itineraries={pendingItineraries.length > 0 ? pendingItineraries : (initialData?.itineraries || [])}
-                priceOptions={pendingPriceOptions.length > 0 ? pendingPriceOptions : (initialData?.priceOptions || [])}
+                images={previewImages}
+                itineraries={previewItineraries}
+                priceOptions={previewPriceOptions}
               />
             </div>
           </div>

@@ -7,7 +7,7 @@ export function ProcessSection(props: {
 }) {
   return (
     <section className="bg-white py-24">
-      <div className="mx-auto max-w-[1200px] px-6">
+      <div className="mx-auto max-w-[1440px] px-5 md:px-8">
         <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="max-w-xl">
                 <h2 className="text-5xl font-semibold tracking-tight text-[color:var(--fg)] mb-4">{props.title}</h2>

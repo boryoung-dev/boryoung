@@ -19,7 +19,7 @@ function CollectionCarousel({ title, items }: { title: string; items: Collection
 
   return (
     <section className="py-8 md:py-10 bg-[color:var(--surface)]">
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+      <div className="max-w-[1440px] mx-auto px-5 md:px-8">
         <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-6">{title}</h2>
 
         <div className="overflow-hidden" ref={emblaRef}>

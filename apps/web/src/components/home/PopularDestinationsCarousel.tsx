@@ -42,7 +42,7 @@ export function PopularDestinationsCarousel({
       </h2>
       <Link
         href={href}
-        className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
+        className="text-sm md:text-base text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
       >
         전체 보기 →
       </Link>
@@ -59,7 +59,7 @@ export function PopularDestinationsCarousel({
             <Link
               key={dest.name}
               href={`/tours?destination=${encodeURIComponent(dest.name)}`}
-              className="group flex-shrink-0 w-[140px] sm:w-[160px] md:w-[176px]"
+              className="group flex-shrink-0 w-[160px] sm:w-[190px] md:w-[220px]"
             >
               <div className="aspect-square rounded-2xl overflow-hidden bg-[color:var(--surface)] mb-2">
                 <img
@@ -69,7 +69,7 @@ export function PopularDestinationsCarousel({
                   className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
                 />
               </div>
-              <p className="text-sm font-medium text-center text-[color:var(--fg)]">
+              <p className="text-base md:text-lg font-medium text-center text-[color:var(--fg)]">
                 {dest.name}
               </p>
             </Link>
@@ -83,7 +83,7 @@ export function PopularDestinationsCarousel({
 
   return (
     <section className="py-12 md:py-16">
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6">{content}</div>
+      <div className="max-w-[1440px] mx-auto px-5 md:px-8">{content}</div>
     </section>
   );
 }

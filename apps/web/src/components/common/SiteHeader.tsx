@@ -60,7 +60,7 @@ export function SiteHeader() {
             : "bg-white"
         }`}
       >
-        <div className={`mx-auto flex max-w-[1200px] items-center justify-between px-4 md:px-6 transition-all duration-300 ${
+        <div className={`mx-auto flex max-w-[1440px] items-center justify-between px-5 md:px-8 transition-all duration-300 ${
           scrolled ? "h-[60px]" : "h-[72px]"
         }`}>
           {/* 로고 */}

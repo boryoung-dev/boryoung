@@ -31,7 +31,7 @@ export function ProductSpotlight({ curation }: { curation: CurationSection }) {
         style={{ background: `rgba(0,0,0,${overlay})` }}
       />
       <div
-        className="relative max-w-[1200px] mx-auto px-4 md:px-6 flex flex-col justify-center text-white"
+        className="relative max-w-[1440px] mx-auto px-5 md:px-8 flex flex-col justify-center text-white"
         style={{ minHeight: heightPreset }}
       >
         {curation.subtitle && (

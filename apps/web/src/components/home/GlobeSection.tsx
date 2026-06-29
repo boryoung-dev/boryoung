@@ -353,8 +353,8 @@ export function GlobeSection({
   // 목적지가 없을 때 가드
   if (destinations.length === 0) {
     return (
-      <section className="py-16 md:py-24 bg-[color:var(--surface)] overflow-hidden">
-        <div className="max-w-[1200px] mx-auto px-4 md:px-6 text-center">
+      <section className="py-14 md:py-20 bg-[color:var(--surface)] overflow-hidden">
+        <div className="max-w-[1440px] mx-auto px-5 md:px-8 text-center">
           <p className="text-[color:var(--muted)] text-sm">준비 중입니다.</p>
         </div>
       </section>
@@ -376,16 +376,16 @@ export function GlobeSection({
     : selectedProducts;
 
   return (
-    <section className="py-16 md:py-24 bg-[color:var(--surface)] overflow-hidden">
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6">
-        <div className="text-center mb-10">
-          <p className="text-[13px] font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">
+    <section className="py-14 md:py-24 bg-[color:var(--surface)] overflow-hidden">
+      <div className="max-w-[1440px] mx-auto px-5 md:px-8">
+        <div className="text-center mb-10 md:mb-12">
+          <p className="text-sm md:text-base font-medium text-[color:var(--muted)] uppercase tracking-widest mb-3">
             {headingEyebrow}
           </p>
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight mb-5 leading-[1.08]">
             {headingTitle}
           </h2>
-          <p className="text-[color:var(--muted)] max-w-lg mx-auto">
+          <p className="text-lg md:text-xl text-[color:var(--muted)] max-w-2xl mx-auto leading-relaxed">
             {headingDescription}
           </p>
         </div>
@@ -408,7 +408,7 @@ export function GlobeSection({
                 >
                   {dest.emoji} {dest.name}
                   {count > 0 && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                    <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${
                       selectedIndex === i ? "bg-white/20" : "bg-[color:var(--surface)]"
                     }`}>
                       {count}
@@ -421,10 +421,10 @@ export function GlobeSection({
         </div>
 
         {/* 지구본 + 상세 패널 */}
-        <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-center lg:gap-10">
-          {/* 3D 지구본 — 컴팩트 사이즈 */}
+        <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-center lg:gap-14">
+          {/* 3D 지구본 */}
           <div className="flex flex-col items-center gap-4 flex-shrink-0">
-            <div className="relative w-[340px] h-[340px] md:w-[400px] md:h-[400px]">
+            <div className="relative w-[360px] h-[360px] max-w-[86vw] max-h-[86vw] md:w-[520px] md:h-[520px]">
               <canvas
                 ref={canvasRef}
                 className="h-full w-full cursor-grab"
@@ -470,14 +470,14 @@ export function GlobeSection({
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{selectedDest.emoji}</span>
                     <div>
-                      <h3 className="text-lg font-semibold text-[color:var(--fg)]">
+                      <h3 className="text-xl md:text-2xl font-semibold text-[color:var(--fg)]">
                         {selectedDest.name} 골프투어
                       </h3>
                     </div>
                   </div>
                   <Link
                     href={`/tours?category=${selectedDest.slug}`}
-                    className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
+                    className="text-sm md:text-base text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
                   >
                     전체 보기 →
                   </Link>
@@ -489,7 +489,7 @@ export function GlobeSection({
                     <button
                       type="button"
                       onClick={() => setSelectedCity(null)}
-                      className={`px-2.5 py-1 rounded-full text-[12px] font-medium transition-colors border ${
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                         selectedCity === null
                           ? "bg-[color:var(--fg)] text-white border-[color:var(--fg)]"
                           : "bg-[color:var(--surface)] text-[color:var(--muted)] border-[color:var(--border)]"
@@ -502,7 +502,7 @@ export function GlobeSection({
                         key={city.slug}
                         type="button"
                         onClick={() => setSelectedCity(city.name)}
-                        className={`px-2.5 py-1 rounded-full text-[12px] font-medium transition-colors border ${
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                           selectedCity === city.name
                             ? "bg-[color:var(--fg)] text-white border-[color:var(--fg)]"
                             : "bg-[color:var(--surface)] text-[color:var(--muted)] border-[color:var(--border)]"
@@ -530,7 +530,7 @@ export function GlobeSection({
                     <Link
                       key={product.slug}
                       href={`/tours/${product.slug}`}
-                      className="group flex-shrink-0 w-[240px] sm:w-[260px] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 snap-start"
+                      className="group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 snap-start"
                     >
                       <div className="aspect-[4/3] overflow-hidden">
                         {product.imageUrl ? (
@@ -546,11 +546,11 @@ export function GlobeSection({
                           </div>
                         )}
                       </div>
-                      <div className="p-4">
-                        <h4 className="text-sm font-medium text-[color:var(--fg)] line-clamp-1 mb-1">
+                      <div className="p-5">
+                        <h4 className="text-base md:text-lg font-medium text-[color:var(--fg)] line-clamp-1 mb-1.5">
                           {product.title}
                         </h4>
-                        <p className="text-sm font-semibold text-[color:var(--fg)]">
+                        <p className="text-base md:text-lg font-semibold text-[color:var(--fg)]">
                           {product.price}
                         </p>
                       </div>

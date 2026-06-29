@@ -88,16 +88,16 @@ export function HeroSection(props: {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-3 md:py-5">
       <div className="relative group">
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className="min-w-0 flex-[0_0_88%] sm:flex-[0_0_80%] px-2"
+                className="min-w-0 flex-[0_0_100%] sm:flex-[0_0_96%] lg:flex-[0_0_94%] px-2 md:px-3"
               >
-                <div className={`relative w-full aspect-[16/8] sm:aspect-[2.2/1] rounded-2xl overflow-hidden transition-all duration-300 ${
+                <div className={`relative w-full aspect-[16/9] sm:aspect-[2.05/1] rounded-2xl overflow-hidden transition-all duration-300 ${
                   index === selectedIndex ? "opacity-100 scale-100" : "opacity-50 scale-[0.97]"
                 }`}>
                   <img
@@ -110,18 +110,18 @@ export function HeroSection(props: {
                   <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
 
                   {/* 텍스트: 왼쪽 하단 고정 */}
-                  <div className="absolute bottom-0 left-0 p-6 md:p-10 text-white">
-                    <div className="max-w-lg">
-                      <h2 className="text-2xl md:text-4xl font-semibold tracking-tight leading-tight mb-2 md:mb-3">
+                  <div className="absolute bottom-0 left-0 p-6 md:p-12 lg:p-14 text-white">
+                    <div className="max-w-2xl">
+                      <h2 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight mb-3 md:mb-4">
                         {slide.headline}
                       </h2>
                       {slide.subhead && (
-                        <p className="text-sm md:text-base text-white/70 font-normal mb-5 line-clamp-2">
+                        <p className="text-base md:text-xl text-white/78 font-normal mb-6 line-clamp-2">
                           {slide.subhead}
                         </p>
                       )}
                       <Link href={slide.link}>
-                        <button className="rounded-full px-5 h-9 bg-white text-black text-sm font-medium hover:bg-white/90 border-none shadow-sm transition-colors duration-200">
+                        <button className="rounded-full px-6 md:px-7 h-11 md:h-12 bg-white text-black text-base font-semibold hover:bg-white/90 border-none shadow-sm transition-colors duration-200">
                           {slide.cta}
                         </button>
                       </Link>

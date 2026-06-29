@@ -28,7 +28,7 @@ export function FeaturedTourCarousel({ items }: FeaturedTourCarouselProps) {
   return (
     <div>
       {/* 2행 3열 그리드 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
         {currentItems.map((item) => (
           <Link
             key={item.id}
@@ -46,23 +46,23 @@ export function FeaturedTourCarousel({ items }: FeaturedTourCarouselProps) {
               <div className="w-full h-full bg-[color:var(--surface)]" />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-5">
+            <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
               {item.badges && item.badges.length > 0 && (
                 <div className="flex gap-2 mb-2">
                   {item.badges.map((b) => (
                     <span
                       key={b}
-                      className="text-[10px] font-medium px-2.5 py-1 bg-white/15 backdrop-blur-sm rounded-full text-white"
+                      className="text-xs font-medium px-3 py-1.5 bg-white/15 backdrop-blur-sm rounded-full text-white"
                     >
                       {b}
                     </span>
                   ))}
                 </div>
               )}
-              <h3 className="text-base md:text-lg font-semibold text-white tracking-tight mb-0.5 line-clamp-1">
+              <h3 className="text-xl md:text-2xl font-semibold text-white tracking-tight mb-1 line-clamp-1">
                 {item.title}
               </h3>
-              <p className="text-white/60 text-sm">{item.price}</p>
+              <p className="text-white/70 text-base md:text-lg">{item.price}</p>
             </div>
           </Link>
         ))}

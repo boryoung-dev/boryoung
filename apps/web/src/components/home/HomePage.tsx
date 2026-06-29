@@ -276,8 +276,8 @@ function getStyle(curation: { displayConfig?: any }): SectionStyleConfig {
 function ViewAllLink({ href, textTheme }: { href: string; textTheme?: "light" | "dark" }) {
   const cls =
     textTheme === "light"
-      ? "text-[13px] text-white/70 hover:text-white transition-colors"
-      : "text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors";
+      ? "text-sm md:text-base text-white/70 hover:text-white transition-colors"
+      : "text-sm md:text-base text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors";
   return (
     <Link href={href} className={cls}>
       전체 보기 →
@@ -580,11 +580,11 @@ async function FallbackSections({ allProducts }: { allProducts: any[] }) {
       {/* 추천 골프투어 */}
       {rankingItems.length > 0 && (
         <section className="py-16 md:py-20">
-          <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+          <div className="max-w-[1440px] mx-auto px-5 md:px-8">
             <AnimateOnScroll animation="fadeUp">
               <div className="flex items-end justify-between mb-8">
                 <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">추천 골프투어</h2>
-                <Link href="/tours" className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors">
+                <Link href="/tours" className="text-sm md:text-base text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors">
                   전체 보기 →
                 </Link>
               </div>

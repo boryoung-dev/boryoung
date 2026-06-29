@@ -24,7 +24,7 @@ export function CountrySection({ title, subtitle, tabKey, products, bgColor = "b
 
   return (
     <section className={`py-8 md:py-10 ${bgColor}`}>
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+      <div className="max-w-[1440px] mx-auto px-5 md:px-8">
         <div className="flex items-end justify-between mb-6">
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-[color:var(--fg)] tracking-tight">

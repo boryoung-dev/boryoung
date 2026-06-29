@@ -147,6 +147,12 @@ export function ImagesTab({ productId, images: initialImages, onPendingChange }:
           <p>이미지를 추가하면 상품 등록 시 함께 저장됩니다.</p>
         </div>
       )}
+      {!isNewMode && (
+        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          <span className="flex-shrink-0">!</span>
+          <p>이미지 변경 후에는 이 섹션 하단의 <b>이미지 저장</b> 버튼을 눌러야 반영됩니다. 기본정보 저장 버튼과 별개입니다.</p>
+        </div>
+      )}
 
       {/* 업로드 */}
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">

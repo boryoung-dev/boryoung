@@ -36,7 +36,7 @@ export function CurationsSection(props: {
 
   return (
     <section className="bg-[color:var(--surface)] py-24 overflow-hidden">
-      <div className="mx-auto w-full max-w-[1200px] px-6">
+      <div className="mx-auto w-full max-w-[1440px] px-5 md:px-8">
         <div className="mb-10 flex items-end justify-between">
           <h2 className="text-4xl font-semibold tracking-tight text-[color:var(--fg)]">{props.title}</h2>
           <div className="hidden sm:flex items-center gap-4">

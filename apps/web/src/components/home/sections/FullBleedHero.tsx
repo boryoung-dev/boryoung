@@ -33,7 +33,7 @@ export function FullBleedHero({ curation }: { curation: CurationSection }) {
       minHeight={minHeightMap[heightPreset]}
       className="flex items-center justify-center"
     >
-      <div className="w-full max-w-[1200px] mx-auto px-4 md:px-6">
+      <div className="w-full max-w-[1440px] mx-auto px-5 md:px-8">
         <SectionHeading
           eyebrow={curation.subtitle}
           title={curation.title}

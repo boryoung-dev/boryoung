@@ -224,6 +224,12 @@ export function ItineraryTab({ productId, itineraries: initial, onPendingChange 
           <p>일정을 추가하면 상품 등록 시 함께 저장됩니다.</p>
         </div>
       )}
+      {!isNewMode && (
+        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          <span className="flex-shrink-0">!</span>
+          <p>일정 변경 후에는 이 섹션 하단의 <b>일정 저장</b> 버튼을 눌러야 반영됩니다. 기본정보 저장 버튼과 별개입니다.</p>
+        </div>
+      )}
 
       {items.map((item, idx) => (
         <div key={idx} className="border rounded-lg p-4">

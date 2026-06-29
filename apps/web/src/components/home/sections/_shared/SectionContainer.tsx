@@ -76,7 +76,7 @@ export function SectionContainer({
 
   const innerWrapper = fullWidth
     ? "w-full px-0"
-    : "max-w-[1200px] mx-auto px-4 md:px-6";
+    : "max-w-[1440px] mx-auto px-5 md:px-8";
 
   const themeClass = textTheme === "light" ? "text-white" : "text-[color:var(--fg,#1d1d1f)]";
 

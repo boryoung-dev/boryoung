@@ -50,12 +50,12 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
     : products.filter((p) => p.destination.includes(activeTab));
 
   const defaultHeading = (
-    <div className="flex items-center justify-between mb-5">
-      <h2 className="text-xl md:text-2xl font-bold tracking-tight">{title}</h2>
+    <div className="flex items-center justify-between mb-6">
+      <h2 className="text-2xl md:text-4xl font-bold tracking-tight">{title}</h2>
       {showMoreHref && (
         <Link
           href={showMoreHref}
-          className="text-[13px] text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
+          className="text-sm md:text-base text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
         >
           전체 보기 →
         </Link>
@@ -76,7 +76,7 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
+              className={`px-5 py-2 rounded-full text-base font-medium border transition-all ${
                 activeTab === tab
                   ? "bg-[color:var(--fg)] text-white border-[color:var(--fg)]"
                   : "bg-white text-[color:var(--fg)] border-[color:var(--border)] hover:border-[color:var(--fg)]"
@@ -101,7 +101,7 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
                   <Link
                     key={product.slug}
                     href={`/tours/${product.slug}`}
-                    className="flex-shrink-0 w-[260px] sm:w-[280px] group/card"
+                    className="flex-shrink-0 w-[300px] sm:w-[340px] group/card"
                   >
                     {/* 이미지 */}
                     <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-3">
@@ -114,7 +114,7 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
                         />
                       )}
                       {product.badge && (
-                        <span className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-red-500 text-white text-[11px] font-bold rounded">
+                        <span className="absolute top-3 left-3 px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded">
                           {product.badge}
                         </span>
                       )}
@@ -123,35 +123,35 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
                     {/* 정보 */}
                     <div>
                       <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[12px] text-[color:var(--muted)]">
+                        <span className="text-sm text-[color:var(--muted)]">
                           {product.destination}
                         </span>
                         <span className="text-[color:var(--border)]">·</span>
-                        <span className="text-[12px] text-[color:var(--muted)]">
+                        <span className="text-sm text-[color:var(--muted)]">
                           {product.duration}
                         </span>
                       </div>
-                      <h3 className="text-[15px] font-semibold text-[color:var(--fg)] line-clamp-1 mb-1.5 group-hover/card:text-[color:var(--brand)] transition-colors">
+                      <h3 className="text-lg font-semibold text-[color:var(--fg)] line-clamp-1 mb-2 group-hover/card:text-[color:var(--brand)] transition-colors">
                         {product.title}
                       </h3>
                       <div className="flex items-center gap-1 mb-2">
                         <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                        <span className="text-[13px] font-semibold text-[color:var(--fg)]">
+                        <span className="text-sm font-semibold text-[color:var(--fg)]">
                           {product.rating.toFixed(1)}
                         </span>
-                        <span className="text-[12px] text-[color:var(--muted)]">
+                        <span className="text-sm text-[color:var(--muted)]">
                           {product.reviewCount.toLocaleString()}명 평가
                         </span>
                       </div>
                       <div className="flex items-baseline gap-2">
                         {discount > 0 && (
-                          <span className="text-[13px] font-bold text-red-500">{discount}%</span>
+                          <span className="text-base font-bold text-red-500">{discount}%</span>
                         )}
-                        <span className="text-[17px] font-bold text-[color:var(--fg)]">
+                        <span className="text-xl font-bold text-[color:var(--fg)]">
                           {product.basePrice.toLocaleString()}원
                         </span>
                         {product.originalPrice && (
-                          <span className="text-[13px] text-[color:var(--muted)] line-through">
+                          <span className="text-sm text-[color:var(--muted)] line-through">
                             {product.originalPrice.toLocaleString()}원
                           </span>
                         )}
@@ -188,7 +188,7 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
 
   return (
     <section className="py-10 md:py-14">
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6">{content}</div>
+      <div className="max-w-[1440px] mx-auto px-5 md:px-8">{content}</div>
     </section>
   );
 }

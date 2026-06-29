@@ -1,9 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useApiQuery } from "@/hooks/useApi";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import Select from "@/components/ui/Select";
+import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
+import { useToast } from "@/components/ui/Toast";
 import { slugify } from "@/lib/slugify";
+import { Loader2, Plus } from "lucide-react";
 
 interface Props {
   formData: any;
@@ -12,6 +17,14 @@ interface Props {
 }
 
 export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
+  const { authHeaders } = useAdminAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [quickCreate, setQuickCreate] = useState<"country" | "region" | null>(null);
+  const [quickName, setQuickName] = useState("");
+  const [quickEmoji, setQuickEmoji] = useState("");
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+
   const { data: categoriesData } = useApiQuery<any>(
     ["categories"],
     "/api/categories"
@@ -86,6 +99,68 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
     if (country && region) {
       updateField("categoryId", regionId);
       updateField("destination", `${country.name} ${region.name}`);
+    }
+  };
+
+  const resetQuickCreate = () => {
+    setQuickCreate(null);
+    setQuickName("");
+    setQuickEmoji("");
+    setIsCreatingCategory(false);
+  };
+
+  const handleQuickCreateCategory = async () => {
+    const name = quickName.trim();
+    if (!name) {
+      toast("이름을 입력해주세요", "error");
+      return;
+    }
+
+    if (quickCreate === "region" && !selectedCountry) {
+      toast("지역을 추가할 국가를 먼저 선택해주세요", "error");
+      return;
+    }
+
+    setIsCreatingCategory(true);
+    try {
+      const parentId = quickCreate === "region" ? selectedCountry : null;
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders } as any,
+        body: JSON.stringify({
+          name,
+          slug: slugify(name),
+          emoji: quickEmoji.trim() || null,
+          parentId,
+          isActive: true,
+        }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        toast(data.error || "카테고리 생성 실패", "error");
+        return;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["categories"] });
+
+      if (quickCreate === "country") {
+        setSelectedCountry(data.category.id);
+        updateField("categoryId", data.category.id);
+        updateField("destination", data.category.name);
+        toast(`국가 "${data.category.name}"가 추가되었습니다`, "success");
+      } else {
+        const country = topCategories.find((c: any) => c.id === selectedCountry);
+        updateField("categoryId", data.category.id);
+        updateField("destination", country ? `${country.name} ${data.category.name}` : data.category.name);
+        toast(`지역 "${data.category.name}"가 추가되었습니다`, "success");
+      }
+
+      resetQuickCreate();
+    } catch {
+      toast("카테고리 생성 중 오류가 발생했습니다", "error");
+    } finally {
+      setIsCreatingCategory(false);
     }
   };
 
@@ -171,9 +246,18 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
 
         {/* 국가 (카테고리 level 0) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            국가 <span className="text-red-500">*</span>
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-gray-700">
+              국가 <span className="text-red-500">*</span>
+            </label>
+            <button
+              type="button"
+              onClick={() => setQuickCreate("country")}
+              className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+            >
+              <Plus className="w-3 h-3" /> 새 국가 추가
+            </button>
+          </div>
           <Select
             value={selectedCountry}
             onChange={handleCountryChange}
@@ -190,9 +274,20 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
 
         {/* 지역 (카테고리 level 1) - 하위 지역이 있는 경우에만 표시 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            지역 {regions.length > 0 && <span className="text-red-500">*</span>}
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-gray-700">
+              지역 {regions.length > 0 && <span className="text-red-500">*</span>}
+            </label>
+            {selectedCountry && (
+              <button
+                type="button"
+                onClick={() => setQuickCreate("region")}
+                className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+              >
+                <Plus className="w-3 h-3" /> 새 지역 추가
+              </button>
+            )}
+          </div>
           {regions.length > 0 ? (
             <Select
               value={formData.categoryId}
@@ -431,6 +526,64 @@ export function BasicInfoTab({ formData, updateField, isEditMode }: Props) {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={quickCreate !== null}
+        onClose={resetQuickCreate}
+        title={quickCreate === "region" ? "새 지역 추가" : "새 국가 추가"}
+        size="sm"
+        footer={
+          <>
+            <ModalCancelButton onClick={resetQuickCreate} />
+            <ModalConfirmButton onClick={handleQuickCreateCategory} disabled={isCreatingCategory}>
+              {isCreatingCategory ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> 추가 중...
+                </span>
+              ) : (
+                "추가하고 선택"
+              )}
+            </ModalConfirmButton>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          {quickCreate === "region" && (
+            <div className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700">
+              선택한 국가 아래에 지역으로 추가됩니다.
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {quickCreate === "region" ? "지역명" : "국가명"} <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={quickName}
+              onChange={(e) => setQuickName(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={quickCreate === "region" ? "후쿠오카" : "일본"}
+              autoFocus
+            />
+            {quickName && (
+              <p className="mt-1 text-xs text-gray-400">slug: {slugify(quickName)}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">이모지 (선택)</label>
+            <input
+              type="text"
+              value={quickEmoji}
+              onChange={(e) => setQuickEmoji(e.target.value)}
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={quickCreate === "region" ? "🏌️" : "🇯🇵"}
+            />
+          </div>
+          <p className="text-xs text-gray-500">
+            자세한 설명, 정렬 순서, 위도/경도는 나중에 카테고리 관리에서 수정할 수 있습니다.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }
