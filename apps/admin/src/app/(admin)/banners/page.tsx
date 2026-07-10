@@ -1,13 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  type DragEndEvent,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+  SortableContext,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { useApiQuery, useApiMutation } from "@/hooks/useApi";
-import { Plus, Pencil, Trash2, Image as ImageIcon, Upload, Loader2, ChevronUp, ChevronDown } from "lucide-react";
-import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
-import { useToast } from "@/components/ui/Toast";
+import { useApiMutation, useApiQuery } from "@/hooks/useApi";
+import {
+  GripVertical,
+  Image as ImageIcon,
+  Pencil,
+  Plus,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import Modal, {
+  ModalCancelButton,
+  ModalConfirmButton,
+} from "@/components/ui/Modal";
 import { useConfirm } from "@/components/ui/ConfirmModal";
+import { useToast } from "@/components/ui/Toast";
 
 interface Banner {
   id: string;
@@ -32,32 +59,165 @@ interface BannerFormData {
   isActive: boolean;
 }
 
+const emptyForm: BannerFormData = {
+  title: "",
+  subtitle: "",
+  imageUrl: "",
+  linkUrl: "",
+  ctaText: "",
+  sortOrder: 0,
+  isActive: true,
+};
+
+function SortableBannerCard({
+  banner,
+  onEdit,
+  onDelete,
+}: {
+  banner: Banner;
+  onEdit: (banner: Banner) => void;
+  onDelete: (id: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: banner.id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      className={`overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md ${
+        isDragging ? "z-10 opacity-70 ring-2 ring-blue-400" : ""
+      }`}
+    >
+      <div className="relative h-[200px] bg-gray-100">
+        <img
+          src={banner.imageUrl}
+          alt={banner.title}
+          className="h-full w-full object-cover"
+        />
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          className="absolute left-2 top-2 inline-flex h-10 w-10 cursor-grab items-center justify-center rounded-lg bg-white/90 text-gray-700 shadow-sm transition hover:bg-white active:cursor-grabbing"
+          aria-label="배너 순서 드래그"
+          title="드래그해서 순서 변경"
+        >
+          <GripVertical className="h-5 w-5" />
+        </button>
+        <div className="absolute right-2 top-2">
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+              banner.isActive
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {banner.isActive ? "노출 중" : "내림"}
+          </span>
+        </div>
+      </div>
+      <div className="p-4">
+        <div className="mb-2 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h3 className="mb-1 truncate text-lg font-bold">{banner.title}</h3>
+            {banner.subtitle && (
+              <p className="mb-2 line-clamp-2 text-sm text-gray-600">
+                {banner.subtitle}
+              </p>
+            )}
+          </div>
+          <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+            {banner.sortOrder + 1}번째
+          </span>
+        </div>
+
+        {banner.linkUrl && (
+          <p className="mb-2 truncate text-xs text-gray-500">
+            링크:{" "}
+            <a
+              href={banner.linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              {banner.linkUrl}
+            </a>
+          </p>
+        )}
+
+        {banner.ctaText && (
+          <p className="mb-3 text-xs text-gray-500">
+            버튼 문구:{" "}
+            <span className="font-medium text-gray-800">{banner.ctaText}</span>
+          </p>
+        )}
+
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => onEdit(banner)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+          >
+            <Pencil className="h-4 w-4" />
+            수정
+          </button>
+          <button
+            type="button"
+            onClick={() => onDelete(banner.id)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+          >
+            <Trash2 className="h-4 w-4" />
+            삭제
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BannersPage() {
-  const { token, isLoading, authHeaders } = useAdminAuth();
+  const { token, isLoading } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
-  const [formData, setFormData] = useState<BannerFormData>({
-    title: "",
-    subtitle: "",
-    imageUrl: "",
-    linkUrl: "",
-    ctaText: "",
-    sortOrder: 0,
-    isActive: true
-  });
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [formData, setFormData] = useState<BannerFormData>(emptyForm);
+  const [imagePreview, setImagePreview] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [reorderingId, setReorderingId] = useState<string | null>(null);
+  const [reordering, setReordering] = useState(false);
+  const [orderedBanners, setOrderedBanners] = useState<Banner[]>([]);
 
-  const { data, isLoading: loading } = useApiQuery<{ success: boolean; banners: Banner[] }>(
-    ["banners"],
-    "/api/banners"
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
+
+  const { data, isLoading: loading } = useApiQuery<{
+    success: boolean;
+    banners: Banner[];
+  }>(["banners"], "/api/banners");
   const banners = data?.banners ?? [];
+
+  useEffect(() => {
+    setOrderedBanners(
+      [...banners].sort((a, b) => a.sortOrder - b.sortOrder),
+    );
+  }, [banners]);
 
   const saveMutation = useApiMutation<any, { id?: string; body: any }>(
     async ({ id, body }, token) => {
@@ -65,11 +225,14 @@ export default function BannersPage() {
       const method = id ? "PUT" : "POST";
       return fetch(url, {
         method,
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(body),
       });
     },
-    { invalidateKeys: [["banners"]] }
+    { invalidateKeys: [["banners"]] },
   );
 
   const deleteMutation = useApiMutation<any, string>(
@@ -78,20 +241,12 @@ export default function BannersPage() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       }),
-    { invalidateKeys: [["banners"]] }
+    { invalidateKeys: [["banners"]] },
   );
 
   const openCreateModal = () => {
     setEditingBanner(null);
-    setFormData({
-      title: "",
-      subtitle: "",
-      imageUrl: "",
-      linkUrl: "",
-      ctaText: "",
-      sortOrder: banners.length, // 새 배너는 맨 뒤 순서로 자동 지정
-      isActive: true
-    });
+    setFormData({ ...emptyForm, sortOrder: orderedBanners.length });
     setImagePreview("");
     setModalOpen(true);
   };
@@ -105,87 +260,56 @@ export default function BannersPage() {
       linkUrl: banner.linkUrl || "",
       ctaText: banner.ctaText || "",
       sortOrder: banner.sortOrder,
-      isActive: banner.isActive
+      isActive: banner.isActive,
     });
     setImagePreview(banner.imageUrl);
     setModalOpen(true);
   };
 
-  const handleImageUrlChange = (url: string) => {
-    setFormData({ ...formData, imageUrl: url });
+  const setImageUrl = (url: string) => {
+    setFormData((current) => ({ ...current, imageUrl: url }));
     setImagePreview(url);
   };
 
-  // 파일 첨부 업로드 → Supabase Storage 에 올리고 URL 자동 반영
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file || !token) return;
+
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+    uploadData.append("folder", "banners");
 
     setUploading(true);
     try {
-      const uploadData = new FormData();
-      uploadData.append("file", file);
-      uploadData.append("folder", "banners");
-
-      const res = await fetch("/api/upload", {
+      const response = await fetch("/api/upload", {
         method: "POST",
-        headers: authHeaders as any,
+        headers: { Authorization: `Bearer ${token}` },
         body: uploadData,
       });
-      const data = await res.json();
+      const result = await response.json();
 
-      if (data.success && data.url) {
-        setFormData((prev) => ({ ...prev, imageUrl: data.url }));
-        setImagePreview(data.url);
-      } else {
-        toast(data.error || "이미지 업로드에 실패했습니다", "error");
+      if (!response.ok || !result.success) {
+        toast(result.error || "이미지 업로드에 실패했습니다.", "error");
+        return;
       }
+
+      setImageUrl(result.url);
+      toast("이미지를 업로드했습니다.", "success");
     } catch {
-      toast("이미지 업로드 중 오류가 발생했습니다", "error");
+      toast("이미지 업로드 중 오류가 발생했습니다.", "error");
     } finally {
       setUploading(false);
-      e.target.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  // 위/아래 화살표로 순서 변경 → 이웃 배너와 자리 바꾸고 sortOrder 정규화 후 저장
-  const handleMove = async (index: number, direction: "up" | "down") => {
-    const newIndex = direction === "up" ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= banners.length) return;
-
-    const reordered = [...banners];
-    const temp = reordered[index];
-    reordered[index] = reordered[newIndex];
-    reordered[newIndex] = temp;
-
-    setReorderingId(temp.id);
-    try {
-      await Promise.all(
-        reordered
-          .map((b, i) =>
-            b.sortOrder === i
-              ? null
-              : fetch(`/api/banners/${b.id}`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json", ...authHeaders } as any,
-                  body: JSON.stringify({ sortOrder: i }),
-                })
-          )
-          .filter(Boolean) as Promise<Response>[]
-      );
-      queryClient.invalidateQueries({ queryKey: ["banners"] });
-    } catch {
-      toast("순서 변경 중 오류가 발생했습니다", "error");
-    } finally {
-      setReorderingId(null);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     if (!formData.title.trim() || !formData.imageUrl.trim()) {
-      toast("제목과 이미지는 필수입니다", "error");
+      toast("제목과 이미지가 필요합니다.", "error");
       return;
     }
 
@@ -202,29 +326,91 @@ export default function BannersPage() {
         onSuccess: (data) => {
           if (data.success) {
             setModalOpen(false);
+            toast(editingBanner ? "배너를 수정했습니다." : "배너를 추가했습니다.");
           } else {
-            toast(data.error || "저장에 실패했습니다", "error");
+            toast(data.error || "저장에 실패했습니다.", "error");
           }
         },
-        onError: () => toast("배너 저장 중 오류가 발생했습니다", "error"),
-      }
+        onError: () => toast("배너 저장 중 오류가 발생했습니다.", "error"),
+      },
     );
   };
 
   const handleDelete = async (id: string) => {
-    if (!(await confirm({ message: "정말 이 배너를 삭제하시겠습니까?", variant: "danger", confirmText: "삭제" }))) return;
+    const ok = await confirm({
+      message: "이 배너를 삭제하시겠습니까?",
+      variant: "danger",
+      confirmText: "삭제",
+    });
+    if (!ok) return;
 
     deleteMutation.mutate(id, {
       onSuccess: (data) => {
-        if (!data.success) toast(data.error || "삭제에 실패했습니다", "error");
+        if (data.success) {
+          toast("배너를 삭제했습니다.");
+        } else {
+          toast(data.error || "삭제에 실패했습니다.", "error");
+        }
       },
-      onError: () => toast("배너 삭제 중 오류가 발생했습니다", "error"),
+      onError: () => toast("배너 삭제 중 오류가 발생했습니다.", "error"),
     });
+  };
+
+  const persistOrder = async (nextBanners: Banner[]) => {
+    if (!token) return;
+
+    setReordering(true);
+    try {
+      const responses = await Promise.all(
+        nextBanners.map((banner, index) =>
+          fetch(`/api/banners/${banner.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ sortOrder: index }),
+          }),
+        ),
+      );
+
+      if (responses.some((response) => !response.ok)) {
+        throw new Error("failed");
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["banners"] });
+      toast("배너 순서를 저장했습니다.", "success");
+    } catch {
+      toast("배너 순서 저장에 실패했습니다.", "error");
+      setOrderedBanners([...banners].sort((a, b) => a.sortOrder - b.sortOrder));
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = orderedBanners.findIndex(
+      (banner) => banner.id === active.id,
+    );
+    const newIndex = orderedBanners.findIndex(
+      (banner) => banner.id === over.id,
+    );
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const nextBanners = arrayMove(orderedBanners, oldIndex, newIndex).map(
+      (banner, index) => ({ ...banner, sortOrder: index }),
+    );
+
+    setOrderedBanners(nextBanners);
+    void persistOrder(nextBanners);
   };
 
   if (isLoading || loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500">
+      <div className="flex h-64 items-center justify-center text-gray-500">
         로딩 중...
       </div>
     );
@@ -232,132 +418,58 @@ export default function BannersPage() {
 
   return (
     <div>
-      {/* 페이지 헤더 */}
-      <div className="flex items-center justify-between mb-3">
-        <h1 className="text-2xl font-bold text-gray-900">투어목록 상단배너</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">메인배너 관리</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            메인 화면의 대형 캐러셀 배너를 등록하고 드래그로 순서를 관리합니다.
+          </p>
+        </div>
         <button
+          type="button"
           onClick={openCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
         >
-          <Plus className="w-4 h-4" /> 배너 추가
+          <Plus className="h-4 w-4" />
+          배너 추가
         </button>
       </div>
 
-      {/* 노출 위치 안내 — 운영자 혼동 방지 */}
-      <div className="mb-6 flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-        <ImageIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
-        <p>
-          여기서 등록한 배너는 웹사이트 <b>여행상품(투어) 목록 페이지 상단</b>에 노출됩니다.
-          여러 개를 등록하면 <b>순서 1번(맨 위) 배너 1개</b>만 표시되니, 노출할 배너를 카드의 ▲▼ 버튼으로 1번에 올려주세요.
-          (홈 화면 배너는 <b>홈페이지 에디터</b>에서 관리합니다.)
-        </p>
-      </div>
-
-      {banners.length === 0 ? (
-        <div className="py-16 text-center">
-          <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p className="text-sm text-gray-500">등록된 배너가 없습니다</p>
+      {orderedBanners.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center">
+          <ImageIcon className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+          <p className="text-sm text-gray-500">등록된 배너가 없습니다.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {banners.map((banner, idx) => (
-            <div key={banner.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="relative h-[200px] bg-gray-100">
-                <img
-                  src={banner.imageUrl}
-                  alt={banner.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Crect fill='%23ddd' width='400' height='200'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='16'%3E이미지 로드 실패%3C/text%3E%3C/svg%3E";
-                  }}
-                />
-                <div className="absolute top-2 right-2">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                    banner.isActive
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}>
-                    {banner.isActive ? "활성" : "비활성"}
-                  </span>
-                </div>
+        <div>
+          <div className="mb-3 flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            <span>카드 왼쪽 위 핸들을 잡고 드래그하면 순서가 자동 저장됩니다.</span>
+            {reordering && <span className="font-medium">저장 중...</span>}
+          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={orderedBanners.map((banner) => banner.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {orderedBanners.map((banner) => (
+                  <SortableBannerCard
+                    key={banner.id}
+                    banner={banner}
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                  />
+                ))}
               </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg mb-1">{banner.title}</h3>
-                    {banner.subtitle && (
-                      <p className="text-sm text-gray-600 mb-2">{banner.subtitle}</p>
-                    )}
-                  </div>
-                  <div className="ml-2 flex items-center gap-1 flex-shrink-0">
-                    <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                      {idx + 1}번
-                    </span>
-                    <div className="flex flex-col">
-                      <button
-                        onClick={() => handleMove(idx, "up")}
-                        disabled={idx === 0 || reorderingId !== null}
-                        title="위로"
-                        className="p-0.5 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <ChevronUp className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleMove(idx, "down")}
-                        disabled={idx === banners.length - 1 || reorderingId !== null}
-                        title="아래로"
-                        className="p-0.5 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {banner.linkUrl && (
-                  <div className="mb-2">
-                    <span className="text-xs text-gray-500">링크: </span>
-                    <a
-                      href={banner.linkUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline"
-                    >
-                      {banner.linkUrl}
-                    </a>
-                  </div>
-                )}
-
-                {banner.ctaText && (
-                  <div className="mb-3">
-                    <span className="text-xs text-gray-500">CTA: </span>
-                    <span className="text-xs font-medium">{banner.ctaText}</span>
-                  </div>
-                )}
-
-                <div className="flex gap-2 mt-4">
-                  <button
-                    onClick={() => openEditModal(banner)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    수정
-                  </button>
-                  <button
-                    onClick={() => handleDelete(banner.id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    삭제
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            </SortableContext>
+          </DndContext>
         </div>
       )}
 
-      {/* 생성/수정 모달 */}
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -369,7 +481,11 @@ export default function BannersPage() {
             <ModalConfirmButton
               type="submit"
               onClick={() => {
-                document.getElementById("banner-form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+                document
+                  .getElementById("banner-form")
+                  ?.dispatchEvent(
+                    new Event("submit", { bubbles: true, cancelable: true }),
+                  );
               }}
             >
               {editingBanner ? "수정" : "추가"}
@@ -379,118 +495,122 @@ export default function BannersPage() {
       >
         <form id="banner-form" onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">제목 *</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              제목 *
+            </label>
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              onChange={(event) =>
+                setFormData({ ...formData, title: event.target.value })
+              }
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">부제목</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              부제목
+            </label>
             <input
               type="text"
               value={formData.subtitle}
-              onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              onChange={(event) =>
+                setFormData({ ...formData, subtitle: event.target.value })
+              }
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">이미지 *</label>
-
-            {/* 파일 첨부 업로드 */}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="hidden"
-              id="banner-image-upload"
-            />
-            <label
-              htmlFor="banner-image-upload"
-              className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors text-gray-500"
-            >
-              {uploading ? (
-                <span className="flex items-center gap-2 text-sm">
-                  <Loader2 className="w-5 h-5 animate-spin" /> 업로드 중...
-                </span>
-              ) : (
-                <>
-                  <Upload className="w-7 h-7" />
-                  <span className="text-sm">이미지를 선택하거나 드래그하세요</span>
-                  <span className="text-xs text-gray-400">JPG, PNG, WebP, GIF (최대 10MB)</span>
-                </>
-              )}
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              이미지 *
             </label>
-
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={formData.imageUrl}
+                onChange={(event) => setImageUrl(event.target.value)}
+                className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="https://example.com/image.jpg"
+                required
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Upload className="h-4 w-4" />
+                {uploading ? "업로드 중" : "업로드"}
+              </button>
+            </div>
             {imagePreview && (
-              <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+              <div className="mt-3 overflow-hidden rounded-lg border border-gray-200">
                 <img
                   src={imagePreview}
-                  alt="미리보기"
-                  className="w-full h-[200px] object-cover"
+                  alt="배너 미리보기"
+                  className="h-[200px] w-full object-cover"
                   onError={() => setImagePreview("")}
                 />
               </div>
             )}
-
-            {/* URL 직접 입력 (선택) */}
-            <details className="mt-2">
-              <summary className="text-xs text-gray-400 cursor-pointer select-none hover:text-gray-600">
-                또는 이미지 URL 직접 입력
-              </summary>
-              <input
-                type="url"
-                value={formData.imageUrl}
-                onChange={(e) => handleImageUrlChange(e.target.value)}
-                className="mt-2 w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
-                placeholder="https://example.com/image.jpg"
-              />
-            </details>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">링크 URL</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              링크 URL
+            </label>
             <input
               type="url"
               value={formData.linkUrl}
-              onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              onChange={(event) =>
+                setFormData({ ...formData, linkUrl: event.target.value })
+              }
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="https://example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">CTA 텍스트</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              버튼 문구
+            </label>
             <input
               type="text"
               value={formData.ctaText}
-              onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+              onChange={(event) =>
+                setFormData({ ...formData, ctaText: event.target.value })
+              }
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="자세히 보기"
             />
           </div>
 
-          <p className="text-xs text-gray-400">
-            노출 순서는 목록에서 카드의 위/아래 화살표로 변경할 수 있습니다.
-          </p>
-
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">활성화</span>
+            <span className="text-sm font-medium text-gray-700">노출 상태</span>
             <button
               type="button"
-              onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+              onClick={() =>
+                setFormData({ ...formData, isActive: !formData.isActive })
+              }
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                 formData.isActive ? "bg-green-500" : "bg-gray-300"
               }`}
             >
-              <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                formData.isActive ? "translate-x-[22px]" : "translate-x-[2px]"
-              }`} />
+              <span
+                className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  formData.isActive ? "translate-x-[22px]" : "translate-x-[2px]"
+                }`}
+              />
             </button>
           </div>
         </form>

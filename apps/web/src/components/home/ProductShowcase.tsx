@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
@@ -23,17 +23,18 @@ interface ProductShowcaseProps {
   products: ShowcaseProduct[];
   tabs?: string[];
   showMoreHref?: string;
-  /**
-   * true일 경우 자체 `<section>`/max-width 래퍼 없이 콘텐츠만 렌더.
-   * 외부(예: SectionContainer)에서 감쌀 때 사용.
-   */
   bare?: boolean;
-  /** bare=true일 때 헤딩 슬롯 대체 (없으면 기본 제목/전체 보기 렌더) */
   headingSlot?: React.ReactNode;
 }
 
-/** 상품 카드 캐러셀 섹션 (4카드 + 좌우 화살표) */
-export function ProductShowcase({ title, products, tabs, showMoreHref, bare = false, headingSlot }: ProductShowcaseProps) {
+export function ProductShowcase({
+  title,
+  products,
+  tabs,
+  showMoreHref,
+  bare = false,
+  headingSlot,
+}: ProductShowcaseProps) {
   const [activeTab, setActiveTab] = useState("전체");
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
@@ -44,20 +45,20 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
-  // 탭 필터링
-  const filtered = activeTab === "전체"
-    ? products
-    : products.filter((p) => p.destination.includes(activeTab));
+  const filtered =
+    activeTab === "전체"
+      ? products
+      : products.filter((product) => product.destination.includes(activeTab));
 
   const defaultHeading = (
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="text-2xl md:text-4xl font-bold tracking-tight">{title}</h2>
+    <div className="mb-7 flex items-center justify-between gap-4">
+      <h2 className="text-3xl font-bold tracking-tight md:text-4xl">{title}</h2>
       {showMoreHref && (
         <Link
           href={showMoreHref}
-          className="text-sm md:text-base text-[color:var(--muted)] hover:text-[color:var(--fg)] transition-colors"
+          className="shrink-0 text-base font-semibold text-[color:var(--muted)] transition-colors hover:text-[color:var(--fg)] md:text-lg"
         >
-          전체 보기 →
+          전체 보기
         </Link>
       )}
     </div>
@@ -65,21 +66,19 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
 
   const content = (
     <>
-      {/* 헤더 */}
       {headingSlot !== undefined ? headingSlot : defaultHeading}
 
-      {/* 탭 */}
       {tabs && (
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="mb-7 flex flex-wrap gap-2">
           {tabs.map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2 rounded-full text-base font-medium border transition-all ${
+              className={`rounded-full border px-5 py-2.5 text-base font-semibold transition-all md:text-lg ${
                 activeTab === tab
-                  ? "bg-[color:var(--fg)] text-white border-[color:var(--fg)]"
-                  : "bg-white text-[color:var(--fg)] border-[color:var(--border)] hover:border-[color:var(--fg)]"
+                  ? "border-[color:var(--fg)] bg-[color:var(--fg)] text-white"
+                  : "border-[color:var(--border)] bg-white text-[color:var(--fg)] hover:border-[color:var(--fg)]"
               }`}
             >
               {tab}
@@ -88,107 +87,105 @@ export function ProductShowcase({ title, products, tabs, showMoreHref, bare = fa
         </div>
       )}
 
-      {/* 캐러셀 */}
       <div className="relative group/carousel">
-          <div className="overflow-hidden" ref={emblaRef}>
-            <div className="flex gap-4">
-              {filtered.map((product) => {
-                const discount = product.originalPrice
-                  ? Math.round((1 - product.basePrice / product.originalPrice) * 100)
-                  : 0;
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex gap-5">
+            {filtered.map((product) => {
+              const discount = product.originalPrice
+                ? Math.round((1 - product.basePrice / product.originalPrice) * 100)
+                : 0;
 
-                return (
-                  <Link
-                    key={product.slug}
-                    href={`/tours/${product.slug}`}
-                    className="flex-shrink-0 w-[300px] sm:w-[340px] group/card"
-                  >
-                    {/* 이미지 */}
-                    <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-3">
-                      {product.imageUrl && (
-                        <img
-                          src={product.imageUrl}
-                          alt={product.title}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover group-hover/card:scale-[1.03] transition-transform duration-500"
-                        />
+              return (
+                <Link
+                  key={product.slug}
+                  href={`/tours/${product.slug}`}
+                  className="group/card w-[320px] flex-shrink-0 sm:w-[360px]"
+                >
+                  <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-xl">
+                    {product.imageUrl && (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.title}
+                        referrerPolicy="no-referrer"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-[1.03]"
+                      />
+                    )}
+                    {product.badge && (
+                      <span className="absolute left-3 top-3 rounded bg-red-500 px-3 py-1.5 text-sm font-bold text-white">
+                        {product.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="mb-1.5 flex items-center gap-1.5">
+                      <span className="text-base text-[color:var(--muted)]">
+                        {product.destination}
+                      </span>
+                      <span className="text-[color:var(--border)]">·</span>
+                      <span className="text-base text-[color:var(--muted)]">
+                        {product.duration}
+                      </span>
+                    </div>
+                    <h3 className="mb-2 text-xl font-semibold text-[color:var(--fg)] line-clamp-1 transition-colors group-hover/card:text-[color:var(--brand)]">
+                      {product.title}
+                    </h3>
+                    <div className="mb-2.5 flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-base font-semibold text-[color:var(--fg)]">
+                        {product.rating.toFixed(1)}
+                      </span>
+                      <span className="text-base text-[color:var(--muted)]">
+                        {product.reviewCount.toLocaleString()}명 평가
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      {discount > 0 && (
+                        <span className="text-lg font-bold text-red-500">
+                          {discount}%
+                        </span>
                       )}
-                      {product.badge && (
-                        <span className="absolute top-3 left-3 px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded">
-                          {product.badge}
+                      <span className="text-2xl font-bold text-[color:var(--fg)]">
+                        {product.basePrice.toLocaleString()}원
+                      </span>
+                      {product.originalPrice && (
+                        <span className="text-base text-[color:var(--muted)] line-through">
+                          {product.originalPrice.toLocaleString()}원
                         </span>
                       )}
                     </div>
-
-                    {/* 정보 */}
-                    <div>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-sm text-[color:var(--muted)]">
-                          {product.destination}
-                        </span>
-                        <span className="text-[color:var(--border)]">·</span>
-                        <span className="text-sm text-[color:var(--muted)]">
-                          {product.duration}
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-semibold text-[color:var(--fg)] line-clamp-1 mb-2 group-hover/card:text-[color:var(--brand)] transition-colors">
-                        {product.title}
-                      </h3>
-                      <div className="flex items-center gap-1 mb-2">
-                        <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-semibold text-[color:var(--fg)]">
-                          {product.rating.toFixed(1)}
-                        </span>
-                        <span className="text-sm text-[color:var(--muted)]">
-                          {product.reviewCount.toLocaleString()}명 평가
-                        </span>
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        {discount > 0 && (
-                          <span className="text-base font-bold text-red-500">{discount}%</span>
-                        )}
-                        <span className="text-xl font-bold text-[color:var(--fg)]">
-                          {product.basePrice.toLocaleString()}원
-                        </span>
-                        {product.originalPrice && (
-                          <span className="text-sm text-[color:var(--muted)] line-through">
-                            {product.originalPrice.toLocaleString()}원
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
-
-          {/* 좌우 화살표 */}
-          <button
-            type="button"
-            onClick={scrollPrev}
-            className="absolute left-0 top-[120px] -translate-x-1/2 w-10 h-10 rounded-full bg-white shadow-lg border border-[color:var(--border)] flex items-center justify-center text-[color:var(--muted)] hover:text-[color:var(--fg)] transition opacity-0 group-hover/carousel:opacity-100"
-            aria-label="이전"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            type="button"
-            onClick={scrollNext}
-            className="absolute right-0 top-[120px] translate-x-1/2 w-10 h-10 rounded-full bg-white shadow-lg border border-[color:var(--border)] flex items-center justify-center text-[color:var(--muted)] hover:text-[color:var(--fg)] transition opacity-0 group-hover/carousel:opacity-100"
-            aria-label="다음"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
         </div>
-      </>
+
+        <button
+          type="button"
+          onClick={scrollPrev}
+          className="absolute left-0 top-[130px] flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-[color:var(--border)] bg-white text-[color:var(--muted)] opacity-0 shadow-lg transition hover:text-[color:var(--fg)] group-hover/carousel:opacity-100"
+          aria-label="이전"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <button
+          type="button"
+          onClick={scrollNext}
+          className="absolute right-0 top-[130px] flex h-12 w-12 translate-x-1/2 items-center justify-center rounded-full border border-[color:var(--border)] bg-white text-[color:var(--muted)] opacity-0 shadow-lg transition hover:text-[color:var(--fg)] group-hover/carousel:opacity-100"
+          aria-label="다음"
+        >
+          <ChevronRight className="h-6 w-6" />
+        </button>
+      </div>
+    </>
   );
 
   if (bare) return <>{content}</>;
 
   return (
-    <section className="py-10 md:py-14">
-      <div className="max-w-[1440px] mx-auto px-5 md:px-8">{content}</div>
+    <section className="py-11 md:py-16">
+      <div className="mx-auto max-w-[1440px] px-5 md:px-8">{content}</div>
     </section>
   );
 }

@@ -19,14 +19,12 @@ import {
   FileText,
   FileSpreadsheet,
   LayoutGrid,
-  Compass,
   Sparkles,
   LogOut,
 } from "lucide-react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
-// 메뉴를 그룹으로 묶어 가독성 향상.
-// desc: 운영자가 "웹사이트의 어느 화면을 바꾸는지" 바로 알 수 있도록 위치 설명을 붙임.
+// 메뉴를 그룹으로 묶어 가독성 향상
 const navGroups = [
   {
     label: "",
@@ -35,7 +33,7 @@ const navGroups = [
     ],
   },
   {
-    label: "여행상품",
+    label: "상품",
     items: [
       { href: "/products", label: "상품 관리", icon: Package },
       { href: "/products/import", label: "엑셀 업로드", icon: FileSpreadsheet },
@@ -44,17 +42,16 @@ const navGroups = [
     ],
   },
   {
-    label: "사이트 화면 (노출 구성)",
+    label: "홈페이지 관리",
     items: [
-      { href: "/curations", label: "홈페이지 에디터", icon: LayoutGrid, desc: "홈(첫 화면) 섹션 편집" },
-      { href: "/quick-icons", label: "홈 빠른아이콘", icon: Compass, desc: "홈 상단 바로가기 버튼" },
-      { href: "/banners", label: "투어목록 상단배너", icon: Image, desc: "여행상품 리스트 페이지 상단" },
+      { href: "/curations", label: "홈페이지 에디터", icon: LayoutGrid },
+      { href: "/banners", label: "메인배너 관리", icon: Image },
     ],
   },
   {
     label: "콘텐츠",
     items: [
-      { href: "/blog-posts", label: "매거진 관리", icon: FileText, desc: "웹 매거진 페이지 글" },
+      { href: "/blog-posts", label: "매거진 관리", icon: FileText },
     ],
   },
   {
@@ -172,20 +169,7 @@ export function AdminSidebar({ open, onClose, collapsed, onToggleCollapse }: Adm
                       }`}
                     >
                       <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : ""}`} />
-                      {!collapsed && (
-                        <span className="flex flex-col min-w-0 leading-tight">
-                          <span className="truncate">{item.label}</span>
-                          {"desc" in item && item.desc && (
-                            <span
-                              className={`text-[10px] font-normal truncate ${
-                                isActive ? "text-white/70" : "text-[color:var(--muted)]"
-                              }`}
-                            >
-                              {item.desc}
-                            </span>
-                          )}
-                        </span>
-                      )}
+                      {!collapsed && item.label}
                     </Link>
                   );
                 })}

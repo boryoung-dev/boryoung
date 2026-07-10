@@ -8,6 +8,7 @@ import { GlobeSection } from "./GlobeSection";
 import { PopularDestinationsCarousel } from "./PopularDestinationsCarousel";
 import { FeaturedTourCarousel } from "./FeaturedTourCarousel";
 import { ProductShowcase } from "./ProductShowcase";
+import { MainBannerCarousel } from "./MainBannerCarousel";
 import { SiteHeader } from "../common/SiteHeader";
 import { KakaoFloating } from "../common/KakaoFloating";
 import { SiteFooter } from "../common/SiteFooter";
@@ -105,6 +106,7 @@ export async function HomePage() {
       <SiteHeader />
 
       <main>
+        <MainBannerCarousel banners={banners} />
         {/* 1. 3D 지구본 — 국가별 투어 탐색 (항상 표시) */}
         <GlobeSection
           destinations={destinations}
@@ -112,6 +114,7 @@ export async function HomePage() {
           title={globeConfig?.title ?? undefined}
           description={globeConfig?.description ?? undefined}
         />
+
 
         {hasCurations ? (
           /* 큐레이션 기반 동적 섹션 렌더링 */
