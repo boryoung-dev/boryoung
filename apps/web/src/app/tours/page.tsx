@@ -73,7 +73,7 @@ function HeroSearchForm() {
   );
 }
 
-export const revalidate = 0; // 관리자 수정 즉시 반영 (캐시 비활성)
+export const revalidate = 60;
 
 export default async function ToursPage({
   searchParams,
@@ -92,6 +92,7 @@ export default async function ToursPage({
     getTags(),
     prisma.banner.findFirst({
       where: {
+        placement: "tour",
         isActive: true,
         OR: [{ startDate: null }, { startDate: { lte: new Date() } }],
         AND: [{ OR: [{ endDate: null }, { endDate: { gte: new Date() } }] }],

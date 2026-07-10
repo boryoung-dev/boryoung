@@ -11,6 +11,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const banners = await prisma.banner.findMany({
+      where: {
+        placement: "main"
+      },
       orderBy: {
         sortOrder: "asc"
       }
@@ -54,6 +57,7 @@ export async function POST(request: NextRequest) {
 
     const banner = await prisma.banner.create({
       data: {
+        placement: "main",
         title,
         subtitle,
         imageUrl,

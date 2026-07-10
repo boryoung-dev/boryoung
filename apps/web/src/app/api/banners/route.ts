@@ -8,6 +8,7 @@ export async function GET() {
 
     const banners = await prisma.banner.findMany({
       where: {
+        placement: "main",
         isActive: true,
         OR: [
           { startDate: null },

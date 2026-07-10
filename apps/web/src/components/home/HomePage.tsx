@@ -86,6 +86,7 @@ export async function HomePage() {
     }),
     prisma.banner.findMany({
       where: {
+        placement: "main",
         isActive: true,
         OR: [{ startDate: null }, { startDate: { lte: new Date() } }],
         AND: [{ OR: [{ endDate: null }, { endDate: { gte: new Date() } }] }],
