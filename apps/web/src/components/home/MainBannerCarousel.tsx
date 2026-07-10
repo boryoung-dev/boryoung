@@ -17,6 +17,7 @@ const getWrappedIndex = (index: number, length: number) =>
 
 export function MainBannerCarousel({ banners }: { banners: MainBanner[] }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [direction, setDirection] = useState<"next" | "prev">("next");
 
   const visibleBanners = useMemo(() => {
     if (banners.length === 0) return [];
@@ -29,12 +30,22 @@ export function MainBannerCarousel({ banners }: { banners: MainBanner[] }) {
   }, [banners, selectedIndex]);
 
   const scrollPrev = useCallback(() => {
+    setDirection("prev");
     setSelectedIndex((current) => getWrappedIndex(current - 1, banners.length));
   }, [banners.length]);
 
   const scrollNext = useCallback(() => {
+    setDirection("next");
     setSelectedIndex((current) => getWrappedIndex(current + 1, banners.length));
   }, [banners.length]);
+
+  const scrollTo = useCallback(
+    (index: number) => {
+      setDirection(index >= selectedIndex ? "next" : "prev");
+      setSelectedIndex(index);
+    },
+    [selectedIndex],
+  );
 
   useEffect(() => {
     if (banners.length <= 1) return;
@@ -53,8 +64,9 @@ export function MainBannerCarousel({ banners }: { banners: MainBanner[] }) {
         <div className="group relative mx-auto max-w-[1920px]">
           <div className="md:hidden">
             <Link
+              key={activeBanner.id}
               href={activeHref}
-              className="relative block h-[58vw] min-h-[220px] max-h-[340px] w-full overflow-hidden rounded-2xl bg-neutral-100 shadow-sm"
+              className={`main-banner-card main-banner-${direction} relative block h-[58vw] min-h-[220px] max-h-[340px] w-full overflow-hidden rounded-2xl bg-neutral-100 shadow-sm`}
             >
               <img
                 src={activeBanner.imageUrl}
@@ -63,7 +75,9 @@ export function MainBannerCarousel({ banners }: { banners: MainBanner[] }) {
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+              <div
+                className={`main-banner-copy main-banner-copy-${direction} absolute inset-x-0 bottom-0 p-5 text-white`}
+              >
                 <h2 className="text-2xl font-bold leading-tight tracking-tight">
                   {activeBanner.title}
                 </h2>
@@ -86,54 +100,60 @@ export function MainBannerCarousel({ banners }: { banners: MainBanner[] }) {
               banners.length > 1 ? "grid-cols-[2fr_8fr_2fr]" : "grid-cols-1"
             }`}
           >
-            {(banners.length > 1 ? visibleBanners : [activeBanner]).map((banner, position) => {
-              const isActive = banners.length === 1 || position === 1;
-              const href = banner.linkUrl || "/tours";
+            {(banners.length > 1 ? visibleBanners : [activeBanner]).map(
+              (banner, position) => {
+                const isActive = banners.length === 1 || position === 1;
+                const href = banner.linkUrl || "/tours";
 
-              return (
-                <Link
-                  key={`${banner.id}-${position}`}
-                  href={href}
-                  className={`relative block h-full overflow-hidden rounded-3xl bg-neutral-100 shadow-sm transition-all duration-300 ${
-                    isActive
-                      ? "opacity-100"
-                      : "opacity-75 hover:opacity-95"
-                  }`}
-                >
-                  <img
-                    src={banner.imageUrl}
-                    alt={banner.title}
-                    referrerPolicy="no-referrer"
-                    className="h-full w-full object-cover"
-                  />
+                return (
+                  <Link
+                    key={`${banner.id}-${position}`}
+                    href={href}
+                    className={`main-banner-card ${
+                      isActive ? `main-banner-${direction}` : "main-banner-side"
+                    } relative block h-full overflow-hidden rounded-3xl bg-neutral-100 shadow-sm transition-all duration-500 ease-out ${
+                      isActive
+                        ? "opacity-100"
+                        : "opacity-75 hover:opacity-95"
+                    }`}
+                  >
+                    <img
+                      src={banner.imageUrl}
+                      alt={banner.title}
+                      referrerPolicy="no-referrer"
+                      className="h-full w-full object-cover"
+                    />
 
-                  {isActive ? (
-                    <>
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/20 to-transparent" />
-                      <div className="absolute inset-x-0 bottom-0 p-8 text-white lg:p-12">
-                        <div className="max-w-3xl">
-                          <h2 className="text-4xl font-bold leading-tight tracking-tight lg:text-6xl">
-                            {banner.title}
-                          </h2>
-                          {banner.subtitle && (
-                            <p className="mt-4 line-clamp-2 text-lg leading-relaxed text-white/85 lg:text-xl">
-                              {banner.subtitle}
-                            </p>
-                          )}
-                          {banner.ctaText && (
-                            <span className="mt-7 inline-flex h-12 items-center rounded-full bg-white px-6 text-base font-bold text-black transition-colors hover:bg-white/90">
-                              {banner.ctaText}
-                            </span>
-                          )}
+                    {isActive ? (
+                      <>
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/20 to-transparent" />
+                        <div
+                          className={`main-banner-copy main-banner-copy-${direction} absolute inset-x-0 bottom-0 p-8 text-white lg:p-12`}
+                        >
+                          <div className="max-w-3xl">
+                            <h2 className="text-4xl font-bold leading-tight tracking-tight lg:text-6xl">
+                              {banner.title}
+                            </h2>
+                            {banner.subtitle && (
+                              <p className="mt-4 line-clamp-2 text-lg leading-relaxed text-white/85 lg:text-xl">
+                                {banner.subtitle}
+                              </p>
+                            )}
+                            {banner.ctaText && (
+                              <span className="mt-7 inline-flex h-12 items-center rounded-full bg-white px-6 text-base font-bold text-black transition-colors hover:bg-white/90">
+                                {banner.ctaText}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 bg-black/5" />
-                  )}
-                </Link>
-              );
-            })}
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 bg-black/5" />
+                    )}
+                  </Link>
+                );
+              },
+            )}
           </div>
 
           {banners.length > 1 && (
@@ -184,7 +204,7 @@ export function MainBannerCarousel({ banners }: { banners: MainBanner[] }) {
                   <button
                     key={banner.id}
                     type="button"
-                    onClick={() => setSelectedIndex(index)}
+                    onClick={() => scrollTo(index)}
                     aria-label={`${index + 1}번 배너로 이동`}
                     className={`h-2.5 rounded-full transition-all ${
                       index === selectedIndex
