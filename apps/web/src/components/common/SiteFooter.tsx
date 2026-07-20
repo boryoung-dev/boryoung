@@ -126,10 +126,10 @@ export function SiteFooter() {
               <p>
                 이국호 본부장{" "}
                 <a
-                  href="tel:010-3041-9192"
+                  href="tel:010-5514-5831"
                   className="font-medium text-white hover:underline"
                 >
-                  010-3041-9192
+                  010-5514-5831
                 </a>
               </p>
             </div>

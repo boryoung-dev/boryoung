@@ -555,7 +555,7 @@ export function AboutContent() {
                   ["설립연도", "2004년"],
                   ["주소", "경기도 김포시 태장로 795번길 23, 537호(장기동)"],
                   ["대표전화", "1588-0320"],
-                  ["직통전화", "010-3041-9192"],
+                  ["직통전화", "010-5514-5831"],
                 ].map(([label, value]) => (
                   <div key={label} className="flex py-4 text-sm">
                     <dt className="w-28 md:w-40 text-gray-400 flex-shrink-0 font-medium">{label}</dt>
