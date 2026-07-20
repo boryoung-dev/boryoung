@@ -115,7 +115,7 @@ export function SiteFooter() {
                 </a>
               </p>
               <p>
-                이종혁 대표이사{" "}
+                이종양 대표이사{" "}
                 <a
                   href="tel:010-5473-9037"
                   className="font-medium text-white hover:underline"
@@ -195,7 +195,7 @@ export function SiteFooter() {
             2013-000005
           </p>
           <p>
-            대표자 : 이종혁 | 개인정보책임자 : 이종혁 |{" "}
+            대표자 : 이종양 | 개인정보책임자 : 이종양 |{" "}
             <Link
               href="/privacy"
               className="text-white/50 transition-colors hover:text-white"
