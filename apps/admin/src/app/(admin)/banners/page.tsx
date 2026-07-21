@@ -69,6 +69,14 @@ const emptyForm: BannerFormData = {
   isActive: true,
 };
 
+const WEB_SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://boryoung.co.kr";
+
+function resolveBannerImageUrl(imageUrl: string) {
+  if (!imageUrl.startsWith("/")) return imageUrl;
+  return `${WEB_SITE_URL}${imageUrl}`;
+}
+
 function SortableBannerCard({
   banner,
   onEdit,
@@ -100,7 +108,7 @@ function SortableBannerCard({
     >
       <div className="relative h-[200px] bg-gray-100">
         <img
-          src={banner.imageUrl}
+          src={resolveBannerImageUrl(banner.imageUrl)}
           alt={banner.title}
           className="h-full w-full object-cover"
         />
@@ -556,7 +564,7 @@ export default function BannersPage() {
             {imagePreview && (
               <div className="mt-3 overflow-hidden rounded-lg border border-gray-200">
                 <img
-                  src={imagePreview}
+                  src={resolveBannerImageUrl(imagePreview)}
                   alt="배너 미리보기"
                   className="h-[200px] w-full object-cover"
                   onError={() => setImagePreview("")}
