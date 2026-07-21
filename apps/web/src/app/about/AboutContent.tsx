@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SiteHeader } from "@/components/common/SiteHeader";
 import { SiteFooter } from "@/components/common/SiteFooter";
 import { KakaoFloating } from "@/components/common/KakaoFloating";
+import { YouTubeVideo } from "@/components/common/YouTubeVideo";
 
 /* ── 히어로 전용: mount 기반 페이드인 ── */
 function HeroFade({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
@@ -205,10 +206,17 @@ export function AboutContent() {
       <main>
         {/* ━━ 히어로 ━━ */}
         <section className="relative h-[80vh] min-h-[560px] overflow-hidden">
+          {/* 기존 히어로 이미지: 영상이 맞지 않을 경우 아래 이미지를 다시 사용합니다.
           <img
             src="/images/about/slide4_img7.jpg"
             alt="보령항공여행 제휴 골프장"
             className="absolute inset-0 w-full h-full object-cover scale-105"
+          />
+          */}
+          <YouTubeVideo
+            videoId="7ID0j6qcmgY"
+            title="보령항공 여행사 홍보 동영상"
+            variant="background"
           />
           <div className="absolute inset-0 bg-black/60" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40" />

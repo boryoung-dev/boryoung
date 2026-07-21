@@ -13,6 +13,7 @@ import { SiteHeader } from "../common/SiteHeader";
 import { KakaoFloating } from "../common/KakaoFloating";
 import { SiteFooter } from "../common/SiteFooter";
 import { AnimateOnScroll } from "../common/AnimateOnScroll";
+import { YouTubeVideo } from "../common/YouTubeVideo";
 
 // 공용 섹션 시스템 (배경/풀와이드/패딩/폰트/정렬/엣지페이드)
 import { SectionContainer } from "./sections/_shared/SectionContainer";
@@ -108,6 +109,10 @@ export async function HomePage() {
 
       <main>
         <MainBannerCarousel banners={banners} />
+        <YouTubeVideo
+          videoId="7ID0j6qcmgY"
+          title="보령항공 여행사 홍보 동영상"
+        />
         {/* 1. 3D 지구본 — 국가별 투어 탐색 (항상 표시) */}
         <GlobeSection
           destinations={destinations}
