@@ -26,7 +26,7 @@ export default function PrivacyPage() {
         <div className="prose prose-lg max-w-none text-[color:var(--fg)] space-y-8">
           <section>
             <p className="text-sm text-[color:var(--muted)] mb-4">
-              보령항공여행사(이하 "회사")는 고객의 개인정보를 소중히 여기며,
+              보령항공여행사(이하 ‘회사’)는 고객의 개인정보를 소중히 여기며,
               「개인정보 보호법」을 준수하고 있습니다.
             </p>
           </section>
@@ -94,8 +94,8 @@ export default function PrivacyPage() {
             </p>
             <div className="bg-[color:var(--surface)] rounded-lg p-6 mt-4">
               <ul className="space-y-2">
-                <li><strong>수탁업체:</strong> 여행 관련 협력사</li>
-                <li><strong>위탁업무 내용:</strong> 항공권 발권, 호텔 예약, 골프장 예약 등</li>
+                <li><strong>수탁업체:</strong> 여행 관련 협력사 및 문의하시는 모든 고객</li>
+                <li><strong>위탁업무 내용:</strong> 항공권 발권, 호텔 예약, 골프장 예약, 차량 예약 등 여행의 전반적인 업무</li>
               </ul>
             </div>
           </section>
@@ -133,7 +133,7 @@ export default function PrivacyPage() {
                 <li>성명: 이종양</li>
                 <li>직책: 대표이사</li>
                 <li>연락처: 1588-0320</li>
-                <li>이메일: admin@boryoung.com</li>
+                <li>이메일: boryoung2@naver.com</li>
               </ul>
             </div>
             <p className="mt-4 text-sm text-[color:var(--muted)]">

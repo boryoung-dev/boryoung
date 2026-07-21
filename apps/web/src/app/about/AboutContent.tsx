@@ -320,9 +320,10 @@ export function AboutContent() {
                     {[
                       { year: "2004", desc: "㈜보령항공여행사 설립" },
                       { year: "2005", desc: "일본, 태국, 베트남 등 해외시장 진출" },
+                      { year: "2020", desc: "코로나 시기 전국 골프장 계약 등 해외 고객의 국내 골프여행을 70% 이상 유치하며 매출 3배 성장" },
                       { year: "2022", desc: "동남아 현지 파트너 네트워크 강화" },
-                      { year: "2025", desc: "국내 및 해외 기준 누적 77만여명 고객 유치 달성" },
-                      { year: "", desc: "일본항공, 대한항공, 해외국적기 항공사 파트너십" },
+                      { year: "2025", desc: "일본항공, 대한항공, 해외국적기 항공사 파트너십" },
+                      { year: "2026", desc: "국내 및 해외 기준 77만여명 고객 유치 달성" },
                     ].map((item, i) => (
                       <div key={i} className="flex gap-5">
                         <span className="text-sm font-semibold text-[color:var(--fg)] w-12 flex-shrink-0">{item.year}</span>
@@ -439,7 +440,7 @@ export function AboutContent() {
                       <p className="text-[13px] text-[color:var(--muted)] mt-1">글로벌 항공사 파트너십</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {["대한항공", "아시아나항공", "일본항공", "타이항공", "싱가포르항공", "카타르항공", "델타항공", "에어프랑스", "KLM", "유나이티드", "에어캐나다", "중국동방항공", "필리핀항공", "진에어", "티웨이"].map((name) => (
+                      {["대한항공", "아시아나항공", "진에어", "에어부산", "제주항공", "티웨이", "일본항공", "ANA항공", "타이항공", "베트남항공", "싱가포르항공", "카타르항공", "델타항공", "에어프랑스", "KLM", "유나이티드", "에어캐나다", "중국동방항공", "산동항공", "필리핀항공"].map((name) => (
                         <span key={name} className="text-[13px] text-[color:var(--fg)] bg-[color:var(--surface)] px-4 py-2 rounded-lg">{name}</span>
                       ))}
                     </div>

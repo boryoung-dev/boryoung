@@ -118,7 +118,7 @@ export function SiteHeader() {
               href="https://pf.kakao.com/_XaITs"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden h-11 w-11 items-center justify-center rounded-full text-[color:var(--muted)] opacity-75 transition-all duration-300 hover:bg-yellow-50 hover:text-yellow-600 hover:opacity-100 md:flex"
+              className="hidden h-11 w-11 items-center justify-center rounded-full bg-[#FEE500] text-[#371D1E] transition-all duration-300 hover:scale-105 hover:bg-[#F7DC00] md:flex"
               aria-label="카카오톡 상담"
               title="카카오톡 상담"
             >
@@ -130,7 +130,7 @@ export function SiteHeader() {
               href="https://blog.naver.com/boryoung2"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden h-11 w-11 items-center justify-center rounded-full text-[color:var(--muted)] opacity-75 transition-all duration-300 hover:bg-green-50 hover:text-green-600 hover:opacity-100 md:flex"
+              className="hidden h-11 w-11 items-center justify-center rounded-full bg-[#03C75A] text-white transition-all duration-300 hover:scale-105 hover:bg-[#02B351] md:flex"
               aria-label="네이버 블로그"
               title="네이버 블로그"
             >
@@ -142,7 +142,7 @@ export function SiteHeader() {
               href={YOUTUBE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden h-11 w-11 items-center justify-center rounded-full text-[color:var(--muted)] opacity-75 transition-all duration-300 hover:bg-red-50 hover:text-red-600 hover:opacity-100 md:flex"
+              className="hidden h-11 w-11 items-center justify-center rounded-full bg-[#FF0000] text-white transition-all duration-300 hover:scale-105 hover:bg-[#E60000] md:flex"
               aria-label="유튜브 채널"
               title="유튜브 채널"
             >
