@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   closestCenter,
@@ -36,8 +36,11 @@ import Modal, {
 import { useConfirm } from "@/components/ui/ConfirmModal";
 import { useToast } from "@/components/ui/Toast";
 
+type BannerPlacement = "main" | "tour";
+
 interface Banner {
   id: string;
+  placement: BannerPlacement;
   title: string;
   subtitle?: string | null;
   imageUrl: string;
@@ -57,6 +60,12 @@ interface BannerFormData {
   ctaText: string;
   sortOrder: number;
   isActive: boolean;
+}
+
+interface BannerMutationResponse {
+  success: boolean;
+  banner?: Banner;
+  error?: string;
 }
 
 const emptyForm: BannerFormData = {
@@ -200,6 +209,7 @@ export default function BannersPage() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [placement, setPlacement] = useState<BannerPlacement>("main");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [formData, setFormData] = useState<BannerFormData>(emptyForm);
@@ -218,8 +228,8 @@ export default function BannersPage() {
   const { data, isLoading: loading } = useApiQuery<{
     success: boolean;
     banners: Banner[];
-  }>(["banners"], "/api/banners");
-  const banners = data?.banners ?? [];
+  }>(["banners", placement], `/api/banners?placement=${placement}`);
+  const banners = useMemo(() => data?.banners ?? [], [data?.banners]);
 
   useEffect(() => {
     setOrderedBanners(
@@ -227,7 +237,10 @@ export default function BannersPage() {
     );
   }, [banners]);
 
-  const saveMutation = useApiMutation<any, { id?: string; body: any }>(
+  const saveMutation = useApiMutation<
+    BannerMutationResponse,
+    { id?: string; body: Record<string, unknown> }
+  >(
     async ({ id, body }, token) => {
       const url = id ? `/api/banners/${id}` : "/api/banners";
       const method = id ? "PUT" : "POST";
@@ -240,16 +253,16 @@ export default function BannersPage() {
         body: JSON.stringify(body),
       });
     },
-    { invalidateKeys: [["banners"]] },
+    { invalidateKeys: [["banners", placement]] },
   );
 
-  const deleteMutation = useApiMutation<any, string>(
+  const deleteMutation = useApiMutation<BannerMutationResponse, string>(
     async (id, token) =>
       fetch(`/api/banners/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       }),
-    { invalidateKeys: [["banners"]] },
+    { invalidateKeys: [["banners", placement]] },
   );
 
   const openCreateModal = () => {
@@ -323,6 +336,7 @@ export default function BannersPage() {
 
     const body = {
       ...formData,
+      placement,
       subtitle: formData.subtitle || null,
       linkUrl: formData.linkUrl || null,
       ctaText: formData.ctaText || null,
@@ -386,7 +400,7 @@ export default function BannersPage() {
         throw new Error("failed");
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["banners"] });
+      await queryClient.invalidateQueries({ queryKey: ["banners", placement] });
       toast("배너 순서를 저장했습니다.", "success");
     } catch {
       toast("배너 순서 저장에 실패했습니다.", "error");
@@ -416,6 +430,8 @@ export default function BannersPage() {
     void persistOrder(nextBanners);
   };
 
+  const isMainPlacement = placement === "main";
+
   if (isLoading || loading) {
     return (
       <div className="flex h-64 items-center justify-center text-gray-500">
@@ -428,9 +444,11 @@ export default function BannersPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">메인배너 관리</h1>
+          <h1 className="text-2xl font-bold text-gray-900">배너 관리</h1>
           <p className="mt-1 text-sm text-gray-500">
-            메인 화면의 대형 캐러셀 배너를 등록하고 드래그로 순서를 관리합니다.
+            {isMainPlacement
+              ? "메인 화면의 대형 캐러셀 배너를 관리합니다."
+              : "여행상품 목록 페이지 상단의 대표 배너를 관리합니다."}
           </p>
         </div>
         <button
@@ -439,19 +457,49 @@ export default function BannersPage() {
           className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
         >
           <Plus className="h-4 w-4" />
-          배너 추가
+          {isMainPlacement ? "메인 배너 추가" : "여행상품 배너 추가"}
         </button>
+      </div>
+
+      <div className="mb-6 inline-flex rounded-xl bg-gray-100 p-1">
+        {([
+          { value: "main" as const, label: "메인 페이지" },
+          { value: "tour" as const, label: "여행상품 페이지" },
+        ]).map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            onClick={() => {
+              setPlacement(item.value);
+              setModalOpen(false);
+              setEditingBanner(null);
+            }}
+            className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors ${
+              placement === item.value
+                ? "bg-white text-blue-700 shadow-sm"
+                : "text-gray-500 hover:text-gray-800"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
       {orderedBanners.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center">
           <ImageIcon className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-          <p className="text-sm text-gray-500">등록된 배너가 없습니다.</p>
+          <p className="text-sm text-gray-500">
+            등록된 {isMainPlacement ? "메인" : "여행상품"} 배너가 없습니다.
+          </p>
         </div>
       ) : (
         <div>
           <div className="mb-3 flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-            <span>카드 왼쪽 위 핸들을 잡고 드래그하면 순서가 자동 저장됩니다.</span>
+            <span>
+              {isMainPlacement
+                ? "카드 왼쪽 위 핸들을 잡고 드래그하면 순서가 자동 저장됩니다."
+                : "활성 배너 중 첫 번째 배너가 여행상품 페이지 상단에 표시됩니다. 드래그로 우선순위를 변경할 수 있습니다."}
+            </span>
             {reordering && <span className="font-medium">저장 중...</span>}
           </div>
           <DndContext
@@ -481,7 +529,9 @@ export default function BannersPage() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingBanner ? "배너 수정" : "배너 추가"}
+        title={`${isMainPlacement ? "메인" : "여행상품"} 배너 ${
+          editingBanner ? "수정" : "추가"
+        }`}
         size="md"
         footer={
           <>
@@ -502,6 +552,12 @@ export default function BannersPage() {
         }
       >
         <form id="banner-form" onSubmit={handleSubmit} className="space-y-4">
+          {!isMainPlacement && (
+            <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+              제목, 부제목, 이미지가 여행상품 페이지 상단 배너에 표시됩니다.
+            </div>
+          )}
+
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               제목 *
@@ -573,35 +629,39 @@ export default function BannersPage() {
             )}
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              링크 URL
-            </label>
-            <input
-              type="url"
-              value={formData.linkUrl}
-              onChange={(event) =>
-                setFormData({ ...formData, linkUrl: event.target.value })
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://example.com"
-            />
-          </div>
+          {isMainPlacement && (
+            <>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  링크 URL
+                </label>
+                <input
+                  type="text"
+                  value={formData.linkUrl}
+                  onChange={(event) =>
+                    setFormData({ ...formData, linkUrl: event.target.value })
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="/tours 또는 https://example.com"
+                />
+              </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              버튼 문구
-            </label>
-            <input
-              type="text"
-              value={formData.ctaText}
-              onChange={(event) =>
-                setFormData({ ...formData, ctaText: event.target.value })
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="자세히 보기"
-            />
-          </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  버튼 문구
+                </label>
+                <input
+                  type="text"
+                  value={formData.ctaText}
+                  onChange={(event) =>
+                    setFormData({ ...formData, ctaText: event.target.value })
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="자세히 보기"
+                />
+              </div>
+            </>
+          )}
 
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">노출 상태</span>

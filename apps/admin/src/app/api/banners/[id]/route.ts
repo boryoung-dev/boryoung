@@ -25,8 +25,16 @@ export async function PUT(
       sortOrder,
       isActive,
       startDate,
-      endDate
+      endDate,
+      placement,
     } = body;
+
+    if (placement !== undefined && !["main", "tour"].includes(placement)) {
+      return NextResponse.json(
+        { error: "올바르지 않은 배너 위치입니다" },
+        { status: 400 }
+      );
+    }
 
     const banner = await prisma.banner.update({
       where: { id },
@@ -38,9 +46,14 @@ export async function PUT(
         ...(ctaText !== undefined && { ctaText }),
         ...(sortOrder !== undefined && { sortOrder }),
         ...(isActive !== undefined && { isActive }),
-        ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
-        ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null })
-      }
+        ...(startDate !== undefined && {
+          startDate: startDate ? new Date(startDate) : null,
+        }),
+        ...(endDate !== undefined && {
+          endDate: endDate ? new Date(endDate) : null,
+        }),
+        ...(placement !== undefined && { placement }),
+      },
     });
 
     return NextResponse.json({ success: true, banner });

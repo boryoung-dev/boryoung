@@ -10,9 +10,17 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const placement = request.nextUrl.searchParams.get("placement") || "main";
+    if (!["main", "tour"].includes(placement)) {
+      return NextResponse.json(
+        { error: "올바르지 않은 배너 위치입니다" },
+        { status: 400 }
+      );
+    }
+
     const banners = await prisma.banner.findMany({
       where: {
-        placement: "main"
+        placement
       },
       orderBy: {
         sortOrder: "asc"
@@ -45,7 +53,8 @@ export async function POST(request: NextRequest) {
       linkUrl,
       ctaText,
       sortOrder,
-      isActive
+      isActive,
+      placement = "main"
     } = body;
 
     if (!title || !imageUrl) {
@@ -55,9 +64,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!["main", "tour"].includes(placement)) {
+      return NextResponse.json(
+        { error: "올바르지 않은 배너 위치입니다" },
+        { status: 400 }
+      );
+    }
+
     const banner = await prisma.banner.create({
       data: {
-        placement: "main",
+        placement,
         title,
         subtitle,
         imageUrl,
