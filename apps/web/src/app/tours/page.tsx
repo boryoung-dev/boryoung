@@ -5,6 +5,7 @@ import { ToursPageClient } from "@/components/tours/ToursPageClient";
 import { SiteHeader } from "@/components/common/SiteHeader";
 import { KakaoFloating } from "@/components/common/KakaoFloating";
 import { SiteFooter } from "@/components/common/SiteFooter";
+import { TourHeroCarousel } from "@/components/tours/TourHeroCarousel";
 import { getTourProducts, getCategories, getTags } from "@/lib/tours/queries";
 import { prisma } from "@/lib/prisma";
 import { Search } from "lucide-react";
@@ -86,11 +87,11 @@ export default async function ToursPage({
   const tag = typeof params.tag === "string" ? params.tag : undefined;
   const destination = typeof params.destination === "string" ? params.destination : undefined;
 
-  const [products, categories, tags, heroBanner, popularRaw] = await Promise.all([
+  const [products, categories, tags, heroBanners, popularRaw] = await Promise.all([
     getTourProducts({ categorySlug: category, tagSlug: tag, search }),
     getCategories(),
     getTags(),
-    prisma.banner.findFirst({
+    prisma.banner.findMany({
       where: {
         placement: "tour",
         isActive: true,
@@ -120,60 +121,50 @@ export default async function ToursPage({
     emoji: pickEmoji(c.name, c.parent?.name),
   }));
 
-  const heroTitle = heroBanner?.title || "골프, 어디로 떠나시겠어요?";
-  const heroSubtitle =
-    heroBanner?.subtitle || "22년 노하우로 엄선한 전 세계 명문 골프코스";
-  const heroImage =
-    heroBanner?.imageUrl ||
-    "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1920&q=80";
+  const displayBanners =
+    heroBanners.length > 0
+      ? heroBanners.map(({ id, title, subtitle, imageUrl }) => ({
+          id,
+          title,
+          subtitle,
+          imageUrl,
+        }))
+      : [
+          {
+            id: "tour-banner-fallback",
+            title: "골프, 어디로 떠나시겠어요?",
+            subtitle: "22년 노하우로 엄선한 전 세계 명문 골프코스",
+            imageUrl:
+              "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1920&q=80",
+          },
+        ];
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans text-[color:var(--fg)] antialiased selection:bg-[color:var(--brand)] selection:text-white">
       <SiteHeader />
 
-      {/* 히어로 배너 */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
-        {/* 배경 이미지 */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={heroImage}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
-        </div>
+      <TourHeroCarousel banners={displayBanners}>
+        <HeroSearchForm />
 
-        <div className="relative z-10 max-w-[1200px] mx-auto px-4 md:px-6 text-center text-white">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-3 drop-shadow">
-            {heroTitle}
-          </h1>
-          <p className="text-sm md:text-lg text-white/90 mb-8 drop-shadow">
-            {heroSubtitle}
-          </p>
-
-          <HeroSearchForm />
-
-          {/* 인기 목적지 칩 (등록된 카테고리 기준 동적 노출) */}
-          {popularDestinations.length > 0 && (
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-              <span className="text-xs md:text-sm text-white/80 mr-1">
-                인기 목적지
-              </span>
-              {popularDestinations.map((d) => (
-                <Link
-                  key={d.label}
-                  href={d.href}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/30 rounded-full text-xs md:text-sm text-white transition-colors"
-                >
-                  <span>{d.emoji}</span>
-                  {d.label}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+        {/* 인기 목적지 칩 (등록된 카테고리 기준 동적 노출) */}
+        {popularDestinations.length > 0 && (
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-xs md:text-sm text-white/80 mr-1">
+              인기 목적지
+            </span>
+            {popularDestinations.map((d) => (
+              <Link
+                key={d.label}
+                href={d.href}
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/30 rounded-full text-xs md:text-sm text-white transition-colors"
+              >
+                <span>{d.emoji}</span>
+                {d.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </TourHeroCarousel>
 
       {/* 메인 콘텐츠 */}
       <main className="mx-auto max-w-[1440px] px-[60px] py-[40px]">
