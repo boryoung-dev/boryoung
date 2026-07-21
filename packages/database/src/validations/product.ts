@@ -31,6 +31,8 @@ export const createProductSchema = z.object({
   naverUrl: z.string().optional(),
   isActive: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
+  badgeMode: z.enum(["AUTO", "CUSTOM", "HIDDEN"]).optional(),
+  customBadges: z.array(z.string().trim().min(1).max(20)).max(3).optional(),
   sortOrder: z.number().int().optional(),
   publishedAt: z.string().nullable().optional(),
   tagIds: z.array(z.string()).optional(),

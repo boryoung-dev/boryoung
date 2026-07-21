@@ -46,6 +46,12 @@ export function ProductDealGrid({ curation }: { curation: CurationSection }) {
       <div className={`grid grid-cols-1 ${COL_MAP[columns]} gap-5`}>
         {deals.map((p, i) => {
           const pct = Math.round(p._discount * 100);
+          const labels =
+            p.badgeMode === "HIDDEN"
+              ? []
+              : p.badgeMode === "CUSTOM"
+                ? p.customBadges
+                : [`${pct}% OFF`];
           return (
             <Link
               key={`${p.slug}-${i}`}
@@ -61,15 +67,22 @@ export function ProductDealGrid({ curation }: { curation: CurationSection }) {
                     className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
                   />
                 ) : null}
-                {/* 할인율 배지 */}
-                <div className="absolute top-3 left-3">
-                  <div className="bg-red-500 text-white px-3 py-2 rounded-xl shadow-lg">
-                    <span className="text-2xl font-bold leading-none">{pct}%</span>
-                    <span className="text-[10px] block leading-none mt-0.5 text-white/90">
-                      OFF
-                    </span>
+                {labels.length > 0 && (
+                  <div className="absolute top-3 left-3 flex max-w-[calc(100%-1.5rem)] flex-wrap gap-1.5">
+                    {labels.map((label, labelIndex) => (
+                      <span
+                        key={`${label}-${labelIndex}`}
+                        className={`rounded-lg px-3 py-1.5 text-sm font-bold shadow-lg ${
+                          labelIndex === 0
+                            ? "bg-red-500 text-white"
+                            : "bg-white/90 text-[color:var(--fg,#1d1d1f)] backdrop-blur-sm"
+                        }`}
+                      >
+                        {label}
+                      </span>
+                    ))}
                   </div>
-                </div>
+                )}
               </div>
               <p className={`text-xs ${isLight ? "text-white/70" : "text-[color:var(--muted,#86868b)]"}`}>
                 {p.destination}

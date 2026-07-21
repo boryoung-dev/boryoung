@@ -15,6 +15,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { resolveProductBadges } from "@repo/database/product-badges";
 
 interface ProductPreviewProps {
   formData: any;
@@ -48,6 +49,7 @@ export function ProductPreview({
     images.find((img: any) => img.isThumbnail)?.url || images[0]?.url;
   const mainImageUrl = images[activeImageIdx]?.url || thumbnail;
   const thumbnailRow = images.slice(0, 5);
+  const badges = resolveProductBadges(formData, "detail");
 
   const discountPct =
     formData.originalPrice && formData.basePrice &&
@@ -118,18 +120,24 @@ export function ProductPreview({
           {/* 오른쪽: 상품 정보 */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* 배지 */}
-            <div className="flex items-center gap-2 mb-3">
-              {formData.isFeatured && (
-                <span className="inline-flex items-center gap-1 bg-[color:var(--fg)] text-white text-xs font-medium px-3 py-1 rounded-full">
-                  <Star className="w-3 h-3" /> 베스트셀러
-                </span>
-              )}
-              {discountPct > 0 && (
-                <span className="border border-[color:var(--border)] text-[color:var(--fg)] text-xs px-3 py-1 rounded-full">
-                  얼리버드 -{discountPct}%
-                </span>
-              )}
-            </div>
+            {badges.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                {badges.map((badge, index) => (
+                  <span
+                    key={`${badge.text}-${index}`}
+                    className={`inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full ${
+                      badge.kind === "featured" ||
+                      (badge.kind === "custom" && index === 0)
+                        ? "bg-[color:var(--fg)] text-white"
+                        : "border border-[color:var(--border)] text-[color:var(--fg)]"
+                    }`}
+                  >
+                    {badge.kind === "featured" && <Star className="w-3 h-3" />}
+                    {badge.text}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {/* 제목 */}
             <h1

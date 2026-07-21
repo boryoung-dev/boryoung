@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
+import { resolveProductBadges } from "@repo/database/product-badges";
 
 type Product = {
   id: string;
@@ -14,6 +15,8 @@ type Product = {
   basePrice?: number | null;
   originalPrice?: number | null;
   isFeatured?: boolean;
+  badgeMode?: string | null;
+  customBadges?: unknown;
   category?: {
     name: string;
   } | null;
@@ -22,11 +25,7 @@ type Product = {
 
 export function ProductCard({ product }: { product: Product }) {
   const [imgError, setImgError] = useState(false);
-
-  // 할인율 계산
-  const discountPercent = product.originalPrice && product.basePrice
-    ? Math.round(((product.originalPrice - product.basePrice) / product.originalPrice) * 100)
-    : 0;
+  const badges = resolveProductBadges(product, "card");
 
   // 랜덤 평점 생성 (실제 데이터 없으므로)
   const rating = 4.5;
@@ -57,18 +56,23 @@ export function ProductCard({ product }: { product: Product }) {
           )}
 
           {/* 배지 (좌상단) */}
-          <div className="absolute top-4 left-4 flex gap-2">
-            {product.isFeatured && (
-              <span className="bg-[color:var(--fg)] text-white text-[10px] font-medium px-2.5 py-1 rounded-full">
-                베스트
-              </span>
-            )}
-            {discountPercent > 0 && (
-              <span className="bg-white/90 text-[color:var(--fg)] text-[10px] font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
-                -{discountPercent}%
-              </span>
-            )}
-          </div>
+          {badges.length > 0 && (
+            <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+              {badges.map((badge, index) => (
+                <span
+                  key={`${badge.text}-${index}`}
+                  className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${
+                    badge.kind === "featured" ||
+                    (badge.kind === "custom" && index === 0)
+                      ? "bg-[color:var(--fg)] text-white"
+                      : "bg-white/90 text-[color:var(--fg)] backdrop-blur-sm"
+                  }`}
+                >
+                  {badge.text}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 카드 콘텐츠 */}

@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./product-badges": "./src/product-badges.ts",
     "./validations": "./src/validations/index.ts"
   },
   "scripts": {

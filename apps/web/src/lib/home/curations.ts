@@ -1,5 +1,35 @@
 import { prisma } from "@/lib/prisma";
 
+type ProductBadgeMode = "AUTO" | "CUSTOM" | "HIDDEN";
+
+function getHomeBadgeSettings(
+  product: { badgeMode?: string | null; customBadges?: unknown },
+  automaticBadge?: string
+) {
+  const badgeMode: ProductBadgeMode =
+    product.badgeMode === "CUSTOM" || product.badgeMode === "HIDDEN"
+      ? product.badgeMode
+      : "AUTO";
+  const customBadges = Array.isArray(product.customBadges)
+    ? product.customBadges
+        .filter((badge): badge is string => typeof badge === "string")
+        .map((badge) => badge.trim())
+        .filter(Boolean)
+        .slice(0, 3)
+    : [];
+
+  return {
+    badgeMode,
+    customBadges,
+    badge:
+      badgeMode === "HIDDEN"
+        ? undefined
+        : badgeMode === "CUSTOM"
+          ? customBadges[0]
+          : automaticBadge,
+  };
+}
+
 /** 큐레이션에 연결된 상품의 DTO */
 export interface CurationProductDTO {
   slug: string;
@@ -12,6 +42,8 @@ export interface CurationProductDTO {
   rating: number;
   reviewCount: number;
   badge?: string;
+  badgeMode: ProductBadgeMode;
+  customBadges: string[];
 }
 
 /** DB에서 조회한 큐레이션 + 상품 데이터 */
@@ -73,7 +105,7 @@ export async function getActiveCurations(): Promise<CurationSection[]> {
             originalPrice: p.originalPrice ?? undefined,
             rating: 4.5 + Math.random() * 0.4, // 임시 평점 (추후 리뷰 기반)
             reviewCount: Math.floor(50 + Math.random() * 200), // 임시 리뷰 수
-            badge: p.isFeatured ? "특가" : undefined,
+            ...getHomeBadgeSettings(p, p.isFeatured ? "특가" : undefined),
           };
         }),
     }));
@@ -110,7 +142,7 @@ export async function getFallbackDealProducts(): Promise<CurationProductDTO[]> {
         originalPrice: p.originalPrice ?? undefined,
         rating: 4.5 + Math.random() * 0.4,
         reviewCount: Math.floor(50 + Math.random() * 200),
-        badge: "특가",
+        ...getHomeBadgeSettings(p, "특가"),
       }));
   } catch (error) {
     console.error("특가 상품 조회 실패:", error);
@@ -140,7 +172,7 @@ export async function getFallbackNewProducts(): Promise<CurationProductDTO[]> {
       originalPrice: p.originalPrice ?? undefined,
       rating: 4.5 + Math.random() * 0.4,
       reviewCount: Math.floor(50 + Math.random() * 200),
-      badge: undefined,
+      ...getHomeBadgeSettings(p),
     }));
   } catch (error) {
     console.error("신규 상품 조회 실패:", error);

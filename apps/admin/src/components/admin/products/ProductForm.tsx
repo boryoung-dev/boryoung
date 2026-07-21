@@ -95,6 +95,10 @@ export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
     naverUrl: initialData?.naverUrl || "",
     isActive: initialData?.isActive ?? true,
     isFeatured: initialData?.isFeatured ?? false,
+    badgeMode: initialData?.badgeMode || "AUTO",
+    customBadges: Array.isArray(initialData?.customBadges)
+      ? initialData.customBadges
+      : [],
     sortOrder: initialData?.sortOrder || 0,
     publishedAt: initialData?.publishedAt
       ? new Date(initialData.publishedAt).toISOString().slice(0, 16)
@@ -218,6 +222,10 @@ export function ProductForm({ initialData, isDuplicate }: ProductFormProps) {
 
       const body = {
         ...formData,
+        customBadges: formData.customBadges
+          .map((badge: string) => badge.trim())
+          .filter(Boolean)
+          .slice(0, 3),
         nights: formData.nights != null ? formData.nights : undefined,
         days: formData.days != null ? formData.days : undefined,
         basePrice: formData.basePrice != null ? formData.basePrice : undefined,

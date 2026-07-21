@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Star, Phone } from "lucide-react";
+import { resolveProductBadges } from "@repo/database/product-badges";
 
 interface HeroSectionProps {
   product: any;
@@ -19,6 +20,7 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
   const [selectedImage, setSelectedImage] = useState(defaultMain);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const thumbnails = allImages.slice(0, 4);
+  const badges = resolveProductBadges(product, "detail");
 
   const avgRating =
     product.reviews && product.reviews.length > 0
@@ -73,18 +75,23 @@ export function HeroSection({ product, onBooking, onImageClick }: HeroSectionPro
       {/* 오른쪽: 정보 섹션 */}
       <div className="flex-1">
         {/* 배지 컨테이너 */}
-        <div className="flex items-center gap-2 mb-4">
-          {product.isFeatured && (
-            <span className="bg-[color:var(--fg)] text-white text-[11px] font-medium px-3 py-1 rounded-full">
-              베스트셀러
-            </span>
-          )}
-          {product.originalPrice && product.basePrice && product.originalPrice > product.basePrice && (
-            <span className="bg-white text-[color:var(--fg)] border border-[color:var(--border)] text-[11px] font-medium px-3 py-1 rounded-full">
-              얼리버드 -{Math.round((1 - product.basePrice / product.originalPrice) * 100)}%
-            </span>
-          )}
-        </div>
+        {badges.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {badges.map((badge, index) => (
+              <span
+                key={`${badge.text}-${index}`}
+                className={`text-[11px] font-medium px-3 py-1 rounded-full ${
+                  badge.kind === "featured" ||
+                  (badge.kind === "custom" && index === 0)
+                    ? "bg-[color:var(--fg)] text-white"
+                    : "bg-white text-[color:var(--fg)] border border-[color:var(--border)]"
+                }`}
+              >
+                {badge.text}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* 타이틀 */}
         <h1 className="text-2xl lg:text-[36px] font-bold text-[color:var(--fg)] leading-[1.2] tracking-tight mb-2">
