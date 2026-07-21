@@ -1,22 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-export interface BlogSection {
-  type: "intro" | "content" | "highlight" | "tips" | "comparison" | "cta";
-  heading?: string;
-  subheading?: string;
-  text?: string;
-  items?: string[];
-  image?: string;
-  imageAlt?: string;
-  columns?: { title: string; items: string[] }[];
-}
-
-export interface StructuredBlogContent {
-  version: 2;
-  sections: BlogSection[];
-}
+import type { BlogSection } from "@/lib/blog-content";
 
 // ─── 섹션별 렌더러 ───────────────────────────────────────────────
 
@@ -35,8 +20,10 @@ function SectionImage({
     <img
       src={src}
       alt={alt}
+      loading="lazy"
+      referrerPolicy="no-referrer"
       onError={() => setError(true)}
-      className={`rounded-xl shadow-md object-cover w-full ${className}`}
+      className={`h-auto w-full max-w-full rounded-xl object-cover shadow-md ${className}`}
     />
   );
 }
@@ -50,7 +37,7 @@ function IntroSection({ section }: { section: BlogSection }) {
         </p>
       )}
       {section.text && (
-        <p className="text-xl md:text-2xl text-[color:var(--muted)] leading-relaxed font-light">
+        <p className="break-words whitespace-pre-line text-xl font-light leading-relaxed text-[color:var(--muted)] [overflow-wrap:anywhere] md:text-2xl">
           {section.text}
         </p>
       )}
@@ -90,7 +77,7 @@ function ContentSection({
             className="max-h-[420px]"
           />
           {section.text && (
-            <p className="text-base text-[color:var(--fg)] leading-[1.85] max-w-prose">
+            <p className="max-w-prose break-words whitespace-pre-line text-base leading-[1.85] text-[color:var(--fg)] [overflow-wrap:anywhere]">
               {section.text}
             </p>
           )}
@@ -100,7 +87,7 @@ function ContentSection({
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             {section.text && (
-              <p className="text-base text-[color:var(--fg)] leading-[1.85]">
+              <p className="break-words whitespace-pre-line text-base leading-[1.85] text-[color:var(--fg)] [overflow-wrap:anywhere]">
                 {section.text}
               </p>
             )}
@@ -114,7 +101,7 @@ function ContentSection({
       ) : (
         /* 이미지 없음 */
         section.text && (
-          <p className="text-base text-[color:var(--fg)] leading-[1.85] max-w-prose">
+          <p className="max-w-prose break-words whitespace-pre-line text-base leading-[1.85] text-[color:var(--fg)] [overflow-wrap:anywhere]">
             {section.text}
           </p>
         )
@@ -133,7 +120,7 @@ function HighlightSection({ section }: { section: BlogSection }) {
           </h3>
         )}
         {section.text && (
-          <p className="text-base text-[color:var(--fg)] leading-[1.85]">
+          <p className="break-words whitespace-pre-line text-base leading-[1.85] text-[color:var(--fg)] [overflow-wrap:anywhere]">
             {section.text}
           </p>
         )}
@@ -142,7 +129,7 @@ function HighlightSection({ section }: { section: BlogSection }) {
             {section.items.map((item, i) => (
               <li
                 key={i}
-                className="flex items-start gap-2 text-sm text-[color:var(--fg)]"
+                className="flex min-w-0 items-start gap-2 break-words text-sm text-[color:var(--fg)] [overflow-wrap:anywhere]"
               >
                 <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[color:var(--brand)]" />
                 {item}
@@ -178,7 +165,7 @@ function TipsSection({ section }: { section: BlogSection }) {
               <span className="flex-shrink-0 mt-0.5 h-6 w-6 rounded-full bg-[color:var(--brand)] text-white flex items-center justify-center text-xs font-bold">
                 {i + 1}
               </span>
-              <span className="text-base text-[color:var(--fg)] leading-relaxed">
+              <span className="min-w-0 break-words whitespace-pre-line text-base leading-relaxed text-[color:var(--fg)] [overflow-wrap:anywhere]">
                 {item}
               </span>
             </li>
@@ -186,7 +173,7 @@ function TipsSection({ section }: { section: BlogSection }) {
         </ul>
       )}
       {section.text && (
-        <p className="mt-5 text-base text-[color:var(--fg)] leading-[1.85]">
+        <p className="mt-5 break-words whitespace-pre-line text-base leading-[1.85] text-[color:var(--fg)] [overflow-wrap:anywhere]">
           {section.text}
         </p>
       )}
@@ -205,16 +192,11 @@ function ComparisonSection({ section }: { section: BlogSection }) {
         </h2>
       )}
       {section.text && (
-        <p className="text-base text-[color:var(--muted)] mb-6 leading-relaxed">
+        <p className="mb-6 break-words whitespace-pre-line text-base leading-relaxed text-[color:var(--muted)] [overflow-wrap:anywhere]">
           {section.text}
         </p>
       )}
-      <div
-        className="grid gap-4"
-        style={{
-          gridTemplateColumns: `repeat(${Math.min(section.columns.length, 3)}, minmax(0, 1fr))`,
-        }}
-      >
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {section.columns.map((col, ci) => (
           <div
             key={ci}
@@ -227,7 +209,7 @@ function ComparisonSection({ section }: { section: BlogSection }) {
               {col.items.map((item, ii) => (
                 <li
                   key={ii}
-                  className="flex items-start gap-2 text-sm text-[color:var(--fg)]"
+                  className="flex min-w-0 items-start gap-2 break-words text-sm text-[color:var(--fg)] [overflow-wrap:anywhere]"
                 >
                   <svg
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-[color:var(--brand)]"
@@ -271,14 +253,14 @@ function CtaSection({ section }: { section: BlogSection }) {
             <p className="text-white/80 text-base mb-4">{section.subheading}</p>
           )}
           {section.text && (
-            <p className="text-white/90 text-base leading-relaxed mb-5">
+            <p className="mb-5 break-words whitespace-pre-line text-base leading-relaxed text-white/90 [overflow-wrap:anywhere]">
               {section.text}
             </p>
           )}
           {section.items && section.items.length > 0 && (
             <ul className="space-y-2 mb-5">
               {section.items.map((item, i) => (
-                <li key={i} className="flex items-center gap-2 text-white/90 text-sm">
+                <li key={i} className="flex min-w-0 items-center gap-2 break-words text-sm text-white/90 [overflow-wrap:anywhere]">
                   <svg
                     className="flex-shrink-0 h-4 w-4 text-white"
                     fill="none"

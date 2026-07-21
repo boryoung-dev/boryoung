@@ -8,7 +8,8 @@ import { KakaoFloating } from "@/components/common/KakaoFloating";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { SITE_URL, SITE_NAME } from "@/lib/seo";
 import BlogPostTemplate from "@/components/magazine/BlogPostTemplate";
-import type { BlogSection } from "@/components/magazine/BlogPostTemplate";
+import { MagazineImage } from "@/components/magazine/MagazineImage";
+import { parseStructuredBlogContent } from "@/lib/blog-content";
 
 // 60초마다 재검증 (ISR) — 새 글 발행 시 최대 60초 내 반영
 export const revalidate = 0; // 관리자 수정 즉시 반영 (캐시 비활성)
@@ -99,6 +100,8 @@ export default async function MagazineDetailPage({ params }: Props) {
     take: 3,
   });
 
+  const structuredSections = parseStructuredBlogContent(post.content);
+
   // JSON-LD: BlogPosting 구조화 데이터
   const jsonLd = {
     "@context": "https://schema.org",
@@ -169,7 +172,7 @@ export default async function MagazineDetailPage({ params }: Props) {
         {/* 썸네일 */}
         {post.thumbnail && (
           <div className="relative aspect-video rounded-xl overflow-hidden bg-[color:var(--surface)] mb-8">
-            <img
+            <MagazineImage
               src={post.thumbnail}
               alt={post.title}
               className="w-full h-full object-cover"
@@ -178,28 +181,23 @@ export default async function MagazineDetailPage({ params }: Props) {
         )}
 
         {/* 본문 */}
-        {(() => {
-          // 구조화된 JSON 콘텐츠 감지
-          try {
-            const parsed = JSON.parse(post.content);
-            if (parsed.sections && Array.isArray(parsed.sections)) {
-              return <BlogPostTemplate sections={parsed.sections as BlogSection[]} />;
-            }
-          } catch {
-            // JSON 파싱 실패 → 기존 방식으로 렌더링
-          }
-          return (
-            <article className="prose prose-lg max-w-none mb-16">
-              {post.contentHtml ? (
-                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.contentHtml) }} />
-              ) : (
-                <div className="whitespace-pre-wrap text-[color:var(--fg)] leading-relaxed">
-                  {post.content}
-                </div>
-              )}
-            </article>
-          );
-        })()}
+        {structuredSections ? (
+          <BlogPostTemplate sections={structuredSections} />
+        ) : (
+          <article className="magazine-rich-content mb-16 min-w-0 overflow-hidden">
+            {post.contentHtml ? (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(post.contentHtml),
+                }}
+              />
+            ) : (
+              <div className="break-words whitespace-pre-wrap leading-relaxed text-[color:var(--fg)] [overflow-wrap:anywhere]">
+                {post.content}
+              </div>
+            )}
+          </article>
+        )}
 
         {/* 관련 글 */}
         {relatedPosts.length > 0 && (
@@ -214,7 +212,7 @@ export default async function MagazineDetailPage({ params }: Props) {
                 >
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-[color:var(--surface)] mb-2">
                     {related.thumbnail ? (
-                      <img
+                      <MagazineImage
                         src={related.thumbnail}
                         alt={related.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

@@ -189,3 +189,95 @@ body {
     animation: none;
   }
 }
+
+/* 매거진 일반 HTML 본문: 모바일 넘침과 외부 콘텐츠 깨짐 방지 */
+.magazine-rich-content {
+  color: var(--fg);
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.magazine-rich-content h2,
+.magazine-rich-content h3 {
+  margin: 1.8em 0 0.65em;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.magazine-rich-content h2 {
+  font-size: 1.65rem;
+}
+
+.magazine-rich-content h3 {
+  font-size: 1.3rem;
+}
+
+.magazine-rich-content p,
+.magazine-rich-content ul,
+.magazine-rich-content ol,
+.magazine-rich-content blockquote {
+  margin: 1em 0;
+}
+
+.magazine-rich-content ul,
+.magazine-rich-content ol {
+  padding-left: 1.5rem;
+}
+
+.magazine-rich-content ul {
+  list-style: disc;
+}
+
+.magazine-rich-content ol {
+  list-style: decimal;
+}
+
+.magazine-rich-content a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.magazine-rich-content img,
+.magazine-rich-content video,
+.magazine-rich-content iframe {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+  border-radius: 0.75rem;
+}
+
+.magazine-rich-content iframe {
+  aspect-ratio: 16 / 9;
+}
+
+.magazine-rich-content table,
+.magazine-rich-content pre {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.magazine-rich-content table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+}
+
+.magazine-rich-content th,
+.magazine-rich-content td {
+  min-width: 7rem;
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.magazine-rich-content blockquote {
+  border-left: 4px solid var(--brand);
+  padding-left: 1rem;
+  color: var(--muted);
+}
