@@ -7,7 +7,7 @@ const YOUTUBE_URL =
 export function SiteFooter() {
   return (
     <footer className="mt-auto bg-[#111] text-sm text-white/70">
-      <div className="mx-auto max-w-6xl px-6 py-14">
+      <div className="mx-auto max-w-6xl px-6 py-12 md:py-14">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
           <div className="flex flex-col gap-4">
             <Link
@@ -191,10 +191,8 @@ export function SiteFooter() {
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="border-t border-white/10">
-        <div className="mx-auto max-w-6xl space-y-1 px-6 py-6 text-xs leading-relaxed text-white/30">
+        <div className="mt-10 space-y-1 text-xs leading-relaxed text-white/30 md:mt-12">
           <p>
             사업자등록번호 : 117-81-52746 | 통신판매번호 :
             제2013-경기김포-0560호
