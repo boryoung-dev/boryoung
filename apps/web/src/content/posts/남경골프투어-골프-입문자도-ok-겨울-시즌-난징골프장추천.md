@@ -17,7 +17,7 @@ images: [
   "https://postfiles.pstatic.net/MjAyNTExMjFfMjkg/MDAxNzYzNzEwMzE1Njcy.WyaMgHQPjn-u58xIitxr62_vU2WArH34DTpHPsJVDX0g.vnrfoxNGQXF3ai3s06L00hhmzXkf13o6Y2wBR5mG5Z0g.JPEG/0010.jpg?type=w80_blur",
   "https://postfiles.pstatic.net/MjAyNTExMjFfMTIz/MDAxNzYzNzEwMzE5NzMx.NEtJ3hxcoPMsHSDHCpspy5RVwsB3Ati875z3AkAd3HUg.Wm1ZwbH5GkFDjbVv09Uv0Lb2CcTMlS_kssjhw_FIobcg.JPEG/%E5%8D%81%E5%8F%B7%E5%8F%91%E7%90%83%E5%8F%B0226.jpg?type=w80_blur"
 ]
-excerpt: "​  ​  안녕하세요?  남경골프투어 전문  22년 전통의..."
+excerpt: "​  ​  안녕하세요?  남경골프투어 전문  23년 전통의..."
 naverUrl: "https://blog.naver.com/boryoung2/224087779545"
 ---
 
@@ -29,4 +29,4 @@ naverUrl: "https://blog.naver.com/boryoung2/224087779545"
 
 남경골프투어 전문
 
-22년 전통의
+23년 전통의

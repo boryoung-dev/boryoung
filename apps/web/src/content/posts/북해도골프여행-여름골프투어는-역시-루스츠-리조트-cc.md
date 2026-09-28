@@ -17,7 +17,7 @@ images: [
   "https://postfiles.pstatic.net/MjAyNTA2MTlfMTA0/MDAxNzUwMzE3OTM4Nzk2.H-cg09JgOLT6JQALu808g9GKP4IJoSKRgAnMEkna_HUg.H_hXJusOBBKHZCRMbTIIbvwDCjhKJvdOJjl4aq7IaVwg.JPEG/%EB%A3%A8%EC%8A%A4%EC%B8%A03.JPG?type=w80_blur",
   "https://postfiles.pstatic.net/MjAyNTA2MTlfNjcg/MDAxNzUwMzE3OTM4ODA0.LOCB5QrTKNin7cBEQwU2ipObIS9J1mbG9DI2sof71JIg.-v6VPi-Wg4WWIo5C-7X_90J6rGg0E3C23ESMlBMxt6Ug.JPEG/%EB%A3%A8%EC%8A%A4%EC%B8%A09.JPG?type=w80_blur"
 ]
-excerpt: "​  더위를 피해 떠나는 골퍼들의  최고의 선택  ​  안녕하세요? 22년 전통의..."
+excerpt: "​  더위를 피해 떠나는 골퍼들의  최고의 선택  ​  안녕하세요? 23년 전통의..."
 naverUrl: "https://blog.naver.com/boryoung2/223905129836"
 ---
 
@@ -29,4 +29,4 @@ naverUrl: "https://blog.naver.com/boryoung2/223905129836"
 
 ​
 
-안녕하세요? 22년 전통의
+안녕하세요? 23년 전통의

@@ -629,7 +629,7 @@ async function FallbackSections({ allProducts }: { allProducts: any[] }) {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <AnimateOnScroll animation="fadeUp">
             <h2 className="text-2xl md:text-[42px] font-semibold tracking-tight leading-[1.15] mb-6">
-              22년간,<br />10,000명의 골퍼가 선택했습니다
+              23년간,<br />10,000명의 골퍼가 선택했습니다
             </h2>
             <p className="text-base text-[color:var(--muted)] mb-10 max-w-lg mx-auto leading-relaxed">
               2004년부터 오직 골프여행만 해온 전문 여행사.<br />

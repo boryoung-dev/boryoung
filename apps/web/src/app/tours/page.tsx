@@ -133,7 +133,7 @@ export default async function ToursPage({
           {
             id: "tour-banner-fallback",
             title: "골프, 어디로 떠나시겠어요?",
-            subtitle: "22년 노하우로 엄선한 전 세계 명문 골프코스",
+            subtitle: "23년 노하우로 엄선한 전 세계 명문 골프코스",
             imageUrl:
               "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1920&q=80",
           },

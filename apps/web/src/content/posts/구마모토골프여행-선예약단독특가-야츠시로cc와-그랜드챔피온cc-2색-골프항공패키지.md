@@ -17,12 +17,12 @@ images: [
   "https://postfiles.pstatic.net/MjAyNDA2MTlfMTU2/MDAxNzE4NzYyNjI2NzY5.DqeIuICP1uc0l4cas7zfF50bKHpQ1qCAvegboi6Umxog.wJKSMXhhJKkOi70CG5oYXIEQD8z2caebva3hQzgcIBAg.JPEG/%EC%82%AC%EC%9A%A9%ED%95%A8_(5).jpg?type=w80_blur",
   "https://postfiles.pstatic.net/MjAyNDA2MTlfMTkx/MDAxNzE4NzYyNjI2NzE4.UHn9KhBMkr-yXPO6T4Vskpt_fZG0xOlnTQzAB8Qi1GEg.AZUqOGbU3dKs4JYjYTK4GfWKVeRWwGtiekDJOgzV4_gg.JPEG/%EC%82%AC%EC%9A%A9%ED%95%A8_(6).jpg?type=w80_blur"
 ]
-excerpt: "안녕하세요~!  골프투어전문으로만 22년째   운영하고 있는..."
+excerpt: "안녕하세요~!  골프투어전문으로만 23년째   운영하고 있는..."
 naverUrl: "https://blog.naver.com/boryoung2/223484257336"
 ---
 
 안녕하세요~!
 
-골프투어전문으로만 22년째 
+골프투어전문으로만 23년째 
 
 운영하고 있는

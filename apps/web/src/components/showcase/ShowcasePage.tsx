@@ -272,7 +272,7 @@ export function ShowcasePage({ data }: { data: ShowcaseData }) {
           <div className="max-w-4xl text-white">
             <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-[13px] font-medium tracking-tight text-white backdrop-blur-md">
               <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--accent)]" />
-              22년 해외 골프여행 전문 상담
+              23년 해외 골프여행 전문 상담
             </p>
             <h1 className="text-[40px] font-semibold leading-[1.05] tracking-[-0.03em] md:text-[68px] lg:text-[76px]">
               {heroTitle}

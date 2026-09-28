@@ -1,0 +1,1836 @@
+{
+  "schema_version": "1.0",
+  "change_id": "20260928-103207-update-seo-tenure-wording-to-23-years",
+  "created_at": "2026-09-28T10:32:07+09:00",
+  "repository": "boryoung",
+  "branch": "main",
+  "baseline_commit": "707b2dbf8038f01c72dd00ce2ed68749f1fd591c",
+  "request": "Update SEO and search-visible tenure wording from 22 years to 23 years",
+  "title": "Update SEO tenure wording to 23 years",
+  "purpose": "Ensure search snippets and site copy show 23 years instead of 22 years",
+  "files": [
+    {
+      "path": "apps/admin/src/components/admin/homepage-editor/panels/SectionEditPanel.tsx",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 431,
+          "old_end": 431,
+          "new_start": 431,
+          "new_end": 431
+        }
+      ],
+      "working_tree_sha256": "54891e4859906b2c371480a3f6895656755b8233c054b9ece984dcea299029e7",
+      "symbols": [
+        "SectionEditPanel",
+        "homepage editor placeholder copy"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/admin/src/components/admin/homepage-editor/panels/SectionEditPanel.tsx from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/admin/src/components/admin/homepage-editor/panels/SectionEditPanel.tsx. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/app/about/AboutContent.tsx",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 294,
+          "old_end": 294,
+          "new_start": 294,
+          "new_end": 294
+        },
+        {
+          "old_start": 357,
+          "old_end": 357,
+          "new_start": 357,
+          "new_end": 357
+        },
+        {
+          "old_start": 361,
+          "old_end": 361,
+          "new_start": 361,
+          "new_end": 361
+        },
+        {
+          "old_start": 395,
+          "old_end": 395,
+          "new_start": 395,
+          "new_end": 395
+        }
+      ],
+      "working_tree_sha256": "83fed900cff055fa4e60c5c175f935c36b4726a3e487e1c3bace0d192e8918b4",
+      "symbols": [
+        "AboutContent",
+        "about page visible tenure copy"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/app/about/AboutContent.tsx from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/app/about/AboutContent.tsx. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/app/about/page.tsx",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 8,
+          "old_end": 8,
+          "new_start": 8,
+          "new_end": 8
+        },
+        {
+          "old_start": 14,
+          "old_end": 14,
+          "new_start": 14,
+          "new_end": 14
+        }
+      ],
+      "working_tree_sha256": "bf9e25910344f2c124cb9a60675789adb1d8093860724219ff22ca708ed2359a",
+      "symbols": [
+        "metadata",
+        "about page OpenGraph metadata"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/app/about/page.tsx from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/app/about/page.tsx. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/app/layout.tsx",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 22,
+          "old_end": 22,
+          "new_start": 22,
+          "new_end": 22
+        },
+        {
+          "old_start": 77,
+          "old_end": 77,
+          "new_start": 77,
+          "new_end": 77
+        }
+      ],
+      "working_tree_sha256": "91638f1d5e9346e143b345e64781524f76bd9d5510a16cb8a1df139ae56dff62",
+      "symbols": [
+        "metadata",
+        "root layout default SEO metadata",
+        "OpenGraph image alt text"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/app/layout.tsx from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/app/layout.tsx. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/app/manifest.ts",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 7,
+          "old_end": 7,
+          "new_start": 7,
+          "new_end": 7
+        }
+      ],
+      "working_tree_sha256": "f6640b2cfe3fc3ef198ba9f427cc4b1c567591cd738dc14b3e78b6f956c3a2e9",
+      "symbols": [
+        "manifest",
+        "web app manifest description"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/app/manifest.ts from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/app/manifest.ts. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/app/page.tsx",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 6,
+          "old_end": 7,
+          "new_start": 6,
+          "new_end": 7
+        },
+        {
+          "old_start": 12,
+          "old_end": 12,
+          "new_start": 12,
+          "new_end": 12
+        }
+      ],
+      "working_tree_sha256": "db26a0c3eb45aac64befdae08aa94607ba1876d7fa64c61a7a450a0964bfebd3",
+      "symbols": [
+        "metadata",
+        "home page OpenGraph metadata"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/app/page.tsx from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/app/page.tsx. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/app/tours/page.tsx",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 136,
+          "old_end": 136,
+          "new_start": 136,
+          "new_end": 136
+        }
+      ],
+      "working_tree_sha256": "84aa531243ef22e85ed81070691530c75cc93d5ec8fea3a6b6ee866b3363de29",
+      "symbols": [
+        "Tours page copy"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/app/tours/page.tsx from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/app/tours/page.tsx. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/components/home/HomePage.tsx",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 632,
+          "old_end": 632,
+          "new_start": 632,
+          "new_end": 632
+        }
+      ],
+      "working_tree_sha256": "227b7c9d8a2949f60835cb4b541593036c4907a0e045c245e7c3941147ba9b6e",
+      "symbols": [
+        "HomePage",
+        "home page visible tenure copy"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/components/home/HomePage.tsx from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/components/home/HomePage.tsx. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/components/showcase/ShowcasePage.tsx",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 275,
+          "old_end": 275,
+          "new_start": 275,
+          "new_end": 275
+        }
+      ],
+      "working_tree_sha256": "751823c63ac85ea3eb96e0329947ab046f1b074f7a75fa8264ba4b96b79f0c02",
+      "symbols": [
+        "ShowcasePage",
+        "showcase visible tenure copy"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/components/showcase/ShowcasePage.tsx from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/components/showcase/ShowcasePage.tsx. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/content/blogPosts.ts",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 222,
+          "old_end": 223,
+          "new_start": 222,
+          "new_end": 223
+        },
+        {
+          "old_start": 244,
+          "old_end": 245,
+          "new_start": 244,
+          "new_end": 245
+        },
+        {
+          "old_start": 266,
+          "old_end": 267,
+          "new_start": 266,
+          "new_end": 267
+        },
+        {
+          "old_start": 288,
+          "old_end": 289,
+          "new_start": 288,
+          "new_end": 289
+        },
+        {
+          "old_start": 310,
+          "old_end": 311,
+          "new_start": 310,
+          "new_end": 311
+        },
+        {
+          "old_start": 332,
+          "old_end": 333,
+          "new_start": 332,
+          "new_end": 333
+        },
+        {
+          "old_start": 354,
+          "old_end": 355,
+          "new_start": 354,
+          "new_end": 355
+        },
+        {
+          "old_start": 466,
+          "old_end": 467,
+          "new_start": 466,
+          "new_end": 467
+        },
+        {
+          "old_start": 488,
+          "old_end": 489,
+          "new_start": 488,
+          "new_end": 489
+        },
+        {
+          "old_start": 510,
+          "old_end": 511,
+          "new_start": 510,
+          "new_end": 511
+        },
+        {
+          "old_start": 532,
+          "old_end": 533,
+          "new_start": 532,
+          "new_end": 533
+        },
+        {
+          "old_start": 554,
+          "old_end": 555,
+          "new_start": 554,
+          "new_end": 555
+        },
+        {
+          "old_start": 576,
+          "old_end": 577,
+          "new_start": 576,
+          "new_end": 577
+        },
+        {
+          "old_start": 598,
+          "old_end": 599,
+          "new_start": 598,
+          "new_end": 599
+        },
+        {
+          "old_start": 620,
+          "old_end": 621,
+          "new_start": 620,
+          "new_end": 621
+        },
+        {
+          "old_start": 642,
+          "old_end": 643,
+          "new_start": 642,
+          "new_end": 643
+        },
+        {
+          "old_start": 664,
+          "old_end": 665,
+          "new_start": 664,
+          "new_end": 665
+        },
+        {
+          "old_start": 708,
+          "old_end": 709,
+          "new_start": 708,
+          "new_end": 709
+        },
+        {
+          "old_start": 730,
+          "old_end": 731,
+          "new_start": 730,
+          "new_end": 731
+        },
+        {
+          "old_start": 774,
+          "old_end": 775,
+          "new_start": 774,
+          "new_end": 775
+        },
+        {
+          "old_start": 818,
+          "old_end": 819,
+          "new_start": 818,
+          "new_end": 819
+        },
+        {
+          "old_start": 840,
+          "old_end": 841,
+          "new_start": 840,
+          "new_end": 841
+        },
+        {
+          "old_start": 862,
+          "old_end": 863,
+          "new_start": 862,
+          "new_end": 863
+        },
+        {
+          "old_start": 884,
+          "old_end": 885,
+          "new_start": 884,
+          "new_end": 885
+        },
+        {
+          "old_start": 928,
+          "old_end": 929,
+          "new_start": 928,
+          "new_end": 929
+        },
+        {
+          "old_start": 950,
+          "old_end": 951,
+          "new_start": 950,
+          "new_end": 951
+        },
+        {
+          "old_start": 972,
+          "old_end": 973,
+          "new_start": 972,
+          "new_end": 973
+        },
+        {
+          "old_start": 994,
+          "old_end": 995,
+          "new_start": 994,
+          "new_end": 995
+        },
+        {
+          "old_start": 1038,
+          "old_end": 1039,
+          "new_start": 1038,
+          "new_end": 1039
+        },
+        {
+          "old_start": 1060,
+          "old_end": 1061,
+          "new_start": 1060,
+          "new_end": 1061
+        },
+        {
+          "old_start": 1082,
+          "old_end": 1083,
+          "new_start": 1082,
+          "new_end": 1083
+        },
+        {
+          "old_start": 1104,
+          "old_end": 1105,
+          "new_start": 1104,
+          "new_end": 1105
+        },
+        {
+          "old_start": 1126,
+          "old_end": 1127,
+          "new_start": 1126,
+          "new_end": 1127
+        },
+        {
+          "old_start": 1148,
+          "old_end": 1149,
+          "new_start": 1148,
+          "new_end": 1149
+        },
+        {
+          "old_start": 1170,
+          "old_end": 1171,
+          "new_start": 1170,
+          "new_end": 1171
+        },
+        {
+          "old_start": 1192,
+          "old_end": 1193,
+          "new_start": 1192,
+          "new_end": 1193
+        },
+        {
+          "old_start": 1236,
+          "old_end": 1237,
+          "new_start": 1236,
+          "new_end": 1237
+        },
+        {
+          "old_start": 1258,
+          "old_end": 1259,
+          "new_start": 1258,
+          "new_end": 1259
+        },
+        {
+          "old_start": 1302,
+          "old_end": 1303,
+          "new_start": 1302,
+          "new_end": 1303
+        },
+        {
+          "old_start": 1368,
+          "old_end": 1369,
+          "new_start": 1368,
+          "new_end": 1369
+        },
+        {
+          "old_start": 1390,
+          "old_end": 1391,
+          "new_start": 1390,
+          "new_end": 1391
+        },
+        {
+          "old_start": 1456,
+          "old_end": 1457,
+          "new_start": 1456,
+          "new_end": 1457
+        },
+        {
+          "old_start": 1522,
+          "old_end": 1523,
+          "new_start": 1522,
+          "new_end": 1523
+        },
+        {
+          "old_start": 1588,
+          "old_end": 1589,
+          "new_start": 1588,
+          "new_end": 1589
+        },
+        {
+          "old_start": 1632,
+          "old_end": 1633,
+          "new_start": 1632,
+          "new_end": 1633
+        },
+        {
+          "old_start": 1654,
+          "old_end": 1655,
+          "new_start": 1654,
+          "new_end": 1655
+        },
+        {
+          "old_start": 1720,
+          "old_end": 1721,
+          "new_start": 1720,
+          "new_end": 1721
+        },
+        {
+          "old_start": 1786,
+          "old_end": 1787,
+          "new_start": 1786,
+          "new_end": 1787
+        },
+        {
+          "old_start": 1808,
+          "old_end": 1809,
+          "new_start": 1808,
+          "new_end": 1809
+        },
+        {
+          "old_start": 1918,
+          "old_end": 1919,
+          "new_start": 1918,
+          "new_end": 1919
+        },
+        {
+          "old_start": 1940,
+          "old_end": 1941,
+          "new_start": 1940,
+          "new_end": 1941
+        },
+        {
+          "old_start": 1984,
+          "old_end": 1985,
+          "new_start": 1984,
+          "new_end": 1985
+        },
+        {
+          "old_start": 2006,
+          "old_end": 2007,
+          "new_start": 2006,
+          "new_end": 2007
+        },
+        {
+          "old_start": 2028,
+          "old_end": 2029,
+          "new_start": 2028,
+          "new_end": 2029
+        },
+        {
+          "old_start": 2050,
+          "old_end": 2051,
+          "new_start": 2050,
+          "new_end": 2051
+        },
+        {
+          "old_start": 2072,
+          "old_end": 2073,
+          "new_start": 2072,
+          "new_end": 2073
+        },
+        {
+          "old_start": 2160,
+          "old_end": 2161,
+          "new_start": 2160,
+          "new_end": 2161
+        },
+        {
+          "old_start": 2244,
+          "old_end": 2245,
+          "new_start": 2244,
+          "new_end": 2245
+        },
+        {
+          "old_start": 2248,
+          "old_end": 2249,
+          "new_start": 2248,
+          "new_end": 2249
+        },
+        {
+          "old_start": 2931,
+          "old_end": 2931,
+          "new_start": 2931,
+          "new_end": 2931
+        },
+        {
+          "old_start": 2975,
+          "old_end": 2975,
+          "new_start": 2975,
+          "new_end": 2975
+        },
+        {
+          "old_start": 3107,
+          "old_end": 3107,
+          "new_start": 3107,
+          "new_end": 3107
+        },
+        {
+          "old_start": 3261,
+          "old_end": 3261,
+          "new_start": 3261,
+          "new_end": 3261
+        },
+        {
+          "old_start": 3304,
+          "old_end": 3305,
+          "new_start": 3304,
+          "new_end": 3305
+        },
+        {
+          "old_start": 3679,
+          "old_end": 3679,
+          "new_start": 3679,
+          "new_end": 3679
+        },
+        {
+          "old_start": 4140,
+          "old_end": 4141,
+          "new_start": 4140,
+          "new_end": 4141
+        },
+        {
+          "old_start": 4294,
+          "old_end": 4295,
+          "new_start": 4294,
+          "new_end": 4295
+        },
+        {
+          "old_start": 6164,
+          "old_end": 6165,
+          "new_start": 6164,
+          "new_end": 6165
+        },
+        {
+          "old_start": 6186,
+          "old_end": 6187,
+          "new_start": 6186,
+          "new_end": 6187
+        },
+        {
+          "old_start": 6208,
+          "old_end": 6209,
+          "new_start": 6208,
+          "new_end": 6209
+        },
+        {
+          "old_start": 6230,
+          "old_end": 6231,
+          "new_start": 6230,
+          "new_end": 6231
+        },
+        {
+          "old_start": 6252,
+          "old_end": 6253,
+          "new_start": 6252,
+          "new_end": 6253
+        },
+        {
+          "old_start": 6274,
+          "old_end": 6275,
+          "new_start": 6274,
+          "new_end": 6275
+        },
+        {
+          "old_start": 6296,
+          "old_end": 6297,
+          "new_start": 6296,
+          "new_end": 6297
+        },
+        {
+          "old_start": 6318,
+          "old_end": 6319,
+          "new_start": 6318,
+          "new_end": 6319
+        },
+        {
+          "old_start": 6340,
+          "old_end": 6341,
+          "new_start": 6340,
+          "new_end": 6341
+        },
+        {
+          "old_start": 6362,
+          "old_end": 6363,
+          "new_start": 6362,
+          "new_end": 6363
+        },
+        {
+          "old_start": 6384,
+          "old_end": 6385,
+          "new_start": 6384,
+          "new_end": 6385
+        },
+        {
+          "old_start": 6406,
+          "old_end": 6407,
+          "new_start": 6406,
+          "new_end": 6407
+        },
+        {
+          "old_start": 6428,
+          "old_end": 6429,
+          "new_start": 6428,
+          "new_end": 6429
+        },
+        {
+          "old_start": 6450,
+          "old_end": 6451,
+          "new_start": 6450,
+          "new_end": 6451
+        },
+        {
+          "old_start": 6472,
+          "old_end": 6473,
+          "new_start": 6472,
+          "new_end": 6473
+        },
+        {
+          "old_start": 6494,
+          "old_end": 6495,
+          "new_start": 6494,
+          "new_end": 6495
+        },
+        {
+          "old_start": 6516,
+          "old_end": 6517,
+          "new_start": 6516,
+          "new_end": 6517
+        },
+        {
+          "old_start": 6538,
+          "old_end": 6539,
+          "new_start": 6538,
+          "new_end": 6539
+        },
+        {
+          "old_start": 6560,
+          "old_end": 6561,
+          "new_start": 6560,
+          "new_end": 6561
+        },
+        {
+          "old_start": 6582,
+          "old_end": 6583,
+          "new_start": 6582,
+          "new_end": 6583
+        },
+        {
+          "old_start": 6604,
+          "old_end": 6605,
+          "new_start": 6604,
+          "new_end": 6605
+        },
+        {
+          "old_start": 6626,
+          "old_end": 6627,
+          "new_start": 6626,
+          "new_end": 6627
+        },
+        {
+          "old_start": 7133,
+          "old_end": 7133,
+          "new_start": 7133,
+          "new_end": 7133
+        },
+        {
+          "old_start": 7968,
+          "old_end": 7969,
+          "new_start": 7968,
+          "new_end": 7969
+        },
+        {
+          "old_start": 8239,
+          "old_end": 8240,
+          "new_start": 8239,
+          "new_end": 8240
+        },
+        {
+          "old_start": 8261,
+          "old_end": 8262,
+          "new_start": 8261,
+          "new_end": 8262
+        },
+        {
+          "old_start": 8283,
+          "old_end": 8284,
+          "new_start": 8283,
+          "new_end": 8284
+        },
+        {
+          "old_start": 8305,
+          "old_end": 8306,
+          "new_start": 8305,
+          "new_end": 8306
+        },
+        {
+          "old_start": 8746,
+          "old_end": 8746,
+          "new_start": 8746,
+          "new_end": 8746
+        },
+        {
+          "old_start": 9784,
+          "old_end": 9785,
+          "new_start": 9784,
+          "new_end": 9785
+        }
+      ],
+      "working_tree_sha256": "217e4b91529999eab576a1bcc5f3d83a6dd21c90155f8bcc0dd4f9ba8e3f2cb8",
+      "symbols": [
+        "blogPosts",
+        "blog post summary content"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/content/blogPosts.ts from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/content/blogPosts.ts. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/data/products.ts",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 292,
+          "old_end": 293,
+          "new_start": 292,
+          "new_end": 293
+        },
+        {
+          "old_start": 323,
+          "old_end": 324,
+          "new_start": 323,
+          "new_end": 324
+        },
+        {
+          "old_start": 354,
+          "old_end": 355,
+          "new_start": 354,
+          "new_end": 355
+        },
+        {
+          "old_start": 385,
+          "old_end": 386,
+          "new_start": 385,
+          "new_end": 386
+        },
+        {
+          "old_start": 416,
+          "old_end": 417,
+          "new_start": 416,
+          "new_end": 417
+        },
+        {
+          "old_start": 447,
+          "old_end": 448,
+          "new_start": 447,
+          "new_end": 448
+        },
+        {
+          "old_start": 478,
+          "old_end": 479,
+          "new_start": 478,
+          "new_end": 479
+        },
+        {
+          "old_start": 644,
+          "old_end": 645,
+          "new_start": 644,
+          "new_end": 645
+        },
+        {
+          "old_start": 675,
+          "old_end": 676,
+          "new_start": 675,
+          "new_end": 676
+        },
+        {
+          "old_start": 706,
+          "old_end": 707,
+          "new_start": 706,
+          "new_end": 707
+        },
+        {
+          "old_start": 737,
+          "old_end": 738,
+          "new_start": 737,
+          "new_end": 738
+        },
+        {
+          "old_start": 768,
+          "old_end": 769,
+          "new_start": 768,
+          "new_end": 769
+        },
+        {
+          "old_start": 799,
+          "old_end": 800,
+          "new_start": 799,
+          "new_end": 800
+        },
+        {
+          "old_start": 830,
+          "old_end": 831,
+          "new_start": 830,
+          "new_end": 831
+        },
+        {
+          "old_start": 861,
+          "old_end": 862,
+          "new_start": 861,
+          "new_end": 862
+        },
+        {
+          "old_start": 892,
+          "old_end": 893,
+          "new_start": 892,
+          "new_end": 893
+        },
+        {
+          "old_start": 923,
+          "old_end": 924,
+          "new_start": 923,
+          "new_end": 924
+        },
+        {
+          "old_start": 954,
+          "old_end": 955,
+          "new_start": 954,
+          "new_end": 955
+        },
+        {
+          "old_start": 985,
+          "old_end": 986,
+          "new_start": 985,
+          "new_end": 986
+        },
+        {
+          "old_start": 1016,
+          "old_end": 1017,
+          "new_start": 1016,
+          "new_end": 1017
+        },
+        {
+          "old_start": 1078,
+          "old_end": 1079,
+          "new_start": 1078,
+          "new_end": 1079
+        },
+        {
+          "old_start": 1109,
+          "old_end": 1110,
+          "new_start": 1109,
+          "new_end": 1110
+        },
+        {
+          "old_start": 1140,
+          "old_end": 1141,
+          "new_start": 1140,
+          "new_end": 1141
+        },
+        {
+          "old_start": 1171,
+          "old_end": 1172,
+          "new_start": 1171,
+          "new_end": 1172
+        },
+        {
+          "old_start": 1202,
+          "old_end": 1203,
+          "new_start": 1202,
+          "new_end": 1203
+        },
+        {
+          "old_start": 1233,
+          "old_end": 1234,
+          "new_start": 1233,
+          "new_end": 1234
+        },
+        {
+          "old_start": 1264,
+          "old_end": 1265,
+          "new_start": 1264,
+          "new_end": 1265
+        },
+        {
+          "old_start": 1295,
+          "old_end": 1296,
+          "new_start": 1295,
+          "new_end": 1296
+        },
+        {
+          "old_start": 1326,
+          "old_end": 1327,
+          "new_start": 1326,
+          "new_end": 1327
+        },
+        {
+          "old_start": 1357,
+          "old_end": 1358,
+          "new_start": 1357,
+          "new_end": 1358
+        },
+        {
+          "old_start": 1388,
+          "old_end": 1389,
+          "new_start": 1388,
+          "new_end": 1389
+        },
+        {
+          "old_start": 1420,
+          "old_end": 1420,
+          "new_start": 1420,
+          "new_end": 1420
+        },
+        {
+          "old_start": 1450,
+          "old_end": 1451,
+          "new_start": 1450,
+          "new_end": 1451
+        },
+        {
+          "old_start": 1481,
+          "old_end": 1482,
+          "new_start": 1481,
+          "new_end": 1482
+        },
+        {
+          "old_start": 1512,
+          "old_end": 1513,
+          "new_start": 1512,
+          "new_end": 1513
+        },
+        {
+          "old_start": 1543,
+          "old_end": 1544,
+          "new_start": 1543,
+          "new_end": 1544
+        },
+        {
+          "old_start": 1574,
+          "old_end": 1575,
+          "new_start": 1574,
+          "new_end": 1575
+        },
+        {
+          "old_start": 1605,
+          "old_end": 1606,
+          "new_start": 1605,
+          "new_end": 1606
+        },
+        {
+          "old_start": 1636,
+          "old_end": 1637,
+          "new_start": 1636,
+          "new_end": 1637
+        },
+        {
+          "old_start": 1667,
+          "old_end": 1668,
+          "new_start": 1667,
+          "new_end": 1668
+        },
+        {
+          "old_start": 1729,
+          "old_end": 1730,
+          "new_start": 1729,
+          "new_end": 1730
+        },
+        {
+          "old_start": 1760,
+          "old_end": 1761,
+          "new_start": 1760,
+          "new_end": 1761
+        },
+        {
+          "old_start": 1792,
+          "old_end": 1792,
+          "new_start": 1792,
+          "new_end": 1792
+        },
+        {
+          "old_start": 1822,
+          "old_end": 1823,
+          "new_start": 1822,
+          "new_end": 1823
+        },
+        {
+          "old_start": 1853,
+          "old_end": 1854,
+          "new_start": 1853,
+          "new_end": 1854
+        },
+        {
+          "old_start": 1915,
+          "old_end": 1916,
+          "new_start": 1915,
+          "new_end": 1916
+        },
+        {
+          "old_start": 1946,
+          "old_end": 1947,
+          "new_start": 1946,
+          "new_end": 1947
+        },
+        {
+          "old_start": 2009,
+          "old_end": 2009,
+          "new_start": 2009,
+          "new_end": 2009
+        },
+        {
+          "old_start": 2039,
+          "old_end": 2040,
+          "new_start": 2039,
+          "new_end": 2040
+        },
+        {
+          "old_start": 2070,
+          "old_end": 2071,
+          "new_start": 2070,
+          "new_end": 2071
+        },
+        {
+          "old_start": 2132,
+          "old_end": 2133,
+          "new_start": 2132,
+          "new_end": 2133
+        },
+        {
+          "old_start": 2225,
+          "old_end": 2226,
+          "new_start": 2225,
+          "new_end": 2226
+        },
+        {
+          "old_start": 2256,
+          "old_end": 2257,
+          "new_start": 2256,
+          "new_end": 2257
+        },
+        {
+          "old_start": 2287,
+          "old_end": 2288,
+          "new_start": 2287,
+          "new_end": 2288
+        },
+        {
+          "old_start": 2318,
+          "old_end": 2319,
+          "new_start": 2318,
+          "new_end": 2319
+        },
+        {
+          "old_start": 2350,
+          "old_end": 2350,
+          "new_start": 2350,
+          "new_end": 2350
+        },
+        {
+          "old_start": 2411,
+          "old_end": 2412,
+          "new_start": 2411,
+          "new_end": 2412
+        },
+        {
+          "old_start": 2504,
+          "old_end": 2505,
+          "new_start": 2504,
+          "new_end": 2505
+        },
+        {
+          "old_start": 2535,
+          "old_end": 2536,
+          "new_start": 2535,
+          "new_end": 2536
+        },
+        {
+          "old_start": 2567,
+          "old_end": 2567,
+          "new_start": 2567,
+          "new_end": 2567
+        },
+        {
+          "old_start": 2629,
+          "old_end": 2629,
+          "new_start": 2629,
+          "new_end": 2629
+        },
+        {
+          "old_start": 2660,
+          "old_end": 2660,
+          "new_start": 2660,
+          "new_end": 2660
+        },
+        {
+          "old_start": 2690,
+          "old_end": 2691,
+          "new_start": 2690,
+          "new_end": 2691
+        },
+        {
+          "old_start": 2721,
+          "old_end": 2722,
+          "new_start": 2721,
+          "new_end": 2722
+        },
+        {
+          "old_start": 2783,
+          "old_end": 2784,
+          "new_start": 2783,
+          "new_end": 2784
+        },
+        {
+          "old_start": 2814,
+          "old_end": 2815,
+          "new_start": 2814,
+          "new_end": 2815
+        },
+        {
+          "old_start": 2845,
+          "old_end": 2846,
+          "new_start": 2845,
+          "new_end": 2846
+        },
+        {
+          "old_start": 2876,
+          "old_end": 2877,
+          "new_start": 2876,
+          "new_end": 2877
+        },
+        {
+          "old_start": 2907,
+          "old_end": 2908,
+          "new_start": 2907,
+          "new_end": 2908
+        },
+        {
+          "old_start": 2939,
+          "old_end": 2939,
+          "new_start": 2939,
+          "new_end": 2939
+        },
+        {
+          "old_start": 3031,
+          "old_end": 3032,
+          "new_start": 3031,
+          "new_end": 3032
+        },
+        {
+          "old_start": 3149,
+          "old_end": 3150,
+          "new_start": 3149,
+          "new_end": 3150
+        },
+        {
+          "old_start": 3155,
+          "old_end": 3156,
+          "new_start": 3155,
+          "new_end": 3156
+        },
+        {
+          "old_start": 3342,
+          "old_end": 3342,
+          "new_start": 3342,
+          "new_end": 3342
+        },
+        {
+          "old_start": 3497,
+          "old_end": 3497,
+          "new_start": 3497,
+          "new_end": 3497
+        },
+        {
+          "old_start": 4117,
+          "old_end": 4117,
+          "new_start": 4117,
+          "new_end": 4117
+        },
+        {
+          "old_start": 4148,
+          "old_end": 4148,
+          "new_start": 4148,
+          "new_end": 4148
+        },
+        {
+          "old_start": 4179,
+          "old_end": 4179,
+          "new_start": 4179,
+          "new_end": 4179
+        },
+        {
+          "old_start": 4303,
+          "old_end": 4303,
+          "new_start": 4303,
+          "new_end": 4303
+        },
+        {
+          "old_start": 4365,
+          "old_end": 4365,
+          "new_start": 4365,
+          "new_end": 4365
+        },
+        {
+          "old_start": 4427,
+          "old_end": 4427,
+          "new_start": 4427,
+          "new_end": 4427
+        },
+        {
+          "old_start": 4551,
+          "old_end": 4551,
+          "new_start": 4551,
+          "new_end": 4551
+        },
+        {
+          "old_start": 4582,
+          "old_end": 4582,
+          "new_start": 4582,
+          "new_end": 4582
+        },
+        {
+          "old_start": 4643,
+          "old_end": 4644,
+          "new_start": 4643,
+          "new_end": 4644
+        },
+        {
+          "old_start": 5171,
+          "old_end": 5171,
+          "new_start": 5171,
+          "new_end": 5171
+        },
+        {
+          "old_start": 5542,
+          "old_end": 5543,
+          "new_start": 5542,
+          "new_end": 5543
+        },
+        {
+          "old_start": 5821,
+          "old_end": 5822,
+          "new_start": 5821,
+          "new_end": 5822
+        },
+        {
+          "old_start": 5883,
+          "old_end": 5884,
+          "new_start": 5883,
+          "new_end": 5884
+        },
+        {
+          "old_start": 6038,
+          "old_end": 6039,
+          "new_start": 6038,
+          "new_end": 6039
+        },
+        {
+          "old_start": 6069,
+          "old_end": 6070,
+          "new_start": 6069,
+          "new_end": 6070
+        },
+        {
+          "old_start": 6380,
+          "old_end": 6380,
+          "new_start": 6380,
+          "new_end": 6380
+        },
+        {
+          "old_start": 6472,
+          "old_end": 6473,
+          "new_start": 6472,
+          "new_end": 6473
+        },
+        {
+          "old_start": 6535,
+          "old_end": 6535,
+          "new_start": 6535,
+          "new_end": 6535
+        },
+        {
+          "old_start": 6597,
+          "old_end": 6597,
+          "new_start": 6597,
+          "new_end": 6597
+        },
+        {
+          "old_start": 6751,
+          "old_end": 6752,
+          "new_start": 6751,
+          "new_end": 6752
+        },
+        {
+          "old_start": 7929,
+          "old_end": 7930,
+          "new_start": 7929,
+          "new_end": 7930
+        },
+        {
+          "old_start": 8085,
+          "old_end": 8085,
+          "new_start": 8085,
+          "new_end": 8085
+        },
+        {
+          "old_start": 8333,
+          "old_end": 8333,
+          "new_start": 8333,
+          "new_end": 8333
+        },
+        {
+          "old_start": 8394,
+          "old_end": 8395,
+          "new_start": 8394,
+          "new_end": 8395
+        },
+        {
+          "old_start": 8673,
+          "old_end": 8674,
+          "new_start": 8673,
+          "new_end": 8674
+        },
+        {
+          "old_start": 8704,
+          "old_end": 8705,
+          "new_start": 8704,
+          "new_end": 8705
+        },
+        {
+          "old_start": 8735,
+          "old_end": 8736,
+          "new_start": 8735,
+          "new_end": 8736
+        },
+        {
+          "old_start": 8766,
+          "old_end": 8767,
+          "new_start": 8766,
+          "new_end": 8767
+        },
+        {
+          "old_start": 8797,
+          "old_end": 8798,
+          "new_start": 8797,
+          "new_end": 8798
+        },
+        {
+          "old_start": 8828,
+          "old_end": 8829,
+          "new_start": 8828,
+          "new_end": 8829
+        },
+        {
+          "old_start": 8859,
+          "old_end": 8860,
+          "new_start": 8859,
+          "new_end": 8860
+        },
+        {
+          "old_start": 8890,
+          "old_end": 8891,
+          "new_start": 8890,
+          "new_end": 8891
+        },
+        {
+          "old_start": 8921,
+          "old_end": 8922,
+          "new_start": 8921,
+          "new_end": 8922
+        },
+        {
+          "old_start": 8952,
+          "old_end": 8953,
+          "new_start": 8952,
+          "new_end": 8953
+        },
+        {
+          "old_start": 8983,
+          "old_end": 8984,
+          "new_start": 8983,
+          "new_end": 8984
+        },
+        {
+          "old_start": 9014,
+          "old_end": 9015,
+          "new_start": 9014,
+          "new_end": 9015
+        },
+        {
+          "old_start": 9045,
+          "old_end": 9046,
+          "new_start": 9045,
+          "new_end": 9046
+        },
+        {
+          "old_start": 9076,
+          "old_end": 9077,
+          "new_start": 9076,
+          "new_end": 9077
+        },
+        {
+          "old_start": 9107,
+          "old_end": 9108,
+          "new_start": 9107,
+          "new_end": 9108
+        },
+        {
+          "old_start": 9138,
+          "old_end": 9139,
+          "new_start": 9138,
+          "new_end": 9139
+        },
+        {
+          "old_start": 9169,
+          "old_end": 9170,
+          "new_start": 9169,
+          "new_end": 9170
+        },
+        {
+          "old_start": 9200,
+          "old_end": 9201,
+          "new_start": 9200,
+          "new_end": 9201
+        },
+        {
+          "old_start": 9231,
+          "old_end": 9232,
+          "new_start": 9231,
+          "new_end": 9232
+        },
+        {
+          "old_start": 9262,
+          "old_end": 9263,
+          "new_start": 9262,
+          "new_end": 9263
+        },
+        {
+          "old_start": 9293,
+          "old_end": 9294,
+          "new_start": 9293,
+          "new_end": 9294
+        },
+        {
+          "old_start": 9324,
+          "old_end": 9325,
+          "new_start": 9324,
+          "new_end": 9325
+        },
+        {
+          "old_start": 9666,
+          "old_end": 9666,
+          "new_start": 9666,
+          "new_end": 9666
+        },
+        {
+          "old_start": 10038,
+          "old_end": 10038,
+          "new_start": 10038,
+          "new_end": 10038
+        },
+        {
+          "old_start": 10131,
+          "old_end": 10131,
+          "new_start": 10131,
+          "new_end": 10131
+        },
+        {
+          "old_start": 10224,
+          "old_end": 10224,
+          "new_start": 10224,
+          "new_end": 10224
+        },
+        {
+          "old_start": 10286,
+          "old_end": 10286,
+          "new_start": 10286,
+          "new_end": 10286
+        },
+        {
+          "old_start": 10720,
+          "old_end": 10720,
+          "new_start": 10720,
+          "new_end": 10720
+        },
+        {
+          "old_start": 11215,
+          "old_end": 11216,
+          "new_start": 11215,
+          "new_end": 11216
+        },
+        {
+          "old_start": 11278,
+          "old_end": 11278,
+          "new_start": 11278,
+          "new_end": 11278
+        },
+        {
+          "old_start": 11309,
+          "old_end": 11309,
+          "new_start": 11309,
+          "new_end": 11309
+        },
+        {
+          "old_start": 11603,
+          "old_end": 11604,
+          "new_start": 11603,
+          "new_end": 11604
+        },
+        {
+          "old_start": 11634,
+          "old_end": 11635,
+          "new_start": 11634,
+          "new_end": 11635
+        },
+        {
+          "old_start": 11665,
+          "old_end": 11666,
+          "new_start": 11665,
+          "new_end": 11666
+        },
+        {
+          "old_start": 11696,
+          "old_end": 11697,
+          "new_start": 11696,
+          "new_end": 11697
+        },
+        {
+          "old_start": 11727,
+          "old_end": 11728,
+          "new_start": 11727,
+          "new_end": 11728
+        },
+        {
+          "old_start": 12007,
+          "old_end": 12007,
+          "new_start": 12007,
+          "new_end": 12007
+        },
+        {
+          "old_start": 12317,
+          "old_end": 12317,
+          "new_start": 12317,
+          "new_end": 12317
+        },
+        {
+          "old_start": 12595,
+          "old_end": 12596,
+          "new_start": 12595,
+          "new_end": 12596
+        },
+        {
+          "old_start": 12627,
+          "old_end": 12627,
+          "new_start": 12627,
+          "new_end": 12627
+        },
+        {
+          "old_start": 12844,
+          "old_end": 12844,
+          "new_start": 12844,
+          "new_end": 12844
+        },
+        {
+          "old_start": 13123,
+          "old_end": 13123,
+          "new_start": 13123,
+          "new_end": 13123
+        },
+        {
+          "old_start": 13787,
+          "old_end": 13788,
+          "new_start": 13787,
+          "new_end": 13788
+        }
+      ],
+      "working_tree_sha256": "b6592511c9bb69de03baf9bf07b8e0825ba28f9b70d4e3f29efbe224246d8044",
+      "symbols": [
+        "products",
+        "product search and detail content"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/data/products.ts from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/data/products.ts. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    },
+    {
+      "path": "apps/web/src/lib/seo.ts",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 4,
+          "old_end": 4,
+          "new_start": 4,
+          "new_end": 4
+        }
+      ],
+      "working_tree_sha256": "5c092dcaa48187f0dc1b1557cd16900e278307b49d1340ca4aeafbeb0bc6f1f6",
+      "symbols": [
+        "SITE_DESCRIPTION",
+        "shared SEO defaults"
+      ],
+      "purpose": "Replace stale 22-year tenure wording with 23-year wording in search-visible metadata, page copy, and generated/static content surfaces.",
+      "previous_behavior": "The file could expose Boryoung Travel as a 22-year operator in SEO metadata, Naver-visible snippets, page copy, editor placeholders, or content summaries.",
+      "new_behavior": "The file now exposes Boryoung Travel as a 23-year operator while preserving unrelated dates and non-tenure wording.",
+      "data_impact": "none: this change updates repository source/static text only and does not read, create, update, migrate, or delete live operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "Search engines may continue to show cached 22-year snippets until recrawl or manual reindexing.",
+        "If any marketing surface intentionally needed the old 22-year claim, that copy would need a targeted follow-up adjustment."
+      ],
+      "rollback": "Before commit, restore apps/web/src/lib/seo.ts from baseline commit 707b2dbf8038f01c72dd00ce2ed68749f1fd591c with git restore --source 707b2dbf8038f01c72dd00ce2ed68749f1fd591c -- apps/web/src/lib/seo.ts. After commit, apply the inverse copy change from 23-year wording back to 22-year wording for this file if needed. No data migration rollback applies."
+    }
+  ],
+  "production_safety": {
+    "operational_data": "No production data was read, created, updated, or deleted. The work changed repository source and static marketing/content text only.",
+    "schema_migration": "none: no database schema, migration, seed contract, API contract, or storage format changed.",
+    "external_side_effects": [
+      "none: no deploy, crawl request, external API call, notification, or production system update was performed."
+    ]
+  },
+  "verification": [
+    {
+      "command": "rg -n \"22?\" . --glob \"!node_modules/**\" --glob \"!.next/**\" --glob \"!docs/change-metadata/**\" --glob \"!.git/**\"",
+      "result": "passed",
+      "evidence": "No remaining 22? matches were found outside ignored dependency, build, git, and metadata folders."
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed",
+      "evidence": "apps/web TypeScript completed with tsc -p tsconfig.json --noEmit."
+    },
+    {
+      "command": "npm run lint",
+      "result": "failed",
+      "evidence": "Lint failed on pre-existing unrelated issues such as CommonJS require imports, existing no-explicit-any usages, and React hook dependency warnings/errors; no lint error was introduced by this copy-only tenure update."
+    }
+  ],
+  "residual_risks": [
+    "Naver may continue showing the old 22-year snippet until its cache refreshes or the affected URLs are reindexed.",
+    "Existing unrelated lint issues remain and should be handled separately."
+  ],
+  "commit": "same-as-metadata-file"
+}

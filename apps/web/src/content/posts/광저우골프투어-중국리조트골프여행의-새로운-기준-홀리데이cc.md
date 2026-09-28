@@ -17,10 +17,10 @@ images: [
   "https://postfiles.pstatic.net/MjAyNTEyMTBfMTUg/MDAxNzY1MzUzMTEyODU1.T2lvcn1gw9JfU8cgdmyvmi6B4MFrvSf7yd4auV-kEb0g.ZbNBhnWcQKDSXt6j1kriCI6YJ9sy62QDioCOHETqQ6kg.JPEG/%ED%99%80%EB%A6%AC%EB%8D%B0%EC%9D%B4%EB%A6%AC%EC%A1%B0%ED%8A%B8_%EA%B8%88%EC%82%AC%ED%98%B8%EB%B0%98_5%EC%84%B1%EA%B8%89%ED%98%B8%ED%85%94_(1).jpg?type=w80_blur",
   "https://postfiles.pstatic.net/MjAyNTEyMTBfMjE0/MDAxNzY1MzUzMTIwOTU4.SJTpbFtbd4g1PKEue8tPIRNGD9sgnw1R_5NHFVd7JLIg.BPaFEkJ28QvBVwd4c9YyjwCS-2YAjCUTNEfmk_ehhN8g.JPEG/%ED%99%80%EB%A6%AC%EB%8D%B0%EC%9D%B4%EB%A6%AC%EC%A1%B0%ED%8A%B8_%EA%B8%88%EC%82%AC%ED%98%B8%EB%B0%98_5%EC%84%B1%EA%B8%89%ED%98%B8%ED%85%94_(2).JPG?type=w80_blur"
 ]
-excerpt: "안녕하세요?  22년 전통의..."
+excerpt: "안녕하세요?  23년 전통의..."
 naverUrl: "https://blog.naver.com/boryoung2/224107219116"
 ---
 
 안녕하세요?
 
-22년 전통의
+23년 전통의

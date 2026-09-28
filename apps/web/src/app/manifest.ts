@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "(주)보령항공여행사 - 해외골프투어 전문",
     short_name: "보령항공여행",
-    description: "22년 전통의 해외골프투어 전문 여행사",
+    description: "23년 전통의 해외골프투어 전문 여행사",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

@@ -17,7 +17,7 @@ images: [
   "https://postfiles.pstatic.net/MjAyNTExMTdfMjA3/MDAxNzYzMzYzNDExOTI1.QzoaWgVzfVZF7FhndENb2UzXyykNB2f9GvBVICyuqCsg.jt-1VvsB-6Fzhl03mgRtfbFCUfdf-uTiCT69xJQD9xgg.JPEG/%EA%B7%B8%EB%9E%9C%EB%93%9C%EC%B1%94%ED%94%BC%EC%98%A8_(4).jpg?type=w80_blur",
   "https://postfiles.pstatic.net/MjAyNTExMTdfNjEg/MDAxNzYzMzYzNDIxMDgz.UN3o2RGXZcW3MJH_RUG8teH4N476ROvOrnn6ikH2v_cg.4ZzOvh4JxjSI7T7Z1IcoQqhFLX2YClWchrSQvEmpF0Eg.JPEG/%EA%B7%B8%EB%9E%9C%EB%93%9C%EC%B1%94%ED%94%BC%EC%98%A8_(1).jpg?type=w80_blur"
 ]
-excerpt: "겨울에도 따뜻한 구마모토 골프장추천,  내년 봄에는 더욱 골프치기 좋은  야츠시로CC에서 즐기는 26년일본골프투어  ​  안녕하세요?  구마모토골프장추천 전문  22년 전통의..."
+excerpt: "겨울에도 따뜻한 구마모토 골프장추천,  내년 봄에는 더욱 골프치기 좋은  야츠시로CC에서 즐기는 26년일본골프투어  ​  안녕하세요?  구마모토골프장추천 전문  23년 전통의..."
 naverUrl: "https://blog.naver.com/boryoung2/224083424329"
 ---
 
@@ -33,4 +33,4 @@ naverUrl: "https://blog.naver.com/boryoung2/224083424329"
 
 구마모토골프장추천 전문
 
-22년 전통의
+23년 전통의

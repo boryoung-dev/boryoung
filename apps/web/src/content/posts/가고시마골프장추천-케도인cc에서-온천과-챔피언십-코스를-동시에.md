@@ -17,7 +17,7 @@ images: [
   "https://postfiles.pstatic.net/MjAyNTEyMDVfNzEg/MDAxNzY0OTIwNTQ5MjI2.yxTXe-e0Z5PlaKzG5i2DoFaAGTqKdy8qwGFwdrnP0d0g.DAc6GcnIejN6ftO4RUR7BESyrugBkaNcdsg_dHER9U0g.JPEG/IMG_4002.JPG?type=w80_blur",
   "https://postfiles.pstatic.net/MjAyNTEyMDVfMjI2/MDAxNzY0OTIwNTU2MjI1.16QeA_psPMbK_5G6ZiI678K1jKSSHEbnj45cwSH9nnAg.AIXY4g_nB3z3QCrwZJFB5X5rOY3JLBa3mZdHkVLyoTMg.JPEG/%EC%BC%80%EB%8F%84%EC%9D%B8%EB%A6%AC%EC%A1%B0%ED%8A%B8%EC%99%B8%EA%B4%80%EB%A1%9C%EB%B9%84_(5).JPG?type=w80_blur"
 ]
-excerpt: "​  안녕하세요?  22년 전통의..."
+excerpt: "​  안녕하세요?  23년 전통의..."
 naverUrl: "https://blog.naver.com/boryoung2/224102078160"
 ---
 
@@ -25,4 +25,4 @@ naverUrl: "https://blog.naver.com/boryoung2/224102078160"
 
 안녕하세요?
 
-22년 전통의
+23년 전통의

@@ -17,7 +17,7 @@ images: [
   "https://postfiles.pstatic.net/MjAyNTA0MTBfMjM2/MDAxNzQ0MjcxMzUyMTA4.9F0ian6E7qZlz8MwNFlS7a81X-pktfXW1Mx7IjxsQDAg.vVfcsCmKDQxdTMFW5TxsLYJvxgvq4zNfLUjrTUKpOOAg.JPEG/%EB%8B%88%EC%B9%98%EB%82%9C4.jpg?type=w80_blur",
   "https://postfiles.pstatic.net/MjAyNTA0MTBfNzYg/MDAxNzQ0MjcxMzcwMjQ3.1wxYm-ig4rzgMqgpRyhyyUvBWF9ATB1HRl465mIB8R4g.eN8K47jf7vx-KoN9MUHSadQaL_533r_wO7v3wEgnxBsg.JPEG/%EB%8B%88%EC%B9%98%EB%82%9C5.jpg?type=w80_blur"
 ]
-excerpt: "​  안녕하세요   22년 골프투어 전문..."
+excerpt: "​  안녕하세요   23년 골프투어 전문..."
 naverUrl: "https://blog.naver.com/boryoung2/223830163445"
 ---
 
@@ -25,4 +25,4 @@ naverUrl: "https://blog.naver.com/boryoung2/223830163445"
 
 안녕하세요 
 
-22년 골프투어 전문
+23년 골프투어 전문
