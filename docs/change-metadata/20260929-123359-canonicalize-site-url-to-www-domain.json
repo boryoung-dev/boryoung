@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "change_id": "20260929-123359-canonicalize-site-url-to-www-domain",
+  "created_at": "2026-09-29T12:33:59+09:00",
+  "repository": "boryoung",
+  "branch": "main",
+  "baseline_commit": "f9af93bd14e4c91eab07b290cc0a2dede3a16b5e",
+  "request": "Unify source SEO URL signals to the www domain",
+  "title": "Canonicalize site URL to www domain",
+  "purpose": "Align SEO source of truth with the live redirected www domain for canonical, sitemap, robots, OpenGraph, and structured data URLs",
+  "files": [
+    {
+      "path": "apps/web/src/lib/seo.ts",
+      "change_type": "modified",
+      "previous_path": null,
+      "line_ranges": [
+        {
+          "old_start": 1,
+          "old_end": 1,
+          "new_start": 1,
+          "new_end": 1
+        }
+      ],
+      "working_tree_sha256": "233c4d362cfde090b86f5d2238b3e61ec82f751dfa0badb4bdae5ebdf51b2807",
+      "symbols": [
+        "SITE_URL",
+        "shared SEO URL source"
+      ],
+      "purpose": "Change the shared public site URL fallback to the live www domain so generated canonical, sitemap, robots, OpenGraph, Twitter, and JSON-LD URLs are consistent with the deployed redirect target.",
+      "previous_behavior": "When NEXT_PUBLIC_SITE_URL was not provided, SEO helpers generated non-www URLs even though the live site redirects to https://www.boryoung.co.kr.",
+      "new_behavior": "When NEXT_PUBLIC_SITE_URL is not provided, SEO helpers generate https://www.boryoung.co.kr URLs, matching the live canonical host expected by crawlers.",
+      "data_impact": "none: this is a source configuration constant change only and does not read, write, migrate, or delete operational data.",
+      "access_control_impact": "none: no authentication, authorization, roles, permissions, or protected-route behavior changed.",
+      "risks": [
+        "If production sets NEXT_PUBLIC_SITE_URL to the old non-www value, the environment variable will override this fallback and must be updated separately.",
+        "Search engines may need time to recrawl the updated canonical and sitemap URLs after deployment."
+      ],
+      "rollback": "Restore apps/web/src/lib/seo.ts from baseline commit f9af93bd14e4c91eab07b290cc0a2dede3a16b5e with git restore --source f9af93bd14e4c91eab07b290cc0a2dede3a16b5e -- apps/web/src/lib/seo.ts, or change the SITE_URL fallback back to https://boryoung.co.kr. No data migration rollback applies."
+    }
+  ],
+  "production_safety": {
+    "operational_data": "No production data was read, created, updated, or deleted. The change is limited to a repository SEO URL constant.",
+    "schema_migration": "none: no database schema, migration, seed contract, API contract, or storage format changed.",
+    "external_side_effects": [
+      "none: no deploy, crawl request, external API call, notification, or production system update was performed."
+    ]
+  },
+  "verification": [
+    {
+      "command": "rg -n \"https://boryoung\\.co\\.kr|https://www\\.boryoung\\.co\\.kr|NEXT_PUBLIC_SITE_URL\" src\\lib\\seo.ts src\\app\\robots.ts src\\app\\sitemap.ts src\\app\\layout.tsx src\\app\\page.tsx -S",
+      "result": "passed",
+      "evidence": "The shared SITE_URL fallback now points to https://www.boryoung.co.kr, and SEO route files consume SITE_URL instead of hardcoded non-www URLs."
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed",
+      "evidence": "apps/web TypeScript completed with tsc -p tsconfig.json --noEmit."
+    }
+  ],
+  "residual_risks": [
+    "Production deployment may still need NEXT_PUBLIC_SITE_URL updated to https://www.boryoung.co.kr if the hosting environment defines it.",
+    "Naver Search Advisor still needs the www property and sitemap submitted after deployment for fastest recrawl."
+  ],
+  "commit": "same-as-metadata-file"
+}
