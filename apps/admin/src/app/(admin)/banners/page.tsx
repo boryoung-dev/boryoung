@@ -35,6 +35,7 @@ import Modal, {
 } from "@/components/ui/Modal";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 import { useToast } from "@/components/ui/Toast";
+import { resolveWebSiteUrl } from "@/lib/web-site-url";
 
 type BannerPlacement = "main" | "tour";
 
@@ -78,14 +79,6 @@ const emptyForm: BannerFormData = {
   isActive: true,
 };
 
-const WEB_SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://boryoung.co.kr";
-
-function resolveBannerImageUrl(imageUrl: string) {
-  if (!imageUrl.startsWith("/")) return imageUrl;
-  return `${WEB_SITE_URL}${imageUrl}`;
-}
-
 function SortableBannerCard({
   banner,
   onEdit,
@@ -117,7 +110,7 @@ function SortableBannerCard({
     >
       <div className="relative h-[200px] bg-gray-100">
         <img
-          src={resolveBannerImageUrl(banner.imageUrl)}
+          src={resolveWebSiteUrl(banner.imageUrl)}
           alt={banner.title}
           className="h-full w-full object-cover"
         />
@@ -162,7 +155,7 @@ function SortableBannerCard({
           <p className="mb-2 truncate text-xs text-gray-500">
             링크:{" "}
             <a
-              href={banner.linkUrl}
+              href={resolveWebSiteUrl(banner.linkUrl)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 hover:underline"
@@ -620,7 +613,7 @@ export default function BannersPage() {
             {imagePreview && (
               <div className="mt-3 overflow-hidden rounded-lg border border-gray-200">
                 <img
-                  src={resolveBannerImageUrl(imagePreview)}
+                  src={resolveWebSiteUrl(imagePreview)}
                   alt="배너 미리보기"
                   className="h-[200px] w-full object-cover"
                   onError={() => setImagePreview("")}

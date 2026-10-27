@@ -8,6 +8,7 @@ import Select from "@/components/ui/Select";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmModal";
+import { resolveWebSiteUrl } from "@/lib/web-site-url";
 
 interface QuickIcon {
   id: string;
@@ -217,7 +218,7 @@ export default function QuickIconsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <a
-                        href={icon.linkUrl}
+                        href={resolveWebSiteUrl(icon.linkUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm text-blue-600 hover:underline truncate block max-w-xs"
