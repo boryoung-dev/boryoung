@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useApiQuery, useApiMutation } from "@/hooks/useApi";
-import { Pencil, Trash2, MessageSquare } from "lucide-react";
+import { Plus, Pencil, Trash2, MessageSquare } from "lucide-react";
 import FilterTabs from "@/components/ui/FilterTabs";
 import Select from "@/components/ui/Select";
 import Modal, { ModalCancelButton, ModalConfirmButton } from "@/components/ui/Modal";
@@ -32,6 +32,7 @@ interface Review {
 }
 
 interface EditFormData {
+  productId: string;
   authorName: string;
   rating: number;
   title: string;
@@ -46,27 +47,46 @@ interface ReviewsResponse {
   reviews: Review[];
 }
 
+interface ProductsResponse {
+  success: boolean;
+  products: Product[];
+}
+
+const emptyForm: EditFormData = {
+  productId: "",
+  authorName: "",
+  rating: 5,
+  title: "",
+  content: "",
+  travelDate: "",
+  isVerified: false,
+  isPublished: true,
+};
+
 export default function ReviewsPage() {
   const { token } = useAdminAuth();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "unpublished">("all");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // null이면 새 후기 등록, 값이 있으면 해당 후기 수정
   const [editingReview, setEditingReview] = useState<Review | null>(null);
-  const [editFormData, setEditFormData] = useState<EditFormData>({
-    authorName: "",
-    rating: 5,
-    title: "",
-    content: "",
-    travelDate: "",
-    isVerified: false,
-    isPublished: false,
-  });
+  const [editFormData, setEditFormData] = useState<EditFormData>(emptyForm);
 
   const { data, isLoading } = useApiQuery<ReviewsResponse>(
     ["reviews"],
     "/api/reviews?limit=100&offset=0"
   );
+
+  const { data: productsData } = useApiQuery<ProductsResponse>(
+    ["review-product-options"],
+    "/api/products?limit=200&status=all"
+  );
+
+  const productOptions = (productsData?.products ?? []).map((product) => ({
+    value: product.id,
+    label: product.destination ? `${product.title} (${product.destination})` : product.title,
+  }));
 
   const reviews = data?.reviews ?? [];
 
@@ -92,6 +112,21 @@ export default function ReviewsPage() {
     }
   );
 
+  const createMutation = useApiMutation<{ success: boolean }, EditFormData>(
+    (body, token) =>
+      fetch("/api/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      }),
+    {
+      invalidateKeys: [["reviews"]],
+    }
+  );
+
   const deleteMutation = useApiMutation<any, string>(
     (id, token) =>
       fetch(`/api/reviews/${id}`, {
@@ -109,9 +144,16 @@ export default function ReviewsPage() {
     }
   );
 
+  const handleCreate = () => {
+    setEditingReview(null);
+    setEditFormData(emptyForm);
+    setIsEditModalOpen(true);
+  };
+
   const handleEdit = (review: Review) => {
     setEditingReview(review);
     setEditFormData({
+      productId: review.productId,
       authorName: review.authorName,
       rating: review.rating,
       title: review.title || "",
@@ -126,7 +168,28 @@ export default function ReviewsPage() {
   };
 
   const handleSaveEdit = async () => {
-    if (!editingReview) return;
+    if (!editFormData.authorName.trim() || !editFormData.content.trim()) {
+      toast("작성자와 내용을 입력해주세요.", "error");
+      return;
+    }
+
+    if (!editingReview) {
+      if (!editFormData.productId) {
+        toast("상품을 선택해주세요.", "error");
+        return;
+      }
+      createMutation.mutate(editFormData, {
+        onSuccess: () => {
+          toast("리뷰가 등록되었습니다.", "success");
+          setIsEditModalOpen(false);
+        },
+        onError: () => {
+          toast("리뷰 등록에 실패했습니다.", "error");
+        },
+      });
+      return;
+    }
+
     updateMutation.mutate(
       {
         id: editingReview.id,
@@ -195,6 +258,13 @@ export default function ReviewsPage() {
       {/* 페이지 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">리뷰 관리</h1>
+        <button
+          onClick={handleCreate}
+          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          <Plus className="w-4 h-4" />
+          리뷰 등록
+        </button>
       </div>
 
       {/* 필터 */}
@@ -301,24 +371,41 @@ export default function ReviewsPage() {
 
       {/* 수정 모달 */}
       <Modal
-        isOpen={isEditModalOpen && !!editingReview}
+        isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="리뷰 수정"
+        title={editingReview ? "리뷰 수정" : "리뷰 등록"}
         size="md"
         footer={
           <>
             <ModalCancelButton onClick={() => setIsEditModalOpen(false)} />
-            <ModalConfirmButton onClick={handleSaveEdit}>저장</ModalConfirmButton>
+            <ModalConfirmButton
+              onClick={handleSaveEdit}
+              disabled={createMutation.isPending || updateMutation.isPending}
+            >
+              {editingReview ? "저장" : "등록"}
+            </ModalConfirmButton>
           </>
         }
       >
-        {editingReview && (
+        {isEditModalOpen && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">상품</label>
-              <div className="px-3 py-2.5 bg-gray-50 rounded-lg text-sm text-gray-700">
-                {editingReview.product.title}
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                상품 {!editingReview && <span className="text-red-500">*</span>}
+              </label>
+              {editingReview ? (
+                <div className="px-3 py-2.5 bg-gray-50 rounded-lg text-sm text-gray-700">
+                  {editingReview.product.title}
+                </div>
+              ) : (
+                <Select
+                  value={editFormData.productId}
+                  onChange={(val) => setEditFormData({ ...editFormData, productId: val })}
+                  options={productOptions}
+                  placeholder="상품을 선택하세요"
+                  className="w-full"
+                />
+              )}
             </div>
 
             <div>
